@@ -43,10 +43,20 @@ class McpToolsContract(unittest.IsolatedAsyncioTestCase):
     def tools(self, token=TOKEN):
         return McpTools(URL, token, client_factory=self.client_factory)
 
-    async def test_discover_returns_the_three_registry_tools_with_schemas(self):
+    async def test_discover_returns_the_six_registry_tools_with_schemas(self):
         async with self.running():
             specs = await self.tools().discover()
-            self.assertEqual([s.name for s in specs], ['get_aircraft_summary', 'list_open_issues', 'get_issue_history'])
+            self.assertEqual(
+                [s.name for s in specs],
+                [
+                    'get_aircraft_summary',
+                    'list_open_issues',
+                    'get_issue_history',
+                    'count_issues',
+                    'compare_aircraft',
+                    'search_issues',
+                ],
+            )
             page = next(s for s in specs if s.name == 'list_open_issues')
             self.assertEqual(set(page.input_schema['properties']), {'aircraft_id', 'priority', 'limit', 'offset'})
             self.assertTrue(page.description)
@@ -109,7 +119,7 @@ class McpToolsContract(unittest.IsolatedAsyncioTestCase):
             specs = await self.tools().discover()
             tools = anthropic_tools(specs)
             self.assertEqual([t['name'] for t in tools][-1], 'final_answer')
-            self.assertEqual(len(tools), 4)
+            self.assertEqual(len(tools), 7)
             self.assertEqual(set(tools[0]), {'name', 'description', 'input_schema'})
             self.assertIn('cited_ids', tools[-1]['input_schema']['properties'])
 

@@ -9,6 +9,7 @@ from test_mcp import FixtureRepository
 
 from backend import copilot_chat
 from mcp_service.server import create_server
+from preflight_core.models import AircraftComparison, IssueCounts
 from preflight_core.tools import MCP_SERVER_NAME, QUALIFIED_NAMES, TOOL_CONTRACTS, TOOLS
 
 
@@ -41,8 +42,25 @@ class RegistryAgreement(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(copilot_chat.permission(rogue, {}).kind, 'reject')
         decision = copilot_chat.ToolPolicy().before({'toolName': MCP_SERVER_NAME + '-execute_sql'}, {})
         self.assertEqual(decision['permissionDecision'], 'deny')
-        self.assertEqual(len(TOOL_CONTRACTS), 3)  # widening the allowlist is a reviewed decision, not a side effect
+        self.assertEqual(len(TOOL_CONTRACTS), 6)  # widening the allowlist is a reviewed decision, not a side effect
         self.assertEqual(set(QUALIFIED_NAMES.values()), set(TOOLS))
+
+    def test_new_result_models_reject_extra_fields(self):
+        counts = {
+            'group_by': 'subsystem',
+            'unresolved_only': True,
+            'total': 3,
+            'groups': [{'key': 'cabin', 'count': 1}, {'key': 'hydraulics', 'count': 2}],
+        }
+        self.assertEqual(IssueCounts.model_validate(counts).model_dump(mode='json'), counts)
+        with self.assertRaises(ValueError):
+            IssueCounts.model_validate({**counts, 'sql': 'SELECT 1'})
+        with self.assertRaises(ValueError):
+            IssueCounts.model_validate({**counts, 'group_by': 'actor'})
+        self.assertIn('summaries', AircraftComparison.model_fields)
+        self.assertIn('unresolved_spread', AircraftComparison.model_fields)
+        self.assertEqual(TOOLS['search_issues'].result.__name__, 'IssuePage')
+        self.assertEqual(TOOLS['compare_aircraft'].arguments, frozenset({'aircraft_ids'}))
 
     def test_results_validate_only_against_their_own_contract(self):
         page = {'total': 0, 'limit': 50, 'offset': 0, 'items': []}

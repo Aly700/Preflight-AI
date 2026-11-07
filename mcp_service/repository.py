@@ -6,6 +6,28 @@ import psycopg
 
 Row = dict[str, Any]
 ISSUE_FIELDS = 'issue_id, aircraft_id, title, description, subsystem, priority, status, opened_at, closed_at'
+# Grouping and filter columns are chosen from these fixed names; input values only ever bind as parameters.
+GROUP_COLUMNS = {'subsystem': 'subsystem', 'priority': 'priority', 'status': 'status', 'aircraft': 'aircraft_id'}
+FILTER_COLUMNS = {'aircraft_id': 'aircraft_id', 'status': 'status', 'subsystem': 'subsystem', 'priority': 'priority'}
+
+
+def issue_filters(values: dict[str, Any], *, unresolved_only: bool = False) -> tuple[str, list[Any]]:
+    """A WHERE clause from the present filters, columns fixed, values bound."""
+    clauses: list[str] = []
+    bound: list[Any] = []
+    for name, column in FILTER_COLUMNS.items():
+        if values.get(name) is not None:
+            clauses.append(column + ' = %s')
+            bound.append(values[name])
+    if values.get('opened_after') is not None:
+        clauses.append('opened_at >= %s')
+        bound.append(values['opened_after'])
+    if values.get('opened_before') is not None:
+        clauses.append('opened_at <= %s')
+        bound.append(values['opened_before'])
+    if unresolved_only:
+        clauses.append("status <> 'closed'")
+    return (' WHERE ' + ' AND '.join(clauses)) if clauses else '', bound
 
 
 class Repository:
@@ -100,3 +122,76 @@ class Repository:
             'offset': offset,
             'events': events,
         }
+
+    def issue_counts(
+        self,
+        group_by: str,
+        aircraft_id: str | None,
+        status: str | None,
+        subsystem: str | None,
+        priority: str | None,
+        unresolved_only: bool,
+    ) -> Row:
+        column = GROUP_COLUMNS[group_by]
+        where, values = issue_filters(
+            {'aircraft_id': aircraft_id, 'status': status, 'subsystem': subsystem, 'priority': priority},
+            unresolved_only=unresolved_only,
+        )
+        groups = self.connection.execute(
+            'SELECT '
+            + column
+            + ' AS key, count(*) AS count FROM preflight.issues'
+            + where
+            + ' GROUP BY key ORDER BY key',
+            values,
+        ).fetchall()
+        return {
+            'group_by': group_by,
+            'unresolved_only': unresolved_only,
+            'total': sum(g['count'] for g in groups),
+            'groups': [{'key': g['key'], 'count': g['count']} for g in groups],
+        }
+
+    def compare_aircraft(self, aircraft_ids: list[str]) -> Row:
+        summaries = [self.aircraft_summary(aircraft_id) for aircraft_id in dict.fromkeys(aircraft_ids)]
+        ranked = sorted(
+            (
+                {
+                    'aircraft_id': s['aircraft']['aircraft_id'],
+                    'unresolved_issue_count': s['unresolved_issue_count'],
+                    'issue_count': s['issue_count'],
+                }
+                for s in summaries
+            ),
+            key=lambda r: (-r['unresolved_issue_count'], r['aircraft_id']),
+        )
+        spread = ranked[0]['unresolved_issue_count'] - ranked[-1]['unresolved_issue_count']
+        return {'summaries': summaries, 'ranked_by_unresolved': ranked, 'unresolved_spread': spread}
+
+    def search_issues(
+        self,
+        status: str | None,
+        subsystem: str | None,
+        priority: str | None,
+        aircraft_id: str | None,
+        opened_after: Any,
+        opened_before: Any,
+        limit: int,
+        offset: int,
+    ) -> Row:
+        where, values = issue_filters(
+            {
+                'status': status,
+                'subsystem': subsystem,
+                'priority': priority,
+                'aircraft_id': aircraft_id,
+                'opened_after': opened_after,
+                'opened_before': opened_before,
+            }
+        )
+        counted = self.connection.execute('SELECT count(*) AS count FROM preflight.issues' + where, values).fetchone()
+        items = self.connection.execute(
+            'SELECT ' + ISSUE_FIELDS + ' FROM preflight.issues' + where + ' ORDER BY issue_id LIMIT %s OFFSET %s',
+            [*values, limit, offset],
+        ).fetchall()
+        return {'total': counted['count'] if counted else 0, 'limit': limit, 'offset': offset, 'items': items}

@@ -17,6 +17,8 @@ IssueId = Annotated[str, Field(pattern=r'^ISSUE-[0-9]+$', max_length=64, strict=
 PageLimit = Annotated[int, Field(ge=1, le=100, strict=True)]
 PageOffset = Annotated[int, Field(ge=0, le=10000, strict=True)]
 Priority = Literal['low', 'medium', 'high']
+Subsystem = Literal['hydraulics', 'avionics', 'electrical', 'cabin', 'structures', 'controls']
+GroupBy = Literal['subsystem', 'priority', 'status', 'aircraft']
 IssueStatus = Literal['open', 'in_progress', 'blocked', 'reopened', 'closed']
 TaskStatus = Literal['todo', 'in_progress', 'awaiting_review', 'completed', 'blocked']
 EventType = Literal[
@@ -33,6 +35,7 @@ EventType = Literal[
     'note_added',
 ]
 Count = Annotated[int, Field(ge=0)]
+Flag = Annotated[bool, Field(strict=True)]
 
 
 class Aircraft(BaseModel):
@@ -93,3 +96,31 @@ class IssueHistory(ResultModel):
     limit: PageLimit
     offset: PageOffset
     events: list[ActivityEvent]
+
+
+class CountGroup(ResultModel):
+    key: str
+    count: Count
+
+
+class IssueCounts(ResultModel):
+    """Issue counts grouped by one column; SQL does the counting, keys with no issues are absent."""
+
+    group_by: GroupBy
+    unresolved_only: bool
+    total: Count
+    groups: list[CountGroup]
+
+
+class AircraftRank(ResultModel):
+    aircraft_id: AircraftId
+    unresolved_issue_count: Count
+    issue_count: Count
+
+
+class AircraftComparison(ResultModel):
+    """Summaries for several aircraft in request order, ranked by unresolved issues, with the spread."""
+
+    summaries: list[AircraftSummary]
+    ranked_by_unresolved: list[AircraftRank]
+    unresolved_spread: Count

@@ -9,6 +9,7 @@ import unittest
 
 from backend.copilot_chat import provider_config, stream_answer
 from backend.settings import ChatSettings
+from preflight_core.tools import TOOLS
 
 SETTINGS = ChatSettings('a' * 64, 'b' * 64, 'c' * 64, mcp_url='http://127.0.0.1:8001/mcp')
 BYOK = ChatSettings(
@@ -165,7 +166,7 @@ class AdapterOrchestration(unittest.IsolatedAsyncioTestCase):
         options = seen['options']
         self.assertEqual(
             options['available_tools'],
-            ['mcp:preflight-get_aircraft_summary', 'mcp:preflight-list_open_issues', 'mcp:preflight-get_issue_history'],
+            ['mcp:preflight-' + name for name in TOOLS],
         )
         self.assertEqual(options['mcp_servers']['preflight']['url'], SETTINGS.mcp_url)
         self.assertEqual(options['mcp_servers']['preflight']['headers'], {'Authorization': 'Bearer ' + 'c' * 64})

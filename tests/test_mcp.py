@@ -3,6 +3,7 @@
 from collections import Counter
 from contextlib import contextmanager
 import csv
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 import unittest
@@ -32,6 +33,9 @@ class FixtureRepository:
 
     def healthy(self):
         return True
+
+    def rows_for(self, aircraft_id):
+        return [i for i in self.rows['issues'] if i['aircraft_id'] == aircraft_id]
 
     def aircraft_summary(self, aircraft_id):
         self.calls += 1
@@ -65,6 +69,60 @@ class FixtureRepository:
         ]
         return {'total': len(rows), 'limit': limit, 'offset': offset, 'items': rows[offset : offset + limit]}
 
+    def issue_counts(self, group_by, aircraft_id, status, subsystem, priority, unresolved_only):
+        self.calls += 1
+        column = {'subsystem': 'subsystem', 'priority': 'priority', 'status': 'status', 'aircraft': 'aircraft_id'}[
+            group_by
+        ]
+        rows = [
+            i
+            for i in self.rows['issues']
+            if (aircraft_id is None or i['aircraft_id'] == aircraft_id)
+            and (status is None or i['status'] == status)
+            and (subsystem is None or i['subsystem'] == subsystem)
+            and (priority is None or i['priority'] == priority)
+            and (not unresolved_only or i['status'] != 'closed')
+        ]
+        counts = Counter(r[column] for r in rows)
+        return {
+            'group_by': group_by,
+            'unresolved_only': unresolved_only,
+            'total': len(rows),
+            'groups': [{'key': key, 'count': count} for key, count in sorted(counts.items())],
+        }
+
+    def compare_aircraft(self, aircraft_ids):
+        self.calls += 1
+        summaries = [self.aircraft_summary(i) for i in dict.fromkeys(aircraft_ids)]
+        ranked = sorted(
+            (
+                {
+                    'aircraft_id': s['aircraft']['aircraft_id'],
+                    'unresolved_issue_count': s['unresolved_issue_count'],
+                    'issue_count': s['issue_count'],
+                }
+                for s in summaries
+            ),
+            key=lambda r: (-r['unresolved_issue_count'], r['aircraft_id']),
+        )
+        spread = ranked[0]['unresolved_issue_count'] - ranked[-1]['unresolved_issue_count']
+        return {'summaries': summaries, 'ranked_by_unresolved': ranked, 'unresolved_spread': spread}
+
+    def search_issues(self, status, subsystem, priority, aircraft_id, opened_after, opened_before, limit, offset):
+        self.calls += 1
+        rows = [
+            i
+            for i in self.rows['issues']
+            if (status is None or i['status'] == status)
+            and (subsystem is None or i['subsystem'] == subsystem)
+            and (priority is None or i['priority'] == priority)
+            and (aircraft_id is None or i['aircraft_id'] == aircraft_id)
+            and (opened_after is None or datetime.fromisoformat(i['opened_at']) >= opened_after)
+            and (opened_before is None or datetime.fromisoformat(i['opened_at']) <= opened_before)
+        ]
+        rows.sort(key=lambda i: i['issue_id'])
+        return {'total': len(rows), 'limit': limit, 'offset': offset, 'items': rows[offset : offset + limit]}
+
     def issue_history(self, issue_id, limit, offset):
         self.calls += 1
         issue = next((i for i in self.rows['issues'] if i['issue_id'] == issue_id), None)
@@ -96,11 +154,19 @@ class McpContract(unittest.IsolatedAsyncioTestCase):
         self.factory = factory
         self.server = create_server(repository_factory=factory)
 
-    async def test_only_three_read_only_tools_are_discoverable(self):
+    async def test_only_the_six_read_only_tools_are_discoverable(self):
         async with Client(self.server) as client:
             listing = await client.list_tools()
         self.assertEqual(
-            {t.name for t in listing.tools}, {'get_aircraft_summary', 'list_open_issues', 'get_issue_history'}
+            {t.name for t in listing.tools},
+            {
+                'get_aircraft_summary',
+                'list_open_issues',
+                'get_issue_history',
+                'count_issues',
+                'compare_aircraft',
+                'search_issues',
+            },
         )
         for tool in listing.tools:
             assert tool.annotations is not None
@@ -152,6 +218,150 @@ class McpContract(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(history.structured_content['events'][0]['event_id'], expected['events'][0]['event_id'])
         self.assertEqual(empty.structured_content['total'], 0)
         self.assertEqual(empty.structured_content['items'], [])
+
+    async def test_count_issues_matches_the_csv_oracle_per_group_by(self):
+        async with Client(self.server) as client:
+            for group_by in ('subsystem', 'priority', 'status', 'aircraft'):
+                for unresolved_only in (False, True):
+                    with self.subTest(group_by=group_by, unresolved_only=unresolved_only):
+                        result = await client.call_tool(
+                            'count_issues', {'group_by': group_by, 'unresolved_only': unresolved_only}
+                        )
+                        self.assertFalse(result.is_error)
+                        expected = self.repo.issue_counts(group_by, None, None, None, None, unresolved_only)
+                        self.assertEqual(result.structured_content, expected)
+                        self.assertEqual(
+                            sum(g['count'] for g in result.structured_content['groups']), expected['total']
+                        )
+            filtered = await client.call_tool('count_issues', {'group_by': 'priority', 'aircraft_id': 'DEMO-AIR-0001'})
+        self.assertEqual(
+            filtered.structured_content['total'], self.repo.aircraft_summary('DEMO-AIR-0001')['issue_count']
+        )
+
+    async def test_count_groups_omit_empty_keys(self):
+        closed_only = next(
+            (
+                a
+                for a in self.repo.rows['aircraft']
+                if all(i['status'] == 'closed' for i in self.repo.rows_for(a['aircraft_id']))
+            ),
+            None,
+        )
+        async with Client(self.server) as client:
+            none = await client.call_tool(
+                'count_issues',
+                {
+                    'group_by': 'subsystem',
+                    'aircraft_id': 'DEMO-AIR-0001',
+                    'subsystem': 'avionics',
+                    'status': 'closed',
+                    'priority': 'low',
+                },
+            )
+            by_aircraft = await client.call_tool('count_issues', {'group_by': 'aircraft', 'unresolved_only': True})
+        keys = [g['key'] for g in by_aircraft.structured_content['groups']]
+        self.assertTrue(all(g['count'] > 0 for g in by_aircraft.structured_content['groups']))
+        self.assertEqual(keys, sorted(keys))
+        if closed_only is not None:
+            self.assertNotIn(closed_only['aircraft_id'], keys)
+        self.assertLessEqual(none.structured_content['total'], 1)
+        self.assertEqual(len(none.structured_content['groups']), none.structured_content['total'])
+
+    async def test_compare_ranks_by_unresolved_and_reports_the_spread(self):
+        ids = ['DEMO-AIR-0003', 'DEMO-AIR-0001', 'DEMO-AIR-0002']
+        async with Client(self.server) as client:
+            result = await client.call_tool('compare_aircraft', {'aircraft_ids': ids})
+        self.assertFalse(result.is_error)
+        data = result.structured_content
+        self.assertEqual([s['aircraft']['aircraft_id'] for s in data['summaries']], ids)
+        counts = [r['unresolved_issue_count'] for r in data['ranked_by_unresolved']]
+        self.assertEqual(counts, sorted(counts, reverse=True))
+        self.assertEqual(data['unresolved_spread'], max(counts) - min(counts))
+        expected = self.repo.compare_aircraft(ids)
+        self.assertEqual(data['ranked_by_unresolved'], expected['ranked_by_unresolved'])
+        self.assertEqual(data['unresolved_spread'], expected['unresolved_spread'])
+        for got, want in zip(data['summaries'], expected['summaries'], strict=True):
+            for key in ('issue_count', 'unresolved_issue_count', 'issue_status_counts', 'task_count'):
+                self.assertEqual(got[key], want[key])
+
+    async def test_compare_rejects_duplicates_and_bounds(self):
+        before = self.repo.calls
+        async with Client(self.server) as client:
+            one = await client.call_tool('compare_aircraft', {'aircraft_ids': ['DEMO-AIR-0001', 'DEMO-AIR-0001']})
+            seven = await client.call_tool(
+                'compare_aircraft', {'aircraft_ids': [f'DEMO-AIR-000{i}' for i in range(1, 8)]}
+            )
+            self.assertTrue(one.is_error)
+            self.assertTrue(seven.is_error)
+            self.assertEqual(self.repo.calls, before)  # bound failures never reach the repository
+            missing = await client.call_tool('compare_aircraft', {'aircraft_ids': ['DEMO-AIR-0001', 'DEMO-AIR-9999']})
+        self.assertTrue(missing.is_error)
+        self.assertIn('not found', ' '.join(getattr(c, 'text', '') for c in missing.content))
+
+    async def test_search_filters_paginate_and_include_closed(self):
+        async with Client(self.server) as client:
+            closed = await client.call_tool('search_issues', {'status': 'closed', 'limit': 100})
+            cabin_a = await client.call_tool('search_issues', {'subsystem': 'cabin', 'limit': 4})
+            cabin_b = await client.call_tool('search_issues', {'subsystem': 'cabin', 'limit': 4, 'offset': 4})
+            everything = await client.call_tool('search_issues', {'limit': 100, 'offset': 100})
+        self.assertTrue(all(i['status'] == 'closed' for i in closed.structured_content['items']))
+        self.assertEqual(
+            closed.structured_content['total'],
+            self.repo.search_issues('closed', None, None, None, None, None, 100, 0)['total'],
+        )
+        joined = cabin_a.structured_content['items'] + cabin_b.structured_content['items']
+        self.assertEqual(
+            [i['issue_id'] for i in joined],
+            [i['issue_id'] for i in self.repo.search_issues(None, 'cabin', None, None, None, None, 8, 0)['items']],
+        )
+        self.assertTrue(all(i['subsystem'] == 'cabin' for i in joined))
+        self.assertEqual(everything.structured_content['total'], 180)
+        self.assertEqual(len(everything.structured_content['items']), 80)
+
+    async def test_search_date_window_can_be_empty(self):
+        async with Client(self.server) as client:
+            empty = await client.call_tool(
+                'search_issues',
+                {'opened_after': '2026-09-01T00:00:00+00:00', 'opened_before': '2026-02-01T00:00:00+00:00'},
+            )
+            window = await client.call_tool(
+                'search_issues',
+                {
+                    'opened_after': '2026-03-01T00:00:00+00:00',
+                    'opened_before': '2026-04-01T00:00:00+00:00',
+                    'limit': 100,
+                },
+            )
+        self.assertFalse(empty.is_error)
+        self.assertEqual((empty.structured_content['total'], empty.structured_content['items']), (0, []))
+        self.assertTrue(
+            all(
+                '2026-03' in i['opened_at'] or '2026-04-01' in i['opened_at']
+                for i in window.structured_content['items']
+            )
+        )
+        self.assertGreater(window.structured_content['total'], 0)
+
+    async def test_new_tool_invalid_arguments_never_reach_repository(self):
+        cases: list[tuple[str, dict[str, Any]]] = [
+            ('count_issues', {'group_by': 'sql'}),
+            ('count_issues', {'group_by': 'status', 'subsystem': 'engine'}),
+            ('count_issues', {'group_by': 'status', 'unresolved_only': 'yes'}),
+            ('search_issues', {'opened_after': 'yesterday'}),
+            ('search_issues', {'limit': 101}),
+            ('compare_aircraft', {'aircraft_ids': 'DEMO-AIR-0001'}),
+            ('compare_aircraft', {'aircraft_ids': ["x' OR 1=1 --", 'DEMO-AIR-0001']}),
+        ]
+        async with Client(self.server) as client:
+            for name, args in cases:
+                with self.subTest(name=name, arguments=args):
+                    try:
+                        result = await client.call_tool(name, args)
+                    except MCPError as exc:
+                        self.assertEqual(exc.code, -32602)
+                    else:
+                        self.assertTrue(result.is_error)
+        self.assertEqual(self.repo.calls, 0)
 
     async def test_invalid_arguments_never_reach_repository(self):
         cases: list[tuple[str, dict[str, Any]]] = [
