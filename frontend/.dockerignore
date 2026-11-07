@@ -1,0 +1,9 @@
+node_modules
+dist
+.wrangler
+.vercel
+.dev.vars
+.dev.vars.*
+.env
+.env.*
+tests

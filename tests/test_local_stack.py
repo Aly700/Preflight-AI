@@ -1,0 +1,219 @@
+"""The local Compose stack's helpers: secrets bootstrap, Compose configuration and the stack check.
+
+Nothing here contacts a database or a model; Docker-dependent checks skip with a
+reason when Docker is unavailable, as the built-page test does without a build.
+"""
+
+import importlib.util
+import io
+import json
+from pathlib import Path
+import stat
+import subprocess
+import sys
+import tempfile
+from typing import Any
+import unittest
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def load_script(name: str):
+    spec = importlib.util.spec_from_file_location(name, ROOT / 'scripts' / (name + '.py'))
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+class SecretsBootstrap(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.directory = Path(self.temp.name) / 'secrets'
+        self.ensure_secrets = load_script('init_secrets').ensure_secrets
+
+    def test_secrets_are_generated_once_with_private_modes_and_placeholders_for_keys(self):
+        first = self.ensure_secrets(self.directory)
+        self.assertEqual(first['mcp-token'], 'created')
+        self.assertEqual(first['model-api-key'], 'placeholder')
+        self.assertEqual(first['copilot-token'], 'placeholder')
+        token = (self.directory / 'mcp-token').read_text()
+        self.assertRegex(token, r'^[a-f0-9]{64}\n$')
+        self.assertRegex((self.directory / 'chat-token').read_text(), r'^[a-f0-9]{64}\n$')
+        # Files are world-readable so a container user can read the bind-mounted file on Linux;
+        # privacy on the host comes from the 0700 directory.
+        for name in ('postgres-password', 'api-password', 'mcp-password', 'chat-token', 'mcp-token', 'model-api-key'):
+            self.assertEqual(stat.S_IMODE((self.directory / name).stat().st_mode), 0o644, name)
+        self.assertEqual(stat.S_IMODE(self.directory.stat().st_mode), 0o700)
+        self.assertEqual((self.directory / 'model-api-key').read_text(), '')
+        (self.directory / 'model-api-key').write_text('sk-test\n')
+        (self.directory / 'model-api-key').chmod(0o600)  # a key the owner copied in by hand
+        second = self.ensure_secrets(self.directory)
+        self.assertEqual(second['mcp-token'], 'kept')
+        self.assertEqual(second['model-api-key'], 'present')
+        self.assertEqual(stat.S_IMODE((self.directory / 'model-api-key').stat().st_mode), 0o644)
+        self.assertEqual((self.directory / 'mcp-token').read_text(), token)
+
+    def test_cli_prints_statuses_and_no_values(self):
+        out = subprocess.run(
+            [sys.executable, '-B', 'scripts/init_secrets.py', '--directory', str(self.directory)],
+            capture_output=True,
+            text=True,
+            cwd=ROOT,
+            timeout=60,
+        )
+        self.assertEqual(out.returncode, 0, out.stderr)
+        report = json.loads(out.stdout)
+        self.assertEqual(report['chat-token'], 'created')
+        self.assertNotIn((self.directory / 'chat-token').read_text().strip(), out.stdout)
+        self.assertNotIn((self.directory / 'postgres-password').read_text().strip(), out.stdout)
+
+
+def docker_compose_available() -> bool:
+    try:
+        return subprocess.run(['docker', 'compose', 'version'], capture_output=True, timeout=30).returncode == 0 and (
+            subprocess.run(['docker', 'info'], capture_output=True, timeout=30).returncode == 0
+        )
+    except OSError, subprocess.TimeoutExpired:
+        return False
+
+
+class ComposeConfiguration(unittest.TestCase):
+    def setUp(self):
+        self.ensure_secrets = load_script('init_secrets').ensure_secrets
+
+    def test_roles_script_uses_psql_variables_not_string_interpolation(self):
+        script = ROOT / 'compose/postgres-roles.sh'
+        text = script.read_text()
+        self.assertIn('set -eu', text)
+        self.assertIn("PASSWORD :'", text)
+        self.assertNotIn("PASSWORD '$", text)
+        self.assertIn('preflight_reader', text)
+        self.assertTrue(script.stat().st_mode & stat.S_IXUSR, 'roles script must be executable')
+
+    @unittest.skipUnless(docker_compose_available(), 'docker is not available')
+    def test_compose_config_publishes_only_the_web_entry_point_and_uses_explicit_names(self):
+        self.ensure_secrets(ROOT / '.secrets')
+        rendered = subprocess.run(
+            ['docker', 'compose', '-f', str(ROOT / 'compose.yaml'), 'config', '--format', 'json'],
+            capture_output=True,
+            text=True,
+            check=True,
+            cwd=ROOT,
+            timeout=120,
+        ).stdout
+        config = json.loads(rendered)
+        services = config['services']
+        self.assertEqual(
+            set(services), {'preflight-oss-postgres', 'preflight-oss-mcp', 'preflight-oss-api', 'preflight-oss-web'}
+        )
+        published = {name: s['ports'] for name, s in services.items() if s.get('ports')}
+        self.assertEqual(list(published), ['preflight-oss-web'])
+        port = published['preflight-oss-web'][0]
+        self.assertEqual((port['host_ip'], str(port['published']), port['target']), ('127.0.0.1', '8080', 8080))
+        for name, service in services.items():
+            self.assertEqual(service['container_name'], name)
+        self.assertIn('preflight-oss-mcp:*', services['preflight-oss-mcp']['environment']['MCP_ALLOWED_HOSTS'])
+        self.assertEqual(
+            services['preflight-oss-api']['environment']['PREFLIGHT_MCP_URL'], 'http://preflight-oss-mcp:8001/mcp'
+        )
+        self.assertNotIn('preflight-api', rendered)
+        self.assertNotIn('preflight-mcp:', rendered)
+        self.assertNotIn('preflight-postgres', rendered)
+        self.assertEqual(
+            sorted(config['secrets']),
+            sorted(
+                [
+                    'postgres-password',
+                    'api-password',
+                    'mcp-password',
+                    'chat-token',
+                    'mcp-token',
+                    'copilot-token',
+                    'model-api-key',
+                ]
+            ),
+        )
+
+
+FACTS: dict[str, Any] = {
+    'counts': {
+        'aircraft': 12,
+        'issues': 180,
+        'tasks': 480,
+        'activity_events': 920,
+        'teams': 6,
+        'people': 36,
+        'shifts': 150,
+    },
+    'unresolved_total': 162,
+    'first_unresolved': ['ISSUE-0001', 'ISSUE-0003', 'ISSUE-0004', 'ISSUE-0006', 'ISSUE-0007'],
+    'aircraft_0001': {
+        'issue_count': 15,
+        'unresolved_issue_count': 12,
+        'issue_status_counts': {'open': 7, 'in_progress': 3, 'blocked': 1, 'reopened': 1, 'closed': 3},
+        'task_count': 38,
+        'task_status_counts': {'todo': 23, 'in_progress': 3, 'awaiting_review': 2, 'completed': 9, 'blocked': 1},
+    },
+    'issue_0001_events': 7,
+}
+PAGE = {
+    'total': 162,
+    'limit': 5,
+    'offset': 0,
+    'items': [{'issue_id': i, 'status': 'open'} for i in FACTS['first_unresolved']],
+}
+SUMMARY = {'aircraft': {'aircraft_id': 'DEMO-AIR-0001'}, **FACTS['aircraft_0001']}
+HISTORY = {'issue': {'issue_id': 'ISSUE-0001'}, 'total_events': 7, 'limit': 1, 'offset': 0, 'events': []}
+
+
+class StackCheck(unittest.TestCase):
+    def setUp(self):
+        self.check = load_script('compose_check')
+
+    def test_compare_evidence_flags_a_total_mismatch_and_accepts_a_match(self):
+        events = [
+            ('status', {}),
+            ('evidence', {'results': [{'tool': 'list_open_issues', 'result': PAGE}]}),
+            ('done', {}),
+        ]
+        self.assertEqual(self.check.compare_evidence(events, FACTS), [])
+        wrong = [('evidence', {'results': [{'tool': 'list_open_issues', 'result': {**PAGE, 'total': 161}}]})]
+        mismatches = self.check.compare_evidence(wrong, FACTS)
+        self.assertEqual(len(mismatches), 1)
+        self.assertIn('list_open_issues', mismatches[0])
+
+    def test_an_error_event_fails_the_check(self):
+        events = [('status', {'message': 'Checking'}), ('error', {'message': 'x'})]
+        self.assertEqual(self.check.compare_evidence(events, FACTS), ['answer ended with error: x'])
+
+    def test_compare_tools_checks_all_three_tools(self):
+        results = {'get_aircraft_summary': SUMMARY, 'list_open_issues': PAGE, 'get_issue_history': HISTORY}
+        self.assertEqual(self.check.compare_tools(results, FACTS), [])
+        wrong = {**results, 'get_issue_history': {**HISTORY, 'total_events': 6}}
+        mismatches = self.check.compare_tools(wrong, FACTS)
+        self.assertEqual(len(mismatches), 1)
+        self.assertIn('get_issue_history', mismatches[0])
+        missing = self.check.compare_tools({'list_open_issues': PAGE}, FACTS)
+        self.assertEqual(len(missing), 2)
+
+    def test_sse_parser_reads_frames_until_done(self):
+        raw = (
+            b'event: status\ndata: {"message": "Checking"}\n\n'
+            b'event: delta\ndata: {"text": "162 unresolved"}\n\n'
+            b'event: done\ndata: {"tool_calls": 1}\n\n'
+            b'event: delta\ndata: {"text": "ignored after done"}\n\n'
+        )
+        events = list(self.check.parse_sse(io.BytesIO(raw)))
+        self.assertEqual([name for name, _ in events], ['status', 'delta', 'done'])
+        self.assertEqual(events[1][1], {'text': '162 unresolved'})
+
+    def test_answer_mentions_total(self):
+        events = [('delta', {'text': 'There are 16'}), ('delta', {'text': '2 unresolved issues.'}), ('done', {})]
+        self.assertTrue(self.check.answer_mentions(events, FACTS))
+        self.assertFalse(self.check.answer_mentions([('delta', {'text': 'many'})], FACTS))
+
+
+if __name__ == '__main__':
+    unittest.main()

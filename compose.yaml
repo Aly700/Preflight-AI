@@ -1,0 +1,117 @@
+# Local full stack with explicit names. Only the web entry point is published, on loopback.
+# Secrets are files under the git-ignored .secrets/ directory (scripts/init_secrets.py creates them).
+# Model provider and model can be overridden from the shell: MODEL_PROVIDER=copilot COPILOT_MODEL=... docker compose up -d
+name: preflight-oss
+
+services:
+  preflight-oss-postgres:
+    container_name: preflight-oss-postgres
+    image: postgres:17@sha256:ff87138949ad9a46f32ff23bd6852b52ce024a13dffe9b4087be98292cdd3b4f
+    environment:
+      POSTGRES_DB: preflight_oss
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
+    volumes:
+      - preflight-oss-postgres-data:/var/lib/postgresql/data
+      - ./compose/postgres-roles.sh:/docker-entrypoint-initdb.d/10-roles.sh:ro
+    secrets:
+      - postgres-password
+      - api-password
+      - mcp-password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d preflight_oss"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+
+  preflight-oss-mcp:
+    container_name: preflight-oss-mcp
+    build:
+      context: .
+      dockerfile: mcp_service/Dockerfile
+    environment:
+      PGHOST: preflight-oss-postgres
+      PGPORT: "5432"
+      PGDATABASE: preflight_oss
+      PGUSER: preflight_oss_mcp
+      PGPASSWORD_FILE: /run/secrets/mcp-password
+      MCP_TOKEN_FILE: /run/secrets/mcp-token
+      MCP_ALLOWED_HOSTS: preflight-oss-mcp:*,localhost:*,127.0.0.1:*
+    depends_on:
+      preflight-oss-postgres:
+        condition: service_healthy
+    secrets:
+      - mcp-password
+      - mcp-token
+
+  preflight-oss-api:
+    container_name: preflight-oss-api
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      PGHOST: preflight-oss-postgres
+      PGPORT: "5432"
+      PGDATABASE: preflight_oss
+      PGUSER: preflight_oss_api
+      PGPASSWORD_FILE: /run/secrets/api-password
+      CHAT_TOKEN_FILE: /run/secrets/chat-token
+      MCP_TOKEN_FILE: /run/secrets/mcp-token
+      COPILOT_TOKEN_FILE: /run/secrets/copilot-token
+      MODEL_API_KEY_FILE: /run/secrets/model-api-key
+      MODEL_PROVIDER: ${MODEL_PROVIDER:-anthropic}
+      COPILOT_MODEL: ${COPILOT_MODEL:-claude-sonnet-5-5}
+      ANTHROPIC_WORKSPACE_ID: ${ANTHROPIC_WORKSPACE_ID:-}
+      PREFLIGHT_MCP_URL: http://preflight-oss-mcp:8001/mcp
+      PREFLIGHT_ALLOWED_HOSTS: preflight-oss-api,localhost,127.0.0.1
+    depends_on:
+      preflight-oss-postgres:
+        condition: service_healthy
+      preflight-oss-mcp:
+        condition: service_healthy
+    secrets:
+      - api-password
+      - chat-token
+      - mcp-token
+      - copilot-token
+      - model-api-key
+
+  preflight-oss-web:
+    container_name: preflight-oss-web
+    build:
+      context: frontend
+    environment:
+      API_BASE_URL: http://preflight-oss-api:8000
+      PREFLIGHT_ACCESS_KEY_FILE: /run/secrets/chat-token
+      PORT: "8080"
+      HOST: 0.0.0.0
+    depends_on:
+      preflight-oss-api:
+        condition: service_started
+    secrets:
+      - chat-token
+    ports:
+      - "127.0.0.1:8080:8080"
+
+secrets:
+  postgres-password:
+    file: ./.secrets/postgres-password
+  api-password:
+    file: ./.secrets/api-password
+  mcp-password:
+    file: ./.secrets/mcp-password
+  chat-token:
+    file: ./.secrets/chat-token
+  mcp-token:
+    file: ./.secrets/mcp-token
+  copilot-token:
+    file: ./.secrets/copilot-token
+  model-api-key:
+    file: ./.secrets/model-api-key
+
+volumes:
+  preflight-oss-postgres-data: {}
+
+networks:
+  default:
+    name: preflight-oss
