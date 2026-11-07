@@ -2,17 +2,17 @@
 
 Ask questions about aircraft maintenance issues in plain English and get answers backed by the records.
 
-All data is made up: 12 demo aircraft, 180 issues, 480 tasks and their history, generated from a seed. The model can only read the records through three tools, and every answer shows which records it used. Nothing here is a real maintenance system.
+All data is made up: 12 demo aircraft, 180 issues, 480 tasks and their history, generated from a seed. The model can only read the records through six read-only tools, and every answer shows which records it used. Nothing here is a real maintenance system.
 
 **Live demo:** <https://preflight-oss-demo.preflight-ai.workers.dev>
 
-![Architecture: a browser reaches a Cloudflare Worker, which proxies chat to an Nginx entry on an EC2 host; the API runs a model runtime that calls three read-only MCP tools over PostgreSQL](docs/architecture.svg)
+![Architecture: a browser reaches a Cloudflare Worker, which proxies chat to an Nginx entry on an EC2 host; the API runs a model runtime that calls read-only MCP tools over PostgreSQL](docs/architecture.svg)
 
 ## What is in the repo
 
 - **Chat UI** in React, served with a small proxy that holds the only credential. The browser never sees a key.
 - **API** in FastAPI: a streaming chat endpoint, one answer at a time, with fixed limits.
-- **Three read-only tools** over MCP: aircraft summary, open issues, issue history. Each result is validated and its record IDs are kept as evidence.
+- **Six read-only tools** over MCP: aircraft summary, open issues, issue history, counts grouped by subsystem, priority, status or aircraft, a comparison of several aircraft, and issue search with filters. SQL does the arithmetic; each result is validated and its record IDs are kept as evidence.
 - **PostgreSQL** with the generated fictional data, loaded in one checked transaction, read-only roles.
 - **Model choice** with one setting: Claude or OpenAI with your own key, or GitHub Copilot.
 - **Two runtimes.** The Copilot SDK's loop, or this repository's own loop over the Anthropic API: multi-step and parallel tool calls, every result validated, and the record IDs and numbers in the answer checked against the tool results before it is marked complete.

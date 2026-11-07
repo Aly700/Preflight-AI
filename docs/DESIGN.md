@@ -18,7 +18,7 @@ What is kept:
 - A standard-library generator with a fixed data contract and seeded data.
 - PostgreSQL constraints, transactional loading and read-only application roles.
 - FastAPI transport, Pydantic contracts and explicit parameterized SQL.
-- Three MCP tools and two runtimes with an explicit tool allowlist: the Copilot
+- Six MCP tools and two runtimes with an explicit tool allowlist: the Copilot
   SDK's loop, and this repository's own loop over the Anthropic Messages API with
   multi-step and parallel tool calls and verified claims.
 - A streaming React / assistant-ui chat with record-source display.
@@ -51,20 +51,23 @@ of answers by itself.
    private; one documented command sequence starts it, loads all 1,784 rows, checks
    the tools against SQL and checks one real model answer against SQL, with the
    mocked, real-stack and live-model checks labelled separately.
+3. **Three more tools.** Counts grouped by subsystem, priority, status or aircraft;
+   a comparison of two to six aircraft with the spread; issue search with filters
+   and pagination. SQL does the arithmetic; each has a contract test against the
+   CSV oracle and a stack-check comparison against independent SQL.
 
 ## Next
 
-3. **Gateway and hosted demo on the same code.** Route the three tools through
+4. **Gateway and hosted demo on the same code.** Route the six tools through
    AgentCore Gateway; verify TLS, authentication, tool discovery, denied calls and
    SQL parity; deploy this stack behind the existing hosted entry; record
    direct-versus-Gateway latency and error behaviour.
-4. **Stronger structured-data answers.** Focused read-only tools for comparisons,
-   filters and aggregates driven by a written question set; SQL does the arithmetic;
-   the model selects tools, resolves follow-ups, asks for missing criteria and
+5. **Stronger structured-data answers.** A written question set drives further
+   tools; the model selects tools, resolves follow-ups, asks for missing criteria and
    explains supported results within pagination and limits. Numeric claims are
    checked against tool output before an answer is complete; missing records and
    tool failures produce explicit limits, not invented facts.
-5. **Evaluation and adaptability.** A versioned benchmark of original cases
+6. **Evaluation and adaptability.** A versioned benchmark of original cases
    (lookups, comparisons, timelines, multi-step questions, follow-ups, ambiguity,
    pagination, missing evidence, tool failures, adversarial text inside records),
    tuning cases separate from held-out cases, several seeds and paraphrases, the

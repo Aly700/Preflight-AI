@@ -87,7 +87,7 @@ What each step does:
   `--database` are always required. Preview with `--sql-only`. Re-running it against
   loaded data verifies and commits nothing new.
 - `compose_check.py` checks that every container is healthy, the row counts from an
-  independent SQL query, the chat status route, and the three MCP tools called inside
+  independent SQL query, the chat status route, and the six MCP tools called inside
   the MCP container through their real HTTP transport and bearer token, compared with
   SQL. No model is involved.
 - `compose_check.py --ask` sends one fixed question through the web entry point and

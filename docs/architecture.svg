@@ -90,7 +90,7 @@
         <rect x="445" y="400" width="440" height="100" rx="4"/>
         <use href="#i-chip" x="457" y="412" width="22" height="22" class="ic ic-orange"/>
         <text class="t" x="487" y="419">preflight-oss-api · FastAPI + uvicorn · tcp/8000</text>
-        <text x="487" y="439">Copilot SDK runtime · allowlist of 3 tools</text>
+        <text x="487" y="439">Copilot SDK runtime · allowlist of 6 tools</text>
         <text x="487" y="455">SSE chat · one answer at a time · 5 per minute · 120 s</text>
         <text x="487" y="471">Bearer access key + origin check · record routes private</text>
         <text class="m" x="487" y="487">tool results validated · source IDs collected</text>
@@ -104,9 +104,9 @@
         <text x="705" y="655">streamable HTTP · tcp/8001</text>
         <text x="705" y="671">Bearer token (64 hex)</text>
         <text x="705" y="687">host allowlist · strict args</text>
-        <text class="m" x="705" y="705">get_aircraft_summary</text>
-        <text class="m" x="705" y="721">list_open_issues</text>
-        <text class="m" x="705" y="737">get_issue_history</text>
+        <text class="m" x="705" y="705">six read-only tools:</text>
+        <text class="m" x="705" y="721">summary · issues · history</text>
+        <text class="m" x="705" y="737">counts · compare · search</text>
         
       </g>
 
