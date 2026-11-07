@@ -13,7 +13,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 import json
 import logging
-from typing import Any
+from typing import Any, Protocol
 
 import httpx2
 from mcp import Client
@@ -43,6 +43,14 @@ class ToolResult:
     ok: bool
     payload: dict[str, Any] | None = None
     error: str | None = None
+
+
+class ToolService(Protocol):
+    """What the loop needs from a tool service; McpTools and test fakes both satisfy it."""
+
+    async def discover(self) -> list[ToolSpec]: ...
+
+    async def call(self, call_id: str, name: str, arguments: dict[str, Any]) -> ToolResult: ...
 
 
 def default_client_factory(timeout: float) -> ClientFactory:

@@ -1,6 +1,10 @@
-"""The claims contract: the `final_answer` tool the model calls last, carrying claims only."""
+"""The claims contract: the `final_answer` tool the model calls last, and the check of what it declares."""
 
+from dataclasses import dataclass, field
+import re
 from typing import Any
+
+from preflight_core.models import RECORD_ID
 
 FINAL_ANSWER_TOOL: dict[str, Any] = {
     'name': 'final_answer',
@@ -40,3 +44,112 @@ FINAL_ANSWER_TOOL: dict[str, Any] = {
         'required': ['cited_ids', 'numbers'],
     },
 }
+
+
+def record_ids(payload: Any) -> list[str]:
+    """Collect fictional record IDs from `*_id` fields only, never from free text."""
+    found: set[str] = set()
+
+    def visit(value: Any) -> None:
+        if isinstance(value, dict):
+            for key, item in value.items():
+                if key.endswith('_id') and isinstance(item, str) and RECORD_ID.fullmatch(item):
+                    found.add(item)
+                else:
+                    visit(item)
+        elif isinstance(value, list):
+            for item in value:
+                visit(item)
+
+    visit(payload)
+    return sorted(found)
+
+
+@dataclass
+class Verification:
+    verified: bool
+    unverified: list[str] = field(default_factory=list)
+    undeclared: int = 0
+    note: str = ''
+
+
+ID_PATTERN = re.compile(r'\b(?:DEMO-AIR|ISSUE|TASK|EVT|TEAM|PERSON|SHIFT)-[0-9]+\b')
+DATE = re.compile(r'\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2})?(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?)?')
+TIME = re.compile(r'\b\d{1,2}:\d{2}(?::\d{2})?\b')
+INTEGER = re.compile(r'(?<![\w.-])\d{1,9}(?![\w.-])')
+PATH_PART = re.compile(r'\[(\d+)\]|([^.\[\]]+)')
+
+
+def resolve_path(payload: Any, path: str) -> Any:
+    """Follow dotted keys and [n] indexes into a tool result; LookupError when the path is absent."""
+    value = payload
+    try:
+        for index, key in PATH_PART.findall(path):
+            value = value[int(index)] if index else value[key]
+    except KeyError, IndexError, TypeError:
+        raise LookupError(path) from None
+    return value
+
+
+def same_number(declared: float, actual: Any) -> bool:
+    if isinstance(actual, bool) or not isinstance(actual, (int, float)):
+        return False
+    if isinstance(declared, int) and isinstance(actual, int):
+        return declared == actual
+    return abs(float(declared) - float(actual)) <= 1e-9
+
+
+def number_token(value: float) -> str:
+    return str(int(value)) if float(value).is_integer() else str(value)
+
+
+def verify_claims(
+    *, prose: str, claims: dict[str, Any] | None, results: dict[str, dict[str, Any]], seen_ids: set[str]
+) -> Verification:
+    """Check declared numbers against the results they name and prose IDs against what tools returned.
+
+    Declared mismatches are reported to the reader. Undeclared bare integers are
+    only counted (dates, times and years excluded), for evaluation.
+    """
+    unverified: list[str] = []
+    declared_tokens: set[str] = set()
+    numbers = list(claims.get('numbers') or []) if claims else []
+    cited = {str(c) for c in (claims.get('cited_ids') or [])} if claims else set()
+    for item in numbers:
+        if not isinstance(item, dict):
+            unverified.append('a declared number is malformed')
+            continue
+        label = str(item.get('label') or 'number')
+        value = item.get('value')
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            unverified.append(f'{label}: the declared value is not a number')
+            continue
+        declared_tokens.add(number_token(value))
+        payload = results.get(str(item.get('call_id', '')))
+        if payload is None:
+            unverified.append(f'{label} ({number_token(value)}) refers to a tool call that returned nothing')
+            continue
+        try:
+            actual = resolve_path(payload, str(item.get('path', '')))
+        except LookupError:
+            unverified.append(f'{label} ({number_token(value)}) has no value at {item.get("path")!r} in that result')
+            continue
+        if not same_number(value, actual):
+            unverified.append(f'{label} ({number_token(value)}) does not match the tool result ({actual!r})')
+    prose_ids = set(ID_PATTERN.findall(prose))
+    for record in sorted(prose_ids - cited):
+        unverified.append(f'{record} is not among the cited records')
+    for record in sorted(cited - seen_ids):
+        unverified.append(f'{record} was cited but no tool returned it')
+    stripped = TIME.sub(' ', DATE.sub(' ', ID_PATTERN.sub(' ', prose)))
+    undeclared = 0
+    for match in INTEGER.finditer(stripped):
+        token = match.group()
+        if len(token) == 4 and 1900 <= int(token) <= 2100:
+            continue
+        if token not in declared_tokens:
+            undeclared += 1
+    if claims is None and (prose_ids or undeclared):
+        unverified.append('no claims were declared for the records or numbers in this answer')
+    note = ('Unverified: ' + '; '.join(unverified)) if unverified else ''
+    return Verification(verified=not unverified, unverified=unverified, undeclared=undeclared, note=note)

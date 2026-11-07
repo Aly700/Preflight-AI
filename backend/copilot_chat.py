@@ -19,7 +19,7 @@ from copilot import CopilotClient, RuntimeConnection
 from copilot.rpc import PermissionDecisionApproveOnce, PermissionDecisionReject
 
 from backend.settings import ChatSettings
-from preflight_core.models import RECORD_ID
+from backend.verify import record_ids
 from preflight_core.tools import MCP_SERVER_NAME, QUALIFIED_NAMES, TOOLS
 
 logger = logging.getLogger('preflight.copilot')
@@ -72,25 +72,6 @@ class ToolPolicy:
 def validate_result(name: str, payload: Any) -> dict[str, Any]:
     """Parse a tool result against its declared schema; ValueError (pydantic) on any mismatch."""
     return TOOLS[name].result.model_validate(payload).model_dump(mode='json')
-
-
-def record_ids(payload: Any) -> list[str]:
-    """Collect fictional record IDs from `*_id` fields only, never from free text."""
-    found: set[str] = set()
-
-    def visit(value: Any) -> None:
-        if isinstance(value, dict):
-            for key, item in value.items():
-                if key.endswith('_id') and isinstance(item, str) and RECORD_ID.fullmatch(item):
-                    found.add(item)
-                else:
-                    visit(item)
-        elif isinstance(value, list):
-            for item in value:
-                visit(item)
-
-    visit(payload)
-    return sorted(found)
 
 
 class EventTracker:
