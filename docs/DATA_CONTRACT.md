@@ -4,7 +4,7 @@
 **Scope:** aircraft, issues, tasks, activity events, teams, people, shifts.  
 **Deferred to Week 2:** NCR documents, NCR index, document retrieval, embeddings, vector search.
 
-This is an independent fictional schema, not an employer schema or a copy of an operational export. Its purpose is to support first-week API, dashboard, and future read-only MCP tool development.
+This is an independent fictional schema, not a copy of any real schema or operational export. Its purpose is to support first-week API, dashboard, and future read-only MCP tool development.
 
 ## Files and columns
 

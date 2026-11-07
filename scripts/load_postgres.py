@@ -93,7 +93,7 @@ def main() -> None:
     parser.add_argument('--sql-only', action='store_true', help='Print the transaction without connecting')
     args = parser.parse_args()
     if not args.sql_only:
-        # No inherited defaults: the operator names the target every time.
+        # No defaults: the operator names the target every time.
         if args.container is None or args.database is None:
             parser.error('--container and --database are required unless --sql-only is given')
         if not all(re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]*', x) for x in (args.container, args.database)):

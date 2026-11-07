@@ -16,7 +16,7 @@ All data is made up: 12 demo aircraft, 180 issues, 480 tasks and their history, 
 - **PostgreSQL** with the generated fictional data, loaded in one checked transaction, read-only roles.
 - **Model choice** with one setting: Claude or OpenAI with your own key, or GitHub Copilot.
 - **Hosted demo** on Cloudflare Workers, calling an earlier build of the same backend on AWS.
-- **Setup and verification records** in `docs/`, with the real commands and results.
+- **Setup notes and the data contract** in `docs/`.
 
 ## Run it locally
 
@@ -55,7 +55,7 @@ These use fixtures and a fake model client. The stack check above is the real th
 - Put the tools behind Amazon Bedrock AgentCore Gateway.
 - More tools for comparisons and timelines, then a published evaluation set with two model configurations.
 
-[Design](docs/DESIGN.md) · [Setup](docs/SETUP.md) · [What was verified](docs/BASELINE.md) · [Code-quality audit](docs/CODE_QUALITY_AUDIT.md) · [AWS plan](docs/SHARED_AWS.md)
+[Design](docs/DESIGN.md) · [Setup](docs/SETUP.md) · [Data contract](docs/DATA_CONTRACT.md)
 
 ## License
 

@@ -48,7 +48,7 @@ class SecretsBootstrap(unittest.TestCase):
         self.assertEqual(stat.S_IMODE(self.directory.stat().st_mode), 0o700)
         self.assertEqual((self.directory / 'model-api-key').read_text(), '')
         (self.directory / 'model-api-key').write_text('sk-test\n')
-        (self.directory / 'model-api-key').chmod(0o600)  # a key the owner copied in by hand
+        (self.directory / 'model-api-key').chmod(0o600)  # a key copied in by hand
         second = self.ensure_secrets(self.directory)
         self.assertEqual(second['mcp-token'], 'kept')
         self.assertEqual(second['model-api-key'], 'present')

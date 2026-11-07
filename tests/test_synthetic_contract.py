@@ -1,7 +1,7 @@
 """Week 1 acceptance tests for *future* fictional operational data.
 
-The starter deliberately has no generated CSVs or generator; missing-file
-failures are expected until the generator has been run.
+Generated CSVs are absent until the generator has been run; missing-file
+failures are expected until then.
 
 Run: python -m unittest discover -s tests -v
 """

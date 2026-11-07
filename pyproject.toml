@@ -15,7 +15,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "scripts/*" = ["T201"]  # command-line scripts print their JSON result
-# Preserved baseline files are not edited in this increment (see docs/CODE_QUALITY_AUDIT.md).
+# The generator and its contract test are kept byte-identical; CSV reproducibility is the contract.
 "scripts/generate_synthetic.py" = ["I001", "E501", "B905", "UP017", "C408"]
 "tests/test_synthetic_contract.py" = ["I001", "E501", "B905", "UP017", "C408"]
 
@@ -25,7 +25,7 @@ known-first-party = ["backend", "mcp_service", "preflight_core", "scripts"]
 
 [tool.ruff.format]
 quote-style = "single"
-# Preserved baseline files stay byte-identical; CSV reproducibility is the contract.
+# The generator and its contract test are kept byte-identical.
 exclude = ["scripts/generate_synthetic.py", "tests/test_synthetic_contract.py"]
 
 [tool.mypy]
@@ -49,6 +49,6 @@ warn_return_any = true
 no_implicit_reexport = true
 
 [[tool.mypy.overrides]]
-# Preserved baseline files are not edited in this increment.
+# The generator and its contract test are kept byte-identical.
 module = ["generate_synthetic", "test_synthetic_contract"]
 ignore_errors = true

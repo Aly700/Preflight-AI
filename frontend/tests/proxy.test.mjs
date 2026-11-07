@@ -20,12 +20,12 @@ function streamedPost(chunks, {signal, close = true} = {}) {
       if (close) controller.close();
     },
   });
-  return new Request('https://prototype.invalid/api/chat', {method: 'POST', body: stream, duplex: 'half', signal});
+  return new Request('https://app.invalid/api/chat', {method: 'POST', body: stream, duplex: 'half', signal});
 }
 
 test('The proxy returns an explicit setup error without an upstream', async () => {
   const {forward} = await load();
-  const r = await forward(new Request('https://prototype.invalid/api/chat/status'), '/api/chat/status', {baseURL: ''});
+  const r = await forward(new Request('https://app.invalid/api/chat/status'), '/api/chat/status', {baseURL: ''});
   assert.equal(r.status, 503);
 });
 
@@ -33,9 +33,9 @@ test('Anonymous browser chat uses the server credential and streams the answer w
   const {forward} = await load();
   let captured;
   const accessKey = 'server-secret-for-test';
-  const request = new Request('https://prototype.invalid/api/chat', {
+  const request = new Request('https://app.invalid/api/chat', {
     method: 'POST',
-    headers: {Cookie: 'unrelated=private', Origin: 'https://prototype.invalid'},
+    headers: {Cookie: 'unrelated=private', Origin: 'https://app.invalid'},
     body: '{"question":"Summary"}',
   });
   const response = await forward(request, '/api/chat', {
@@ -59,7 +59,7 @@ test('Anonymous browser chat uses the server credential and streams the answer w
 
 test('Missing server credentials cannot be replaced by a browser-supplied token', async () => {
   const {forward} = await load();
-  const request = new Request('https://prototype.invalid/api/chat', {
+  const request = new Request('https://app.invalid/api/chat', {
     method: 'POST', headers: {Authorization: 'Bearer browser-supplied-key'}, body: '{}',
   });
   const response = await forward(request, '/api/chat', {baseURL: 'https://upstream.invalid', accessKey: '', fetchImpl: untouched});
@@ -73,24 +73,24 @@ test('The proxy ignores browser credentials and rejects cross-origin requests', 
     sent = request.headers.Authorization;
     return Response.json({configured: true});
   }};
-  const status = new Request('https://prototype.invalid/api/chat/status', {headers: {Authorization: 'Bearer browser-key'}});
+  const status = new Request('https://app.invalid/api/chat/status', {headers: {Authorization: 'Bearer browser-key'}});
   const response = await forward(status, '/api/chat/status', options);
   assert.equal(response.status, 200);
   assert.equal(sent, 'Bearer server-key');
-  const foreign = new Request('https://prototype.invalid/api/chat', {method: 'POST', headers: {Origin: 'https://untrusted.invalid'}, body: '{}'});
+  const foreign = new Request('https://app.invalid/api/chat', {method: 'POST', headers: {Origin: 'https://untrusted.invalid'}, body: '{}'});
   assert.equal((await forward(foreign, '/api/chat', options)).status, 403);
 });
 
 test('An oversized body is refused before upstream is contacted, with or without Content-Length', async () => {
   const {forward, BODY_LIMIT_BYTES} = await load();
-  const declared = new Request('https://prototype.invalid/api/chat', {
+  const declared = new Request('https://app.invalid/api/chat', {
     method: 'POST', headers: {'Content-Length': String(BODY_LIMIT_BYTES + 1)}, body: 'x'.repeat(BODY_LIMIT_BYTES + 1),
   });
   assert.equal((await forward(declared, '/api/chat', {...upstream, fetchImpl: untouched})).status, 413);
   let pulled = 0;
   const chunk = 'x'.repeat(4096);
   const endless = new ReadableStream({pull(controller) { pulled += 1; controller.enqueue(new TextEncoder().encode(chunk)); }});
-  const streamed = new Request('https://prototype.invalid/api/chat', {method: 'POST', body: endless, duplex: 'half'});
+  const streamed = new Request('https://app.invalid/api/chat', {method: 'POST', body: endless, duplex: 'half'});
   assert.equal(streamed.headers.get('content-length'), null);
   assert.equal((await forward(streamed, '/api/chat', {...upstream, fetchImpl: untouched})).status, 413);
   assert.ok(pulled * chunk.length < BODY_LIMIT_BYTES * 2, `read ${pulled * chunk.length} bytes before refusing`);
@@ -113,7 +113,7 @@ test('A client that aborts while its body is still arriving releases the reader'
     start(c) { c.enqueue(new TextEncoder().encode('{"question":')); },
     cancel() { cancelled = true; },
   });
-  const request = new Request('https://prototype.invalid/api/chat', {method: 'POST', body: stalled, duplex: 'half', signal: controller.signal});
+  const request = new Request('https://app.invalid/api/chat', {method: 'POST', body: stalled, duplex: 'half', signal: controller.signal});
   const pending = forward(request, '/api/chat', {...upstream, fetchImpl: untouched});
   setTimeout(() => controller.abort(), 20);
   const response = await pending;
@@ -123,14 +123,14 @@ test('A client that aborts while its body is still arriving releases the reader'
 
 test('Only an HTTPS upstream is accepted', async () => {
   const {forward} = await load();
-  const request = new Request('https://prototype.invalid/api/chat/status');
+  const request = new Request('https://app.invalid/api/chat/status');
   assert.equal((await forward(request, '/api/chat/status', {baseURL: 'http://upstream.invalid', accessKey: 'k', fetchImpl: untouched})).status, 503);
   assert.equal((await forward(request, '/api/chat/status', {baseURL: 'not a url', accessKey: 'k', fetchImpl: untouched})).status, 503);
 });
 
 test('Upstream failures and unexpected content types become a fixed 502 and the upstream body is cancelled', async () => {
   const {forward} = await load();
-  const request = () => new Request('https://prototype.invalid/api/chat/status');
+  const request = () => new Request('https://app.invalid/api/chat/status');
   const thrown = await forward(request(), '/api/chat/status', {...upstream, fetchImpl: async () => { throw new Error('ECONNREFUSED 10.0.0.9:8000 key=server-key'); }});
   assert.equal(thrown.status, 502);
   const text = await thrown.text();
@@ -151,7 +151,7 @@ test('An already-aborted request with an errored body is reported without an unh
     const controller = new AbortController();
     controller.abort();
     const errored = new ReadableStream({pull(c) { c.error(new Error('upload failed')); }});
-    const request = new Request('https://prototype.invalid/api/chat', {method: 'POST', body: errored, duplex: 'half', signal: controller.signal});
+    const request = new Request('https://app.invalid/api/chat', {method: 'POST', body: errored, duplex: 'half', signal: controller.signal});
     const response = await forward(request, '/api/chat', {...upstream, fetchImpl: untouched});
     assert.equal(response.status, 502);
     await new Promise((resolve) => setTimeout(resolve, 20));
@@ -169,12 +169,12 @@ test('A cancel hook that never settles does not delay the 413 or the 502', async
     pull(c) { c.enqueue(new Uint8Array(BODY_LIMIT_BYTES + 1)); },
     cancel: never,
   });
-  const upload = new Request('https://prototype.invalid/api/chat', {method: 'POST', body: oversized, duplex: 'half'});
+  const upload = new Request('https://app.invalid/api/chat', {method: 'POST', body: oversized, duplex: 'half'});
   const refused = await Promise.race([forward(upload, '/api/chat', {...upstream, fetchImpl: untouched}), timeout(500)]);
   assert.equal(refused.status, 413);
   const html = new ReadableStream({start(c) { c.enqueue(new TextEncoder().encode('<html>')); }, cancel: never});
   const rejected = await Promise.race([
-    forward(new Request('https://prototype.invalid/api/chat/status'), '/api/chat/status',
+    forward(new Request('https://app.invalid/api/chat/status'), '/api/chat/status',
       {...upstream, fetchImpl: async () => new Response(html, {headers: {'Content-Type': 'text/html'}})}),
     timeout(500),
   ]);
@@ -186,7 +186,7 @@ test('An upstream redirect is refused with the fixed 502 and never followed, so 
   let captured;
   let cancelled = false;
   const redirectBody = new ReadableStream({cancel() { cancelled = true; }});
-  const response = await forward(new Request('https://prototype.invalid/api/chat/status'), '/api/chat/status', {
+  const response = await forward(new Request('https://app.invalid/api/chat/status'), '/api/chat/status', {
     ...upstream,
     fetchImpl: async (url, options) => {
       captured = options;
@@ -195,7 +195,7 @@ test('An upstream redirect is refused with the fixed 502 and never followed, so 
   });
   assert.equal(captured.redirect, 'manual');
   assert.equal(response.status, 502);
-  assert.deepEqual(await response.json(), {detail: 'The prototype API connection is unavailable'});
+  assert.deepEqual(await response.json(), {detail: 'The upstream API connection is unavailable'});
   assert.equal(cancelled, true);
 });
 

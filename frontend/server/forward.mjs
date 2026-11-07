@@ -75,19 +75,19 @@ export async function forward(request, path, {
   timeoutMs = UPSTREAM_TIMEOUT_MS,
   allowHttp = false,
 } = {}) {
-  if (!baseURL) return fail(503, 'The prototype API connection is not configured');
-  if (!accessKey?.trim()) return fail(503, 'The prototype server credential is not configured');
+  if (!baseURL) return fail(503, 'The upstream API connection is not configured');
+  if (!accessKey?.trim()) return fail(503, 'The upstream server credential is not configured');
   const origin = request.headers.get('origin');
   if (origin && origin !== new URL(request.url).origin) return fail(403, 'Origin not allowed');
   let target;
   try {
     target = new URL(path, baseURL);
   } catch {
-    return fail(503, 'The prototype API connection is invalid');
+    return fail(503, 'The upstream API connection is invalid');
   }
   // Plain http is for a private Compose network only; the hosted Worker never enables it.
   if (target.protocol !== 'https:' && !(allowHttp && target.protocol === 'http:')) {
-    return fail(503, 'The prototype API connection is invalid');
+    return fail(503, 'The upstream API connection is invalid');
   }
   // One deadline covers reading the body and the upstream call; the client going away ends both.
   const signal = AbortSignal.any([request.signal, AbortSignal.timeout(timeoutMs)]);
@@ -112,7 +112,7 @@ export async function forward(request, path, {
     if (redirected || (!contentType.includes('application/json') && !contentType.includes('text/event-stream'))) {
       discard(response.body);
       console.error('chat proxy: upstream response refused', {status: response.status, contentType});
-      return fail(502, 'The prototype API connection is unavailable');
+      return fail(502, 'The upstream API connection is unavailable');
     }
     return new Response(response.body, {
       status: response.status,
@@ -121,6 +121,6 @@ export async function forward(request, path, {
   } catch (error) {
     // Server-side only: the client still gets the fixed message, operators get the cause in the service log.
     console.error('chat proxy: upstream request failed', {name: error?.name, message: error?.message});
-    return fail(502, 'The prototype API connection is unavailable');
+    return fail(502, 'The upstream API connection is unavailable');
   }
 }

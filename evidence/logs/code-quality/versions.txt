@@ -1,7 +1,0 @@
-Python 3.14.8
-uv 0.11.6 (65950801c 2026-04-09 aarch64-apple-darwin)
-ruff 0.17.4
-mypy 2.4.1 (compiled: yes)
-node (default) v26.8.1
-npm (default) 11.19.0
-node (isolated) v24.22.2
