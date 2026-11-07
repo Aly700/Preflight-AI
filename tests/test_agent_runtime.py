@@ -38,6 +38,8 @@ def final(cited=(), numbers=()):
 
 
 class FakeModel:
+    model = 'fake-model'
+
     def __init__(self, turns):
         self.turns = list(turns)
         self.calls = []
@@ -222,6 +224,30 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(done['unverified'], 1)
         text = ''.join(e['data']['text'] for e in events if e['event'] == 'delta')
         self.assertIn('Unverified: unresolved total (999) does not match the tool result', text)
+
+    async def test_consumer_going_away_cancels_in_flight_tools(self):
+        started = asyncio.Event()
+        outcome = {}
+
+        class HangingTools(FakeTools):
+            async def call(self, call_id, name, arguments):
+                started.set()
+                try:
+                    await asyncio.sleep(30)
+                except asyncio.CancelledError:
+                    outcome['cancelled'] = True
+                    raise
+                outcome['finished'] = True
+                return ToolResult(name, call_id, False, error='Tool unavailable')
+
+        model = FakeModel([Turn('', [ToolCall('t1', 'list_open_issues', {'limit': 1})], 'tool_use')])
+        stream = stream_answer('Summary', SETTINGS, model_client=model, tools=HangingTools())
+        first = await stream.__anext__()
+        self.assertEqual(first['data']['status'], 'running')
+        await asyncio.wait_for(started.wait(), 1)
+        await stream.aclose()
+        await asyncio.sleep(0)
+        self.assertEqual(outcome, {'cancelled': True})
 
     async def test_answer_text_cap_is_enforced(self):
         model = FakeModel([Turn('x' * (ANSWER_CHARS + 1), [final()], 'tool_use')])

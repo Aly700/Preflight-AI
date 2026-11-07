@@ -136,6 +136,30 @@ class ChatContract(unittest.TestCase):
         self.assertLess(response.text.index('event: delta'), response.text.index('event: sources'))
         self.assertLess(response.text.index('event: sources'), response.text.index('event: done'))
 
+    def test_native_runtime_is_selected_by_settings(self):
+        headers = self.configured()
+        temp = tempfile.TemporaryDirectory()
+        self.addCleanup(temp.cleanup)
+        key = Path(temp.name) / 'MODEL_API_KEY_FILE'
+        key.write_text('sk-ant-' + 'k' * 40)
+        native = {
+            'CHAT_RUNTIME': 'native',
+            'MODEL_PROVIDER': 'anthropic',
+            'MODEL_API_KEY_FILE': str(key),
+            'COPILOT_MODEL': 'claude-sonnet-5-5',
+        }
+
+        async def inference(question, settings, **options):
+            self.assertEqual(settings.runtime, 'native')
+            yield {'event': 'delta', 'data': {'text': 'from the native loop'}}
+            yield {'event': 'done', 'data': {'tool_calls': 0, 'verified': True}}
+
+        with patch.dict('os.environ', native), patch('backend.agent_runtime.stream_answer', inference):
+            response = self.client.post('/api/chat', headers=headers, json={'question': 'Summary'})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('from the native loop', response.text)
+        self.assertIn('event: done', response.text)
+
     def test_inference_error_is_sanitized_and_request_slot_released(self):
         headers = self.configured()
 

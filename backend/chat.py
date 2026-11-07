@@ -153,10 +153,10 @@ def compose_question(question: str, history: list[dict[str, str]]) -> str:
 
 
 async def stream_answer(question: str, settings: ChatSettings) -> AsyncGenerator[dict[str, Any]]:
-    # SDK loading is lazy so a missing chat dependency cannot break the SQL API.
-    from backend.copilot_chat import stream_answer as copilot_answer
+    # The runtime selector loads SDKs lazily so a missing chat dependency cannot break the SQL API.
+    from backend.runtime import stream_answer as selected
 
-    async for event in copilot_answer(question, settings):
+    async for event in selected(question, settings):
         yield event
 
 
