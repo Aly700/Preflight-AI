@@ -103,11 +103,24 @@ def number_token(value: float) -> str:
     return str(int(value)) if float(value).is_integer() else str(value)
 
 
-def candidates(reference: str, results: dict[str, dict[str, Any]], names: dict[str, str]) -> list[dict[str, Any]]:
-    """The results a declared number may refer to: the exact call id, or every call of a tool named instead."""
+PATH_CHARS = 80
+
+
+def candidates(reference: str, results: dict[str, dict[str, Any]], names: dict[str, str]) -> list[dict[str, Any]] | str:
+    """The result a declared number refers to: the exact call id, or the tool's name when it was called once.
+
+    Returns a reason string instead when the reference is ambiguous.
+    """
     if reference in results:
         return [results[reference]]
-    return [results[call_id] for call_id, name in names.items() if name == reference and call_id in results]
+    matches = [results[call_id] for call_id, name in names.items() if name == reference and call_id in results]
+    if len(matches) > 1:
+        return 'names a tool that was called more than once; use the call id'
+    return matches
+
+
+def short(path: str) -> str:
+    return path if len(path) <= PATH_CHARS else path[:PATH_CHARS] + '…'
 
 
 def verify_claims(
@@ -128,7 +141,14 @@ def verify_claims(
     unverified: list[str] = []
     declared_tokens: set[str] = set()
     numbers = list(claims.get('numbers') or []) if claims else []
-    cited = {str(c) for c in (claims.get('cited_ids') or [])} if claims else set()
+    raw_cited = claims.get('cited_ids') if claims else None
+    cited: set[str] = set()
+    if raw_cited is None:
+        pass
+    elif isinstance(raw_cited, list):
+        cited = {str(c) for c in raw_cited}
+    else:
+        unverified.append('cited_ids is malformed')
     for item in numbers:
         if not isinstance(item, dict):
             unverified.append('a declared number is malformed')
@@ -140,21 +160,29 @@ def verify_claims(
             continue
         declared_tokens.add(number_token(value))
         options = candidates(str(item.get('call_id', '')), results, names)
+        if isinstance(options, str):
+            unverified.append(f'{label} ({number_token(value)}) {options}')
+            continue
         if not options:
             unverified.append(f'{label} ({number_token(value)}) refers to a tool call that returned nothing')
             continue
-        path = str(item.get('path', ''))
+        path = short(str(item.get('path', '')))
         actuals: list[Any] = []
         for payload in options:
             try:
-                actuals.append(resolve_path(payload, path))
+                actuals.append(resolve_path(payload, str(item.get('path', ''))))
             except LookupError:
                 continue
         if not actuals:
             unverified.append(f'{label} ({number_token(value)}) has no value at {path!r} in that result')
             continue
-        if not any(same_number(value, actual) for actual in actuals):
-            unverified.append(f'{label} ({number_token(value)}) does not match the tool result ({actuals[0]!r})')
+        numeric = [a for a in actuals if isinstance(a, (int, float)) and not isinstance(a, bool)]
+        if not numeric:
+            # Record text is data; it never reaches the note.
+            unverified.append(f'{label} ({number_token(value)}): the value at {path!r} is not a number')
+            continue
+        if not any(same_number(value, actual) for actual in numeric):
+            unverified.append(f'{label} ({number_token(value)}) does not match the tool result ({numeric[0]!r})')
     prose_ids = set(ID_PATTERN.findall(prose))
     for record in sorted(prose_ids - cited):
         unverified.append(f'{record} is not among the cited records')

@@ -85,6 +85,30 @@ class ClaimVerification(unittest.TestCase):
         self.assertFalse(result.verified)
         self.assertIn('162', result.unverified[0])
 
+    def test_non_numeric_path_does_not_leak_the_payload(self):
+        leaky = {'cited_ids': [], 'numbers': [number(162, 'items'), number(5, 'x' * 200)]}
+        result = verify_claims(prose='162 and 5', claims=leaky, results=RESULTS, seen_ids=SEEN)
+        self.assertFalse(result.verified)
+        self.assertNotIn('high', result.note)  # no record field reaches the note
+        self.assertNotIn('ISSUE-0001', result.note)
+        self.assertIn('is not a number', result.unverified[0])
+        self.assertLess(len(result.unverified[1]), 200)  # the long path is truncated
+
+    def test_malformed_cited_ids_are_reported_not_iterated(self):
+        result = verify_claims(
+            prose='', claims={'cited_ids': 'ISSUE-0001', 'numbers': []}, results=RESULTS, seen_ids=SEEN
+        )
+        self.assertFalse(result.verified)
+        self.assertEqual(result.unverified, ['cited_ids is malformed'])
+
+    def test_tool_name_reference_is_refused_when_the_tool_was_called_twice(self):
+        results = {'a': {'issue_count': 7}, 'b': {'issue_count': 12}}
+        names = {'a': 'get_aircraft_summary', 'b': 'get_aircraft_summary'}
+        swapped = {'cited_ids': [], 'numbers': [number(12, 'issue_count', 'get_aircraft_summary', 'issues')]}
+        result = verify_claims(prose='12', claims=swapped, results=results, seen_ids=set(), names=names)
+        self.assertFalse(result.verified)
+        self.assertIn('more than once', result.unverified[0])
+
     def test_undeclared_integers_are_counted_not_shown(self):
         result = verify_claims(
             prose='There are 162 unresolved issues as of 2026-01-01 at 10:30, 3 of them high, opened in 2026.',

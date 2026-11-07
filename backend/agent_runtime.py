@@ -17,7 +17,7 @@ import logging
 from typing import Any
 
 from backend.mcp_tools import McpTools, ToolResult, ToolService, anthropic_tools
-from backend.model_client import ModelClient, ToolCall, Turn, build_model_client
+from backend.model_client import ModelClient, ModelError, ToolCall, Turn, build_model_client
 from backend.settings import ChatSettings
 from backend.verify import FINAL_ANSWER_TOOL, record_ids, verify_claims
 from preflight_core.tools import TOOLS
@@ -129,13 +129,23 @@ class Loop:
             if self.rounds >= self.settings.max_tool_rounds:
                 # Wrap-up: the model answers from what it has; no further tools are offered.
                 messages.append({'role': 'user', 'content': NO_MORE_TOOLS})
-                turn = await self.model.stream_turn(
-                    system=SYSTEM,
-                    messages=messages,
-                    tools=tool_defs,
-                    tool_choice={'type': 'none'},
-                    on_text=self.on_text,
-                )
+                try:
+                    turn = await self.model.stream_turn(
+                        system=SYSTEM,
+                        messages=messages,
+                        tools=tool_defs,
+                        tool_choice={'type': 'none'},
+                        on_text=self.on_text,
+                    )
+                except ModelError:
+                    # Not every model accepts tool_choice none; the instruction alone then has to do.
+                    turn = await self.model.stream_turn(
+                        system=SYSTEM,
+                        messages=messages,
+                        tools=tool_defs,
+                        tool_choice={'type': 'auto'},
+                        on_text=self.on_text,
+                    )
                 messages.append({'role': 'assistant', 'content': assistant_blocks(turn)})
                 if turn.tool_calls:
                     refused = [result_block(c.id, LIMIT_REACHED, error=True) for c in turn.tool_calls]

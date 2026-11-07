@@ -9,7 +9,8 @@ user, never upstream text.
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Callable
+from collections.abc import AsyncIterator, Callable
+from contextlib import AbstractAsyncContextManager, asynccontextmanager
 from dataclasses import dataclass
 import json
 import logging
@@ -25,8 +26,10 @@ from preflight_core.tools import TOOLS
 logger = logging.getLogger('preflight.tools')
 
 TOOL_UNAVAILABLE = 'Tool unavailable'
+# The MCP service's own fixed messages; anything else is reported as unavailable.
+SERVICE_ERRORS = frozenset({'Record not found', 'Database unavailable'})
 DEFAULT_TIMEOUT = 10.0
-ClientFactory = Callable[[str, dict[str, str]], Any]
+ClientFactory = Callable[[str, dict[str, str]], AbstractAsyncContextManager[Any]]
 
 
 @dataclass(frozen=True)
@@ -54,9 +57,12 @@ class ToolService(Protocol):
 
 
 def default_client_factory(timeout: float) -> ClientFactory:
-    def factory(url: str, headers: dict[str, str]) -> Any:
-        http = httpx2.AsyncClient(headers=headers, timeout=timeout)
-        return Client(streamable_http_client(url, http_client=http))
+    @asynccontextmanager
+    async def factory(url: str, headers: dict[str, str]) -> AsyncIterator[Any]:
+        # The HTTP client is ours to close: the transport only closes clients it created itself.
+        async with httpx2.AsyncClient(headers=headers, timeout=timeout) as http:  # noqa: SIM117
+            async with Client(streamable_http_client(url, http_client=http)) as client:
+                yield client
 
     return factory
 
@@ -79,7 +85,7 @@ class McpTools:
         self._headers = {'Authorization': 'Bearer ' + token}
         self._factory = client_factory or default_client_factory(timeout)
 
-    def _client(self) -> Any:
+    def _client(self) -> AbstractAsyncContextManager[Any]:
         return self._factory(self.url, dict(self._headers))
 
     async def discover(self) -> list[ToolSpec]:
@@ -108,7 +114,9 @@ class McpTools:
             async with asyncio.timeout(self.timeout), self._client() as client:
                 result = await client.call_tool(name, arguments)
             if getattr(result, 'is_error', False):
-                raise ValueError('tool error')
+                text = getattr(result.content[0], 'text', '') if result.content else ''
+                known = next((message for message in SERVICE_ERRORS if text.endswith(message)), TOOL_UNAVAILABLE)
+                return ToolResult(name, call_id, False, error=known)
             payload = result.structured_content
             if payload is None:
                 payload = json.loads(result.content[0].text)

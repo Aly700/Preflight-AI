@@ -32,11 +32,13 @@ class McpToolsContract(unittest.IsolatedAsyncioTestCase):
         async with self.app.router.lifespan_context(self.app):
             yield
 
-    def client_factory(self, url, headers):
+    @asynccontextmanager
+    async def client_factory(self, url, headers):
         http = httpx2.AsyncClient(
             transport=httpx2.ASGITransport(app=self.app), base_url='http://testserver', headers=headers
         )
-        return Client(streamable_http_client(url, http_client=http))
+        async with http, Client(streamable_http_client(url, http_client=http)) as client:
+            yield client
 
     def tools(self, token=TOKEN):
         return McpTools(URL, token, client_factory=self.client_factory)
@@ -76,9 +78,31 @@ class McpToolsContract(unittest.IsolatedAsyncioTestCase):
             )
             self.assertFalse(result.ok)
             self.assertEqual(result.error, 'Tool unavailable')
+
+    async def test_missing_record_is_reported_as_not_found(self):
+        async with self.running():
             missing = await self.tools().call('c', 'get_issue_history', {'issue_id': 'ISSUE-9999'})
             self.assertFalse(missing.ok)
-            self.assertEqual(missing.error, 'Tool unavailable')
+            self.assertEqual(missing.error, 'Record not found')
+
+    async def test_http_client_is_closed_after_each_use(self):
+        clients = []
+
+        @asynccontextmanager
+        async def factory(url, headers):
+            http = httpx2.AsyncClient(
+                transport=httpx2.ASGITransport(app=self.app), base_url='http://testserver', headers=headers
+            )
+            clients.append(http)
+            async with http, Client(streamable_http_client(url, http_client=http)) as client:
+                yield client
+
+        tools = McpTools(URL, TOKEN, client_factory=factory)
+        async with self.running():
+            await tools.discover()
+            await tools.call('c', 'get_aircraft_summary', {'aircraft_id': 'DEMO-AIR-0001'})
+        self.assertEqual(len(clients), 2)
+        self.assertTrue(all(http.is_closed for http in clients))
 
     async def test_anthropic_tools_include_final_answer_last(self):
         async with self.running():

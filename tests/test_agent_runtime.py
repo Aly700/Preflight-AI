@@ -268,6 +268,25 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
         await asyncio.sleep(0)
         self.assertEqual(outcome, {'cancelled': True})
 
+    async def test_wrap_up_falls_back_to_auto_when_the_model_rejects_tool_choice_none(self):
+        from backend.model_client import ModelError
+
+        class Picky(FakeModel):
+            async def stream_turn(self, **kw):
+                if kw['tool_choice'] == {'type': 'none'}:
+                    self.calls.append({'messages': [], 'tools': kw['tools'], 'tool_choice': kw['tool_choice']})
+                    raise ModelError('Model request failed: BadRequestError')
+                return await super().stream_turn(**kw)
+
+        tool_turns = [Turn('', [ToolCall(f't{i}', 'list_open_issues', {'limit': 1})], 'tool_use') for i in range(6)]
+        model = Picky([*tool_turns, Turn('Answer from what I have.', [], 'end_turn'), claims()])
+        events = await collect(model, FakeTools())
+        choices = [c['tool_choice'] for c in model.calls]
+        self.assertEqual(choices[6], {'type': 'none'})
+        self.assertEqual(choices[7], {'type': 'auto'})
+        self.assertEqual(events[-1]['data']['rounds'], 6)
+        self.assertIn('Answer from what I have.', ''.join(e['data']['text'] for e in events if e['event'] == 'delta'))
+
     async def test_answer_text_cap_is_enforced(self):
         model = FakeModel([Turn('x' * (ANSWER_CHARS + 1), [], 'end_turn')])
         with self.assertRaisesRegex(RuntimeError, 'limit'):

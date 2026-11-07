@@ -18,7 +18,9 @@ What is kept:
 - A standard-library generator with a fixed data contract and seeded data.
 - PostgreSQL constraints, transactional loading and read-only application roles.
 - FastAPI transport, Pydantic contracts and explicit parameterized SQL.
-- Three MCP tools and a Copilot SDK runtime with an explicit tool allowlist.
+- Three MCP tools and two runtimes with an explicit tool allowlist: the Copilot
+  SDK's loop, and this repository's own loop over the Anthropic Messages API with
+  multi-step and parallel tool calls and verified claims.
 - A streaming React / assistant-ui chat with record-source display.
 
 Known limits: one active answer and five requests per minute per process; chat
@@ -32,7 +34,7 @@ IDs but does not verify every sentence of a narrative answer.
 React / assistant-ui on Cloudflare
   → same-origin streaming Worker with a server-side upstream key
   → HTTPS entry on the host
-  → FastAPI / Copilot runtime ↔ configured model provider (Claude, OpenAI or Copilot)
+  → FastAPI, Copilot or native runtime ↔ configured model provider (Claude, OpenAI or Copilot)
   → AgentCore Gateway (planned) → private HTTPS MCP → PostgreSQL
 ```
 

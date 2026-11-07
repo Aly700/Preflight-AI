@@ -207,7 +207,7 @@ def create_router(limits: Limits = LIMITS, admission: Admission | None = None) -
                 yield sse(
                     'error',
                     {
-                        'message': 'Copilot could not complete this answer. '
+                        'message': 'The model could not complete this answer. '
                         'Check server authentication and connectivity.'
                     },
                 )
