@@ -128,7 +128,7 @@ once; after editing the file with an editor that saves by renaming, run
 
 `MODEL_PROVIDER=bedrock` runs Claude on Amazon Bedrock with `CHAT_RUNTIME=native`
 only. Set `COPILOT_MODEL` to the Bedrock model or inference-profile ID (for example,
-`us.anthropic.claude-sonnet-4-5-20250929-v1:0`) and set `AWS_REGION`. Credentials
+`global.anthropic.claude-sonnet-4-6`) and set `AWS_REGION`. Credentials
 come from the standard AWS credential chain at request time, including the
 instance role on EC2; containers using that role need the instance metadata hop
 limit set to 2. No model key file is read.
