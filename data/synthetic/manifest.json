@@ -1,0 +1,46 @@
+{
+  "config_sha256": "edc82e3fc633e994bd1f5b2d8a384cc4c8d51d3625aad4c5cfd4234a32797255",
+  "counts": {
+    "activity_events": 920,
+    "aircraft": 12,
+    "issues": 180,
+    "people": 36,
+    "shifts": 150,
+    "tasks": 480,
+    "teams": 6
+  },
+  "files": {
+    "activity_events.csv": {
+      "rows": 920,
+      "sha256": "885f5a767ecd47912fd611aacba8827978a8f0794d4550e25f6c4527a9feb3f8"
+    },
+    "aircraft.csv": {
+      "rows": 12,
+      "sha256": "b636677226af4f4d5001ba91e22f1660be9b67a6f030caa276bc8124045d1b06"
+    },
+    "issues.csv": {
+      "rows": 180,
+      "sha256": "59e9ea2587f141b467a99339d040fdc87dd558292931350ad2ae28ca383ee3bf"
+    },
+    "people.csv": {
+      "rows": 36,
+      "sha256": "e9a5116643ddda8497f8aeb9a593e0958b653b340c56c24dc19f969e892e16ef"
+    },
+    "shifts.csv": {
+      "rows": 150,
+      "sha256": "5659fa98a7e1915ade369c1b55c2a47f8665a103b8ba28e563151facb8c5780c"
+    },
+    "tasks.csv": {
+      "rows": 480,
+      "sha256": "ea9bff090ae121b55df6173f1180829016bbd340dd8e88c8b884610763148d4d"
+    },
+    "teams.csv": {
+      "rows": 6,
+      "sha256": "11343d307371f843128e3df7e7b8fbf7f97f721d206f6fcc9a17798bb34ab0b2"
+    }
+  },
+  "generated_at_utc": "2026-11-06T04:15:06.838668+00:00",
+  "generator_version": "1.0.0",
+  "phase": "week1_structured_data",
+  "seed": 20261102
+}

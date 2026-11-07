@@ -1,0 +1,921 @@
+event_id,issue_id,task_id,actor_id,event_type,occurred_at,note
+EVT-0001,ISSUE-0162,,,issue_opened,2026-01-01T17:48:56+00:00,Fictional tracking item opened for demonstration.
+EVT-0002,ISSUE-0162,TASK-0431,PERSON-0024,task_created,2026-01-02T00:48:56+00:00,Fictional work item added to the queue.
+EVT-0003,ISSUE-0020,,,issue_opened,2026-01-02T10:43:58+00:00,Fictional tracking item opened for demonstration.
+EVT-0004,ISSUE-0020,TASK-0052,PERSON-0014,task_created,2026-01-02T15:43:58+00:00,Fictional work item added to the queue.
+EVT-0005,ISSUE-0162,TASK-0432,,task_created,2026-01-02T20:48:56+00:00,Fictional work item added to the queue.
+EVT-0006,ISSUE-0162,TASK-0433,PERSON-0008,task_created,2026-01-03T12:48:56+00:00,Fictional work item added to the queue.
+EVT-0007,ISSUE-0081,,,issue_opened,2026-01-03T14:14:01+00:00,Fictional tracking item opened for demonstration.
+EVT-0008,ISSUE-0020,TASK-0053,PERSON-0003,task_created,2026-01-04T07:43:58+00:00,Fictional work item added to the queue.
+EVT-0009,ISSUE-0020,TASK-0054,,task_created,2026-01-04T07:43:58+00:00,Fictional work item added to the queue.
+EVT-0010,ISSUE-0081,TASK-0215,,task_created,2026-01-04T08:14:01+00:00,Fictional work item added to the queue.
+EVT-0011,ISSUE-0120,,,issue_opened,2026-01-04T16:07:59+00:00,Fictional tracking item opened for demonstration.
+EVT-0012,ISSUE-0081,TASK-0213,PERSON-0009,task_created,2026-01-04T18:14:01+00:00,Fictional work item added to the queue.
+EVT-0013,ISSUE-0108,,,issue_opened,2026-01-05T07:45:26+00:00,Fictional tracking item opened for demonstration.
+EVT-0014,ISSUE-0139,,,issue_opened,2026-01-05T08:41:02+00:00,Fictional tracking item opened for demonstration.
+EVT-0015,ISSUE-0108,TASK-0290,PERSON-0002,task_created,2026-01-05T08:45:26+00:00,Fictional work item added to the queue.
+EVT-0016,ISSUE-0081,TASK-0214,PERSON-0028,task_created,2026-01-05T13:14:01+00:00,Fictional work item added to the queue.
+EVT-0017,ISSUE-0108,TASK-0288,,task_created,2026-01-05T19:45:26+00:00,Fictional work item added to the queue.
+EVT-0018,ISSUE-0120,TASK-0322,PERSON-0013,task_created,2026-01-06T04:07:59+00:00,Fictional work item added to the queue.
+EVT-0019,ISSUE-0081,TASK-0213,PERSON-0009,task_started,2026-01-06T06:14:01+00:00,Fictional work item moved into progress.
+EVT-0020,ISSUE-0120,TASK-0321,PERSON-0018,task_created,2026-01-06T10:07:59+00:00,Fictional work item added to the queue.
+EVT-0021,ISSUE-0139,TASK-0369,PERSON-0031,task_created,2026-01-06T23:41:02+00:00,Fictional work item added to the queue.
+EVT-0022,ISSUE-0108,TASK-0289,PERSON-0001,task_created,2026-01-07T04:45:26+00:00,Fictional work item added to the queue.
+EVT-0023,ISSUE-0139,TASK-0370,PERSON-0014,task_created,2026-01-07T06:41:02+00:00,Fictional work item added to the queue.
+EVT-0024,ISSUE-0070,,,issue_opened,2026-01-09T00:28:25+00:00,Fictional tracking item opened for demonstration.
+EVT-0025,ISSUE-0070,TASK-0183,PERSON-0005,task_created,2026-01-09T08:28:25+00:00,Fictional work item added to the queue.
+EVT-0026,ISSUE-0070,TASK-0182,PERSON-0016,task_created,2026-01-09T19:28:25+00:00,Fictional work item added to the queue.
+EVT-0027,ISSUE-0070,TASK-0184,,task_created,2026-01-09T20:28:25+00:00,Fictional work item added to the queue.
+EVT-0028,ISSUE-0139,TASK-0369,PERSON-0031,task_completed,2026-01-10T23:41:02+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0029,ISSUE-0139,TASK-0370,PERSON-0014,task_completed,2026-01-11T06:41:02+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0030,ISSUE-0090,,,issue_opened,2026-01-11T09:48:02+00:00,Fictional tracking item opened for demonstration.
+EVT-0031,ISSUE-0090,TASK-0240,PERSON-0030,task_created,2026-01-11T10:48:02+00:00,Fictional work item added to the queue.
+EVT-0032,ISSUE-0090,TASK-0241,PERSON-0031,task_created,2026-01-11T12:48:02+00:00,Fictional work item added to the queue.
+EVT-0033,ISSUE-0070,TASK-0182,PERSON-0016,task_completed,2026-01-11T19:28:25+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0034,ISSUE-0090,TASK-0242,PERSON-0032,task_created,2026-01-12T17:48:02+00:00,Fictional work item added to the queue.
+EVT-0035,ISSUE-0139,,,issue_closed,2026-01-13T08:41:02+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0036,ISSUE-0018,,,issue_opened,2026-01-13T19:07:24+00:00,Fictional tracking item opened for demonstration.
+EVT-0037,ISSUE-0039,,,issue_opened,2026-01-14T02:37:53+00:00,Fictional tracking item opened for demonstration.
+EVT-0038,ISSUE-0018,TASK-0046,PERSON-0006,task_created,2026-01-14T05:07:24+00:00,Fictional work item added to the queue.
+EVT-0039,ISSUE-0039,TASK-0106,,task_created,2026-01-14T06:37:53+00:00,Fictional work item added to the queue.
+EVT-0040,ISSUE-0018,TASK-0048,PERSON-0026,task_created,2026-01-14T10:07:24+00:00,Fictional work item added to the queue.
+EVT-0041,ISSUE-0018,TASK-0047,,task_created,2026-01-15T06:07:24+00:00,Fictional work item added to the queue.
+EVT-0042,ISSUE-0039,TASK-0105,PERSON-0003,task_created,2026-01-15T14:37:53+00:00,Fictional work item added to the queue.
+EVT-0043,ISSUE-0039,TASK-0105,PERSON-0003,task_blocked,2026-01-16T14:37:53+00:00,Fictional work item waiting for supporting information.
+EVT-0044,ISSUE-0008,,,issue_opened,2026-01-18T11:26:01+00:00,Fictional tracking item opened for demonstration.
+EVT-0045,ISSUE-0008,,,note_added,2026-01-18T11:41:01+00:00,Fictional queue context recorded for demonstration.
+EVT-0046,ISSUE-0008,TASK-0019,PERSON-0002,task_created,2026-01-18T21:26:01+00:00,Fictional work item added to the queue.
+EVT-0047,ISSUE-0008,TASK-0021,PERSON-0016,task_created,2026-01-19T13:26:01+00:00,Fictional work item added to the queue.
+EVT-0048,ISSUE-0008,TASK-0020,PERSON-0003,task_created,2026-01-20T04:26:01+00:00,Fictional work item added to the queue.
+EVT-0049,ISSUE-0078,,,issue_opened,2026-01-20T08:23:34+00:00,Fictional tracking item opened for demonstration.
+EVT-0050,ISSUE-0008,TASK-0019,PERSON-0002,task_started,2026-01-20T09:26:01+00:00,Fictional work item moved into progress.
+EVT-0051,ISSUE-0078,TASK-0205,PERSON-0018,task_created,2026-01-20T10:23:34+00:00,Fictional work item added to the queue.
+EVT-0052,ISSUE-0078,TASK-0206,PERSON-0013,task_created,2026-01-20T13:23:34+00:00,Fictional work item added to the queue.
+EVT-0053,ISSUE-0126,,,issue_opened,2026-01-20T17:25:27+00:00,Fictional tracking item opened for demonstration.
+EVT-0054,ISSUE-0126,TASK-0339,PERSON-0032,task_created,2026-01-20T20:25:27+00:00,Fictional work item added to the queue.
+EVT-0055,ISSUE-0134,,,issue_opened,2026-01-21T07:59:50+00:00,Fictional tracking item opened for demonstration.
+EVT-0056,ISSUE-0078,TASK-0205,PERSON-0018,task_blocked,2026-01-21T10:23:34+00:00,Fictional work item waiting for supporting information.
+EVT-0057,ISSUE-0134,TASK-0358,,task_created,2026-01-21T21:59:50+00:00,Fictional work item added to the queue.
+EVT-0058,ISSUE-0126,TASK-0338,PERSON-0019,task_created,2026-01-22T02:25:27+00:00,Fictional work item added to the queue.
+EVT-0059,ISSUE-0126,TASK-0337,PERSON-0012,task_created,2026-01-22T09:25:27+00:00,Fictional work item added to the queue.
+EVT-0060,ISSUE-0134,TASK-0356,PERSON-0014,task_created,2026-01-22T09:59:50+00:00,Fictional work item added to the queue.
+EVT-0061,ISSUE-0134,TASK-0357,PERSON-0033,task_created,2026-01-23T03:59:50+00:00,Fictional work item added to the queue.
+EVT-0062,ISSUE-0134,TASK-0356,PERSON-0014,task_started,2026-01-23T21:59:50+00:00,Fictional work item moved into progress.
+EVT-0063,ISSUE-0060,,,issue_opened,2026-01-24T09:08:21+00:00,Fictional tracking item opened for demonstration.
+EVT-0064,ISSUE-0126,TASK-0337,PERSON-0012,task_completed,2026-01-24T09:25:27+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0065,ISSUE-0060,TASK-0158,PERSON-0008,task_created,2026-01-24T22:08:21+00:00,Fictional work item added to the queue.
+EVT-0066,ISSUE-0087,,,issue_opened,2026-01-25T00:39:32+00:00,Fictional tracking item opened for demonstration.
+EVT-0067,ISSUE-0134,TASK-0357,PERSON-0033,task_review_requested,2026-01-25T03:59:50+00:00,Fictional work item awaiting record review.
+EVT-0068,ISSUE-0087,TASK-0231,PERSON-0015,task_created,2026-01-25T12:39:32+00:00,Fictional work item added to the queue.
+EVT-0069,ISSUE-0060,TASK-0157,PERSON-0013,task_created,2026-01-25T16:08:21+00:00,Fictional work item added to the queue.
+EVT-0070,ISSUE-0087,TASK-0232,PERSON-0010,task_created,2026-01-25T17:39:32+00:00,Fictional work item added to the queue.
+EVT-0071,ISSUE-0060,TASK-0156,PERSON-0030,task_created,2026-01-26T04:08:21+00:00,Fictional work item added to the queue.
+EVT-0072,ISSUE-0111,,,issue_opened,2026-01-26T13:06:09+00:00,Fictional tracking item opened for demonstration.
+EVT-0073,ISSUE-0087,TASK-0233,PERSON-0035,task_created,2026-01-26T14:39:32+00:00,Fictional work item added to the queue.
+EVT-0074,ISSUE-0087,TASK-0231,PERSON-0015,task_started,2026-01-27T00:39:32+00:00,Fictional work item moved into progress.
+EVT-0075,ISSUE-0111,TASK-0297,PERSON-0028,task_created,2026-01-27T04:06:09+00:00,Fictional work item added to the queue.
+EVT-0076,ISSUE-0111,TASK-0296,PERSON-0027,task_created,2026-01-27T10:06:09+00:00,Fictional work item added to the queue.
+EVT-0077,ISSUE-0060,TASK-0158,PERSON-0008,task_completed,2026-01-27T22:08:21+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0078,ISSUE-0045,,,issue_opened,2026-01-28T01:12:14+00:00,Fictional tracking item opened for demonstration.
+EVT-0079,ISSUE-0045,TASK-0121,PERSON-0028,task_created,2026-01-28T20:12:14+00:00,Fictional work item added to the queue.
+EVT-0080,ISSUE-0111,TASK-0296,PERSON-0027,task_started,2026-01-28T22:06:09+00:00,Fictional work item moved into progress.
+EVT-0081,ISSUE-0045,TASK-0120,PERSON-0003,task_created,2026-01-29T00:12:14+00:00,Fictional work item added to the queue.
+EVT-0082,ISSUE-0111,TASK-0297,PERSON-0028,task_review_requested,2026-01-29T04:06:09+00:00,Fictional work item awaiting record review.
+EVT-0083,ISSUE-0060,TASK-0156,PERSON-0030,task_completed,2026-01-29T04:08:21+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0084,ISSUE-0060,TASK-0157,PERSON-0013,task_completed,2026-01-29T16:08:21+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0085,ISSUE-0045,TASK-0122,PERSON-0035,task_created,2026-01-29T20:12:14+00:00,Fictional work item added to the queue.
+EVT-0086,ISSUE-0043,,,issue_opened,2026-01-30T22:18:00+00:00,Fictional tracking item opened for demonstration.
+EVT-0087,ISSUE-0003,,,issue_opened,2026-01-31T06:18:39+00:00,Fictional tracking item opened for demonstration.
+EVT-0088,ISSUE-0003,,,note_added,2026-01-31T06:33:39+00:00,Fictional queue context recorded for demonstration.
+EVT-0089,ISSUE-0093,,,issue_opened,2026-01-31T15:08:02+00:00,Fictional tracking item opened for demonstration.
+EVT-0090,ISSUE-0043,TASK-0115,PERSON-0031,task_created,2026-01-31T19:18:00+00:00,Fictional work item added to the queue.
+EVT-0091,ISSUE-0043,TASK-0116,PERSON-0002,task_created,2026-02-01T00:18:00+00:00,Fictional work item added to the queue.
+EVT-0092,ISSUE-0003,TASK-0006,PERSON-0022,task_created,2026-02-01T01:18:39+00:00,Fictional work item added to the queue.
+EVT-0093,ISSUE-0093,TASK-0247,PERSON-0033,task_created,2026-02-01T03:08:02+00:00,Fictional work item added to the queue.
+EVT-0094,ISSUE-0060,,,issue_closed,2026-02-01T09:08:21+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0095,ISSUE-0003,TASK-0005,PERSON-0033,task_created,2026-02-02T04:18:39+00:00,Fictional work item added to the queue.
+EVT-0096,ISSUE-0003,TASK-0007,PERSON-0011,task_created,2026-02-02T04:18:39+00:00,Fictional work item added to the queue.
+EVT-0097,ISSUE-0177,,,issue_opened,2026-02-02T15:04:15+00:00,Fictional tracking item opened for demonstration.
+EVT-0098,ISSUE-0003,TASK-0005,PERSON-0033,task_blocked,2026-02-02T16:18:39+00:00,Fictional work item waiting for supporting information.
+EVT-0099,ISSUE-0116,,,issue_opened,2026-02-02T17:58:54+00:00,Fictional tracking item opened for demonstration.
+EVT-0100,ISSUE-0116,TASK-0310,PERSON-0026,task_created,2026-02-02T18:58:54+00:00,Fictional work item added to the queue.
+EVT-0101,ISSUE-0177,TASK-0470,PERSON-0015,task_created,2026-02-02T19:04:15+00:00,Fictional work item added to the queue.
+EVT-0102,ISSUE-0043,TASK-0116,PERSON-0002,task_completed,2026-02-03T00:18:00+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0103,ISSUE-0177,TASK-0472,,task_created,2026-02-03T01:04:15+00:00,Fictional work item added to the queue.
+EVT-0104,ISSUE-0003,TASK-0006,PERSON-0022,task_review_requested,2026-02-03T01:18:39+00:00,Fictional work item awaiting record review.
+EVT-0105,ISSUE-0003,TASK-0005,PERSON-0033,task_unblocked,2026-02-03T04:18:39+00:00,Fictional information dependency cleared.
+EVT-0106,ISSUE-0177,TASK-0471,PERSON-0010,task_created,2026-02-03T08:04:15+00:00,Fictional work item added to the queue.
+EVT-0107,ISSUE-0003,TASK-0005,PERSON-0033,task_started,2026-02-03T16:18:39+00:00,Fictional work item moved into progress.
+EVT-0108,ISSUE-0043,TASK-0115,PERSON-0031,task_completed,2026-02-03T19:18:00+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0109,ISSUE-0116,TASK-0311,PERSON-0027,task_created,2026-02-03T21:58:54+00:00,Fictional work item added to the queue.
+EVT-0110,ISSUE-0093,TASK-0247,PERSON-0033,task_completed,2026-02-04T03:08:02+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0111,ISSUE-0177,TASK-0470,PERSON-0015,task_started,2026-02-04T07:04:15+00:00,Fictional work item moved into progress.
+EVT-0112,ISSUE-0177,TASK-0471,PERSON-0010,task_review_requested,2026-02-05T08:04:15+00:00,Fictional work item awaiting record review.
+EVT-0113,ISSUE-0116,TASK-0310,PERSON-0026,task_completed,2026-02-05T18:58:54+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0114,ISSUE-0116,TASK-0311,PERSON-0027,task_completed,2026-02-06T21:58:54+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0115,ISSUE-0043,,,issue_closed,2026-02-07T22:18:00+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0116,ISSUE-0093,,,issue_closed,2026-02-08T15:08:02+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0117,ISSUE-0168,,,issue_opened,2026-02-09T08:56:09+00:00,Fictional tracking item opened for demonstration.
+EVT-0118,ISSUE-0056,,,issue_opened,2026-02-09T19:12:34+00:00,Fictional tracking item opened for demonstration.
+EVT-0119,ISSUE-0168,TASK-0448,,task_created,2026-02-10T02:56:09+00:00,Fictional work item added to the queue.
+EVT-0120,ISSUE-0056,TASK-0148,PERSON-0008,task_created,2026-02-10T03:12:34+00:00,Fictional work item added to the queue.
+EVT-0121,ISSUE-0093,,,issue_reopened,2026-02-10T15:08:02+00:00,Fictional tracking item reopened for an additional record question.
+EVT-0122,ISSUE-0116,,,issue_closed,2026-02-10T17:58:54+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0123,ISSUE-0093,TASK-0248,,task_created,2026-02-11T07:08:02+00:00,Fictional work item added to the queue.
+EVT-0124,ISSUE-0168,TASK-0447,PERSON-0006,task_created,2026-02-11T07:56:09+00:00,Fictional work item added to the queue.
+EVT-0125,ISSUE-0093,TASK-0249,PERSON-0017,task_created,2026-02-11T08:08:02+00:00,Fictional work item added to the queue.
+EVT-0126,ISSUE-0056,TASK-0148,PERSON-0008,task_completed,2026-02-12T03:12:34+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0127,ISSUE-0168,TASK-0447,PERSON-0006,task_blocked,2026-02-12T07:56:09+00:00,Fictional work item waiting for supporting information.
+EVT-0128,ISSUE-0037,,,issue_opened,2026-02-13T09:54:10+00:00,Fictional tracking item opened for demonstration.
+EVT-0129,ISSUE-0154,,,issue_opened,2026-02-13T11:30:26+00:00,Fictional tracking item opened for demonstration.
+EVT-0130,ISSUE-0154,TASK-0409,PERSON-0024,task_created,2026-02-13T17:30:26+00:00,Fictional work item added to the queue.
+EVT-0131,ISSUE-0037,TASK-0101,,task_created,2026-02-14T01:54:10+00:00,Fictional work item added to the queue.
+EVT-0132,ISSUE-0097,,,issue_opened,2026-02-14T08:29:02+00:00,Fictional tracking item opened for demonstration.
+EVT-0133,ISSUE-0097,TASK-0259,PERSON-0032,task_created,2026-02-14T12:29:02+00:00,Fictional work item added to the queue.
+EVT-0134,ISSUE-0037,TASK-0102,,task_created,2026-02-14T20:54:10+00:00,Fictional work item added to the queue.
+EVT-0135,ISSUE-0037,TASK-0100,PERSON-0025,task_created,2026-02-15T04:54:10+00:00,Fictional work item added to the queue.
+EVT-0136,ISSUE-0154,TASK-0408,PERSON-0035,task_created,2026-02-15T08:30:26+00:00,Fictional work item added to the queue.
+EVT-0137,ISSUE-0154,TASK-0407,PERSON-0016,task_created,2026-02-15T10:30:26+00:00,Fictional work item added to the queue.
+EVT-0138,ISSUE-0097,TASK-0258,PERSON-0031,task_created,2026-02-15T17:29:02+00:00,Fictional work item added to the queue.
+EVT-0139,ISSUE-0097,TASK-0260,PERSON-0033,task_created,2026-02-16T05:29:02+00:00,Fictional work item added to the queue.
+EVT-0140,ISSUE-0037,TASK-0100,PERSON-0025,task_started,2026-02-16T16:54:10+00:00,Fictional work item moved into progress.
+EVT-0141,ISSUE-0097,TASK-0258,PERSON-0031,task_blocked,2026-02-16T17:29:02+00:00,Fictional work item waiting for supporting information.
+EVT-0142,ISSUE-0154,TASK-0407,PERSON-0016,task_started,2026-02-16T22:30:26+00:00,Fictional work item moved into progress.
+EVT-0143,ISSUE-0144,,,issue_opened,2026-02-17T16:14:43+00:00,Fictional tracking item opened for demonstration.
+EVT-0144,ISSUE-0056,,,issue_closed,2026-02-17T19:12:34+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0145,ISSUE-0144,TASK-0380,PERSON-0007,task_created,2026-02-18T11:14:43+00:00,Fictional work item added to the queue.
+EVT-0146,ISSUE-0144,TASK-0379,PERSON-0018,task_created,2026-02-19T05:14:43+00:00,Fictional work item added to the queue.
+EVT-0147,ISSUE-0056,,,issue_reopened,2026-02-19T19:12:34+00:00,Fictional tracking item reopened for an additional record question.
+EVT-0148,ISSUE-0144,TASK-0380,PERSON-0007,task_review_requested,2026-02-20T11:14:43+00:00,Fictional work item awaiting record review.
+EVT-0149,ISSUE-0144,TASK-0379,PERSON-0018,task_started,2026-02-20T17:14:43+00:00,Fictional work item moved into progress.
+EVT-0150,ISSUE-0011,,,issue_opened,2026-02-20T23:37:28+00:00,Fictional tracking item opened for demonstration.
+EVT-0151,ISSUE-0011,,,note_added,2026-02-20T23:52:28+00:00,Fictional queue context recorded for demonstration.
+EVT-0152,ISSUE-0056,TASK-0149,,task_created,2026-02-21T07:12:34+00:00,Fictional work item added to the queue.
+EVT-0153,ISSUE-0011,TASK-0030,PERSON-0025,task_created,2026-02-21T16:37:28+00:00,Fictional work item added to the queue.
+EVT-0154,ISSUE-0011,TASK-0029,PERSON-0006,task_created,2026-02-22T07:37:28+00:00,Fictional work item added to the queue.
+EVT-0155,ISSUE-0011,TASK-0028,PERSON-0035,task_created,2026-02-22T22:37:28+00:00,Fictional work item added to the queue.
+EVT-0156,ISSUE-0104,,,issue_opened,2026-02-23T01:06:29+00:00,Fictional tracking item opened for demonstration.
+EVT-0157,ISSUE-0104,TASK-0279,PERSON-0028,task_created,2026-02-23T20:06:29+00:00,Fictional work item added to the queue.
+EVT-0158,ISSUE-0011,TASK-0029,PERSON-0006,task_completed,2026-02-24T07:37:28+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0159,ISSUE-0104,TASK-0278,PERSON-0003,task_created,2026-02-24T11:06:29+00:00,Fictional work item added to the queue.
+EVT-0160,ISSUE-0046,,,issue_opened,2026-02-24T13:29:16+00:00,Fictional tracking item opened for demonstration.
+EVT-0161,ISSUE-0011,TASK-0030,PERSON-0025,task_completed,2026-02-24T16:37:28+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0162,ISSUE-0104,TASK-0277,PERSON-0026,task_created,2026-02-24T17:06:29+00:00,Fictional work item added to the queue.
+EVT-0163,ISSUE-0046,TASK-0123,PERSON-0004,task_created,2026-02-25T01:29:16+00:00,Fictional work item added to the queue.
+EVT-0164,ISSUE-0091,,,issue_opened,2026-02-25T02:02:01+00:00,Fictional tracking item opened for demonstration.
+EVT-0165,ISSUE-0091,TASK-0243,PERSON-0013,task_created,2026-02-25T12:02:01+00:00,Fictional work item added to the queue.
+EVT-0166,ISSUE-0149,,,issue_opened,2026-02-25T14:14:17+00:00,Fictional tracking item opened for demonstration.
+EVT-0167,ISSUE-0104,TASK-0277,PERSON-0026,task_blocked,2026-02-25T17:06:29+00:00,Fictional work item waiting for supporting information.
+EVT-0168,ISSUE-0091,TASK-0244,PERSON-0026,task_created,2026-02-25T20:02:01+00:00,Fictional work item added to the queue.
+EVT-0169,ISSUE-0011,TASK-0028,PERSON-0035,task_completed,2026-02-25T22:37:28+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0170,ISSUE-0091,TASK-0243,PERSON-0013,task_started,2026-02-27T00:02:01+00:00,Fictional work item moved into progress.
+EVT-0171,ISSUE-0046,TASK-0123,PERSON-0004,task_completed,2026-02-27T01:29:16+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0172,ISSUE-0149,TASK-0392,PERSON-0005,task_created,2026-02-27T02:14:17+00:00,Fictional work item added to the queue.
+EVT-0173,ISSUE-0091,TASK-0244,PERSON-0026,task_review_requested,2026-02-27T20:02:01+00:00,Fictional work item awaiting record review.
+EVT-0174,ISSUE-0011,,,issue_closed,2026-02-28T23:37:28+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0175,ISSUE-0149,TASK-0392,PERSON-0005,task_completed,2026-03-01T02:14:17+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0176,ISSUE-0046,,,issue_closed,2026-03-04T13:29:16+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0177,ISSUE-0149,,,issue_closed,2026-03-05T14:14:17+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0178,ISSUE-0121,,,issue_opened,2026-03-06T13:06:20+00:00,Fictional tracking item opened for demonstration.
+EVT-0179,ISSUE-0046,,,issue_reopened,2026-03-06T13:29:16+00:00,Fictional tracking item reopened for an additional record question.
+EVT-0180,ISSUE-0121,TASK-0325,,task_created,2026-03-06T19:06:20+00:00,Fictional work item added to the queue.
+EVT-0181,ISSUE-0071,,,issue_opened,2026-03-07T04:15:31+00:00,Fictional tracking item opened for demonstration.
+EVT-0182,ISSUE-0149,,,issue_reopened,2026-03-07T14:14:17+00:00,Fictional tracking item reopened for an additional record question.
+EVT-0183,ISSUE-0071,TASK-0187,PERSON-0007,task_created,2026-03-07T22:15:31+00:00,Fictional work item added to the queue.
+EVT-0184,ISSUE-0071,TASK-0187,PERSON-0007,task_assigned,2026-03-07T22:45:31+00:00,Fictional work item allocated to its recorded team and worker.
+EVT-0185,ISSUE-0121,TASK-0324,PERSON-0014,task_created,2026-03-08T01:06:20+00:00,Fictional work item added to the queue.
+EVT-0186,ISSUE-0121,TASK-0323,PERSON-0031,task_created,2026-03-08T03:06:20+00:00,Fictional work item added to the queue.
+EVT-0187,ISSUE-0071,TASK-0186,PERSON-0036,task_created,2026-03-08T11:15:31+00:00,Fictional work item added to the queue.
+EVT-0188,ISSUE-0046,TASK-0124,PERSON-0023,task_created,2026-03-08T11:29:16+00:00,Fictional work item added to the queue.
+EVT-0189,ISSUE-0149,TASK-0393,PERSON-0024,task_created,2026-03-08T14:14:17+00:00,Fictional work item added to the queue.
+EVT-0190,ISSUE-0149,TASK-0394,PERSON-0025,task_created,2026-03-08T14:14:17+00:00,Fictional work item added to the queue.
+EVT-0191,ISSUE-0071,TASK-0185,PERSON-0029,task_created,2026-03-08T15:15:31+00:00,Fictional work item added to the queue.
+EVT-0192,ISSUE-0165,,,issue_opened,2026-03-09T20:18:48+00:00,Fictional tracking item opened for demonstration.
+EVT-0193,ISSUE-0121,TASK-0323,PERSON-0031,task_completed,2026-03-10T03:06:20+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0194,ISSUE-0165,TASK-0440,PERSON-0010,task_created,2026-03-11T13:18:48+00:00,Fictional work item added to the queue.
+EVT-0195,ISSUE-0165,TASK-0439,PERSON-0003,task_created,2026-03-11T14:18:48+00:00,Fictional work item added to the queue.
+EVT-0196,ISSUE-0165,TASK-0441,PERSON-0005,task_created,2026-03-11T18:18:48+00:00,Fictional work item added to the queue.
+EVT-0197,ISSUE-0148,,,issue_opened,2026-03-12T22:35:31+00:00,Fictional tracking item opened for demonstration.
+EVT-0198,ISSUE-0148,TASK-0390,PERSON-0035,task_created,2026-03-13T05:35:31+00:00,Fictional work item added to the queue.
+EVT-0199,ISSUE-0148,TASK-0389,PERSON-0022,task_created,2026-03-13T15:35:31+00:00,Fictional work item added to the queue.
+EVT-0200,ISSUE-0148,TASK-0391,,task_created,2026-03-14T03:35:31+00:00,Fictional work item added to the queue.
+EVT-0201,ISSUE-0140,,,issue_opened,2026-03-14T03:57:02+00:00,Fictional tracking item opened for demonstration.
+EVT-0202,ISSUE-0140,TASK-0372,PERSON-0015,task_created,2026-03-14T18:57:02+00:00,Fictional work item added to the queue.
+EVT-0203,ISSUE-0148,TASK-0389,PERSON-0022,task_started,2026-03-15T03:35:31+00:00,Fictional work item moved into progress.
+EVT-0204,ISSUE-0140,TASK-0371,PERSON-0020,task_created,2026-03-15T07:57:02+00:00,Fictional work item added to the queue.
+EVT-0205,ISSUE-0107,,,issue_opened,2026-03-15T22:35:00+00:00,Fictional tracking item opened for demonstration.
+EVT-0206,ISSUE-0013,,,issue_opened,2026-03-16T07:05:57+00:00,Fictional tracking item opened for demonstration.
+EVT-0207,ISSUE-0013,,,note_added,2026-03-16T07:20:57+00:00,Fictional queue context recorded for demonstration.
+EVT-0208,ISSUE-0107,TASK-0285,PERSON-0017,task_created,2026-03-16T08:35:00+00:00,Fictional work item added to the queue.
+EVT-0209,ISSUE-0107,TASK-0285,PERSON-0017,task_assigned,2026-03-16T09:05:00+00:00,Fictional work item allocated to its recorded team and worker.
+EVT-0210,ISSUE-0158,,,issue_opened,2026-03-16T22:00:13+00:00,Fictional tracking item opened for demonstration.
+EVT-0211,ISSUE-0013,TASK-0034,PERSON-0031,task_created,2026-03-17T03:05:57+00:00,Fictional work item added to the queue.
+EVT-0212,ISSUE-0140,TASK-0371,PERSON-0020,task_completed,2026-03-17T07:57:02+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0213,ISSUE-0013,TASK-0035,PERSON-0014,task_created,2026-03-17T12:05:57+00:00,Fictional work item added to the queue.
+EVT-0214,ISSUE-0158,TASK-0419,PERSON-0002,task_created,2026-03-17T14:00:13+00:00,Fictional work item added to the queue.
+EVT-0215,ISSUE-0158,TASK-0419,PERSON-0002,task_assigned,2026-03-17T14:30:13+00:00,Fictional work item allocated to its recorded team and worker.
+EVT-0216,ISSUE-0158,TASK-0420,PERSON-0015,task_created,2026-03-17T23:00:13+00:00,Fictional work item added to the queue.
+EVT-0217,ISSUE-0158,TASK-0421,PERSON-0028,task_created,2026-03-18T00:00:13+00:00,Fictional work item added to the queue.
+EVT-0218,ISSUE-0041,,,issue_opened,2026-03-18T15:59:10+00:00,Fictional tracking item opened for demonstration.
+EVT-0219,ISSUE-0158,TASK-0419,PERSON-0002,task_started,2026-03-19T02:00:13+00:00,Fictional work item moved into progress.
+EVT-0220,ISSUE-0077,,,issue_opened,2026-03-19T12:06:13+00:00,Fictional tracking item opened for demonstration.
+EVT-0221,ISSUE-0041,TASK-0110,PERSON-0017,task_created,2026-03-19T15:59:10+00:00,Fictional work item added to the queue.
+EVT-0222,ISSUE-0158,TASK-0420,PERSON-0015,task_review_requested,2026-03-19T23:00:13+00:00,Fictional work item awaiting record review.
+EVT-0223,ISSUE-0041,TASK-0111,,task_created,2026-03-20T05:59:10+00:00,Fictional work item added to the queue.
+EVT-0224,ISSUE-0107,TASK-0285,PERSON-0017,task_completed,2026-03-20T08:35:00+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0225,ISSUE-0077,TASK-0203,PERSON-0006,task_created,2026-03-20T09:06:13+00:00,Fictional work item added to the queue.
+EVT-0226,ISSUE-0077,TASK-0204,PERSON-0007,task_created,2026-03-20T15:06:13+00:00,Fictional work item added to the queue.
+EVT-0227,ISSUE-0077,TASK-0202,PERSON-0035,task_created,2026-03-20T22:06:13+00:00,Fictional work item added to the queue.
+EVT-0228,ISSUE-0088,,,issue_opened,2026-03-20T22:55:31+00:00,Fictional tracking item opened for demonstration.
+EVT-0229,ISSUE-0013,TASK-0034,PERSON-0031,task_completed,2026-03-21T03:05:57+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0230,ISSUE-0088,TASK-0235,PERSON-0023,task_created,2026-03-21T06:55:31+00:00,Fictional work item added to the queue.
+EVT-0231,ISSUE-0088,TASK-0236,PERSON-0012,task_created,2026-03-21T19:55:31+00:00,Fictional work item added to the queue.
+EVT-0232,ISSUE-0088,TASK-0234,PERSON-0034,task_created,2026-03-22T13:55:31+00:00,Fictional work item added to the queue.
+EVT-0233,ISSUE-0049,,,issue_opened,2026-03-22T23:22:10+00:00,Fictional tracking item opened for demonstration.
+EVT-0234,ISSUE-0088,TASK-0234,PERSON-0034,task_blocked,2026-03-23T13:55:31+00:00,Fictional work item waiting for supporting information.
+EVT-0235,ISSUE-0041,TASK-0110,PERSON-0017,task_completed,2026-03-23T15:59:10+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0236,ISSUE-0049,TASK-0131,PERSON-0031,task_created,2026-03-23T19:22:10+00:00,Fictional work item added to the queue.
+EVT-0237,ISSUE-0107,,,issue_closed,2026-03-23T22:35:00+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0238,ISSUE-0049,TASK-0132,,task_created,2026-03-24T11:22:10+00:00,Fictional work item added to the queue.
+EVT-0239,ISSUE-0064,,,issue_opened,2026-03-24T12:47:09+00:00,Fictional tracking item opened for demonstration.
+EVT-0240,ISSUE-0049,TASK-0131,PERSON-0031,task_blocked,2026-03-24T19:22:10+00:00,Fictional work item waiting for supporting information.
+EVT-0241,ISSUE-0064,TASK-0167,PERSON-0016,task_created,2026-03-25T00:47:09+00:00,Fictional work item added to the queue.
+EVT-0242,ISSUE-0064,TASK-0169,PERSON-0012,task_created,2026-03-25T17:47:09+00:00,Fictional work item added to the queue.
+EVT-0243,ISSUE-0064,TASK-0168,PERSON-0017,task_created,2026-03-25T21:47:09+00:00,Fictional work item added to the queue.
+EVT-0244,ISSUE-0107,,,issue_reopened,2026-03-25T22:35:00+00:00,Fictional tracking item reopened for an additional record question.
+EVT-0245,ISSUE-0064,TASK-0167,PERSON-0016,task_started,2026-03-26T12:47:09+00:00,Fictional work item moved into progress.
+EVT-0246,ISSUE-0163,,,issue_opened,2026-03-26T19:11:57+00:00,Fictional tracking item opened for demonstration.
+EVT-0247,ISSUE-0163,TASK-0435,PERSON-0032,task_created,2026-03-26T23:11:57+00:00,Fictional work item added to the queue.
+EVT-0248,ISSUE-0107,TASK-0287,PERSON-0025,task_created,2026-03-27T07:35:00+00:00,Fictional work item added to the queue.
+EVT-0249,ISSUE-0107,TASK-0286,PERSON-0030,task_created,2026-03-27T09:35:00+00:00,Fictional work item added to the queue.
+EVT-0250,ISSUE-0163,TASK-0436,PERSON-0021,task_created,2026-03-28T03:11:57+00:00,Fictional work item added to the queue.
+EVT-0251,ISSUE-0163,TASK-0434,PERSON-0019,task_created,2026-03-28T15:11:57+00:00,Fictional work item added to the queue.
+EVT-0252,ISSUE-0160,,,issue_opened,2026-03-28T18:04:00+00:00,Fictional tracking item opened for demonstration.
+EVT-0253,ISSUE-0160,TASK-0425,PERSON-0004,task_created,2026-03-28T19:04:00+00:00,Fictional work item added to the queue.
+EVT-0254,ISSUE-0067,,,issue_opened,2026-03-29T09:41:19+00:00,Fictional tracking item opened for demonstration.
+EVT-0255,ISSUE-0067,TASK-0176,,task_created,2026-03-29T11:41:19+00:00,Fictional work item added to the queue.
+EVT-0256,ISSUE-0163,TASK-0435,PERSON-0032,task_completed,2026-03-29T23:11:57+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0257,ISSUE-0163,TASK-0436,PERSON-0021,task_completed,2026-03-30T03:11:57+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0258,ISSUE-0062,,,issue_opened,2026-03-30T03:15:32+00:00,Fictional tracking item opened for demonstration.
+EVT-0259,ISSUE-0067,TASK-0175,PERSON-0007,task_created,2026-03-30T12:41:19+00:00,Fictional work item added to the queue.
+EVT-0260,ISSUE-0062,TASK-0161,PERSON-0026,task_created,2026-03-30T13:15:32+00:00,Fictional work item added to the queue.
+EVT-0261,ISSUE-0163,TASK-0434,PERSON-0019,task_completed,2026-03-30T15:11:57+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0262,ISSUE-0062,TASK-0163,,task_created,2026-03-30T19:15:32+00:00,Fictional work item added to the queue.
+EVT-0263,ISSUE-0122,,,issue_opened,2026-03-30T21:36:16+00:00,Fictional tracking item opened for demonstration.
+EVT-0264,ISSUE-0062,TASK-0162,,task_created,2026-03-31T01:15:32+00:00,Fictional work item added to the queue.
+EVT-0265,ISSUE-0067,TASK-0175,PERSON-0007,task_started,2026-04-01T00:41:19+00:00,Fictional work item moved into progress.
+EVT-0266,ISSUE-0122,TASK-0328,PERSON-0016,task_created,2026-04-01T06:36:16+00:00,Fictional work item added to the queue.
+EVT-0267,ISSUE-0122,TASK-0326,PERSON-0026,task_created,2026-04-01T07:36:16+00:00,Fictional work item added to the queue.
+EVT-0268,ISSUE-0122,TASK-0327,PERSON-0027,task_created,2026-04-01T12:36:16+00:00,Fictional work item added to the queue.
+EVT-0269,ISSUE-0009,,,issue_opened,2026-04-01T17:49:00+00:00,Fictional tracking item opened for demonstration.
+EVT-0270,ISSUE-0009,,,note_added,2026-04-01T18:04:00+00:00,Fictional queue context recorded for demonstration.
+EVT-0271,ISSUE-0160,TASK-0425,PERSON-0004,task_completed,2026-04-01T19:04:00+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0272,ISSUE-0009,TASK-0022,PERSON-0003,task_created,2026-04-01T19:49:00+00:00,Fictional work item added to the queue.
+EVT-0273,ISSUE-0174,,,issue_opened,2026-04-01T20:02:03+00:00,Fictional tracking item opened for demonstration.
+EVT-0274,ISSUE-0122,TASK-0326,PERSON-0026,task_blocked,2026-04-02T07:36:16+00:00,Fictional work item waiting for supporting information.
+EVT-0275,ISSUE-0009,TASK-0024,PERSON-0005,task_created,2026-04-02T09:49:00+00:00,Fictional work item added to the queue.
+EVT-0276,ISSUE-0052,,,issue_opened,2026-04-02T14:46:37+00:00,Fictional tracking item opened for demonstration.
+EVT-0277,ISSUE-0009,TASK-0022,PERSON-0003,task_blocked,2026-04-02T19:49:00+00:00,Fictional work item waiting for supporting information.
+EVT-0278,ISSUE-0174,TASK-0464,PERSON-0001,task_created,2026-04-03T01:02:03+00:00,Fictional work item added to the queue.
+EVT-0279,ISSUE-0174,TASK-0463,PERSON-0030,task_created,2026-04-03T03:02:03+00:00,Fictional work item added to the queue.
+EVT-0280,ISSUE-0009,TASK-0023,PERSON-0034,task_created,2026-04-03T03:49:00+00:00,Fictional work item added to the queue.
+EVT-0281,ISSUE-0052,TASK-0138,PERSON-0016,task_created,2026-04-03T04:46:37+00:00,Fictional work item added to the queue.
+EVT-0282,ISSUE-0052,TASK-0139,,task_created,2026-04-03T08:46:37+00:00,Fictional work item added to the queue.
+EVT-0283,ISSUE-0163,,,issue_closed,2026-04-03T19:11:57+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0284,ISSUE-0174,TASK-0463,PERSON-0030,task_started,2026-04-04T15:02:03+00:00,Fictional work item moved into progress.
+EVT-0285,ISSUE-0050,,,issue_opened,2026-04-04T15:35:31+00:00,Fictional tracking item opened for demonstration.
+EVT-0286,ISSUE-0052,TASK-0138,PERSON-0016,task_started,2026-04-04T16:46:37+00:00,Fictional work item moved into progress.
+EVT-0287,ISSUE-0174,TASK-0464,PERSON-0001,task_review_requested,2026-04-05T01:02:03+00:00,Fictional work item awaiting record review.
+EVT-0288,ISSUE-0050,TASK-0133,PERSON-0014,task_created,2026-04-05T04:35:31+00:00,Fictional work item added to the queue.
+EVT-0289,ISSUE-0050,TASK-0135,PERSON-0034,task_created,2026-04-05T06:35:31+00:00,Fictional work item added to the queue.
+EVT-0290,ISSUE-0109,,,issue_opened,2026-04-05T13:37:15+00:00,Fictional tracking item opened for demonstration.
+EVT-0291,ISSUE-0109,TASK-0293,PERSON-0027,task_created,2026-04-05T14:37:15+00:00,Fictional work item added to the queue.
+EVT-0292,ISSUE-0160,,,issue_closed,2026-04-05T18:04:00+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0293,ISSUE-0109,TASK-0292,PERSON-0008,task_created,2026-04-06T03:37:15+00:00,Fictional work item added to the queue.
+EVT-0294,ISSUE-0109,TASK-0291,PERSON-0013,task_created,2026-04-06T05:37:15+00:00,Fictional work item added to the queue.
+EVT-0295,ISSUE-0109,TASK-0291,PERSON-0013,task_assigned,2026-04-06T06:07:15+00:00,Fictional work item allocated to its recorded team and worker.
+EVT-0296,ISSUE-0050,TASK-0134,PERSON-0033,task_created,2026-04-06T13:35:31+00:00,Fictional work item added to the queue.
+EVT-0297,ISSUE-0050,TASK-0133,PERSON-0014,task_started,2026-04-06T16:35:31+00:00,Fictional work item moved into progress.
+EVT-0298,ISSUE-0160,,,issue_reopened,2026-04-07T18:04:00+00:00,Fictional tracking item reopened for an additional record question.
+EVT-0299,ISSUE-0160,TASK-0426,PERSON-0023,task_created,2026-04-08T04:04:00+00:00,Fictional work item added to the queue.
+EVT-0300,ISSUE-0132,,,issue_opened,2026-04-08T09:01:55+00:00,Fictional tracking item opened for demonstration.
+EVT-0301,ISSUE-0050,TASK-0134,PERSON-0033,task_review_requested,2026-04-08T13:35:31+00:00,Fictional work item awaiting record review.
+EVT-0302,ISSUE-0132,TASK-0352,,task_created,2026-04-09T17:01:55+00:00,Fictional work item added to the queue.
+EVT-0303,ISSUE-0160,TASK-0427,PERSON-0012,task_created,2026-04-09T18:04:00+00:00,Fictional work item added to the queue.
+EVT-0304,ISSUE-0132,TASK-0353,PERSON-0001,task_created,2026-04-10T01:01:55+00:00,Fictional work item added to the queue.
+EVT-0305,ISSUE-0132,TASK-0353,PERSON-0001,task_assigned,2026-04-10T01:31:55+00:00,Fictional work item allocated to its recorded team and worker.
+EVT-0306,ISSUE-0127,,,issue_opened,2026-04-10T13:09:00+00:00,Fictional tracking item opened for demonstration.
+EVT-0307,ISSUE-0127,TASK-0341,PERSON-0014,task_created,2026-04-10T14:09:00+00:00,Fictional work item added to the queue.
+EVT-0308,ISSUE-0114,,,issue_opened,2026-04-10T23:16:18+00:00,Fictional tracking item opened for demonstration.
+EVT-0309,ISSUE-0114,TASK-0305,PERSON-0031,task_created,2026-04-11T00:16:18+00:00,Fictional work item added to the queue.
+EVT-0310,ISSUE-0127,TASK-0340,PERSON-0007,task_created,2026-04-11T10:09:00+00:00,Fictional work item added to the queue.
+EVT-0311,ISSUE-0127,TASK-0342,PERSON-0033,task_created,2026-04-11T12:09:00+00:00,Fictional work item added to the queue.
+EVT-0312,ISSUE-0145,,,issue_opened,2026-04-11T12:48:44+00:00,Fictional tracking item opened for demonstration.
+EVT-0313,ISSUE-0145,TASK-0382,PERSON-0002,task_created,2026-04-11T13:48:44+00:00,Fictional work item added to the queue.
+EVT-0314,ISSUE-0114,TASK-0306,PERSON-0020,task_created,2026-04-11T18:16:18+00:00,Fictional work item added to the queue.
+EVT-0315,ISSUE-0172,,,issue_opened,2026-04-11T22:20:58+00:00,Fictional tracking item opened for demonstration.
+EVT-0316,ISSUE-0114,TASK-0304,PERSON-0024,task_created,2026-04-12T00:16:18+00:00,Fictional work item added to the queue.
+EVT-0317,ISSUE-0172,TASK-0459,PERSON-0011,task_created,2026-04-12T13:20:58+00:00,Fictional work item added to the queue.
+EVT-0318,ISSUE-0127,TASK-0341,PERSON-0014,task_review_requested,2026-04-12T14:09:00+00:00,Fictional work item awaiting record review.
+EVT-0319,ISSUE-0172,TASK-0460,PERSON-0030,task_created,2026-04-12T15:20:58+00:00,Fictional work item added to the queue.
+EVT-0320,ISSUE-0031,,,issue_opened,2026-04-12T19:46:02+00:00,Fictional tracking item opened for demonstration.
+EVT-0321,ISSUE-0031,TASK-0082,PERSON-0025,task_created,2026-04-12T21:46:02+00:00,Fictional work item added to the queue.
+EVT-0322,ISSUE-0061,,,issue_opened,2026-04-12T21:48:57+00:00,Fictional tracking item opened for demonstration.
+EVT-0323,ISSUE-0127,TASK-0340,PERSON-0007,task_started,2026-04-12T22:09:00+00:00,Fictional work item moved into progress.
+EVT-0324,ISSUE-0145,TASK-0381,,task_created,2026-04-12T22:48:44+00:00,Fictional work item added to the queue.
+EVT-0325,ISSUE-0061,TASK-0159,,task_created,2026-04-13T02:48:57+00:00,Fictional work item added to the queue.
+EVT-0326,ISSUE-0101,,,issue_opened,2026-04-13T02:52:39+00:00,Fictional tracking item opened for demonstration.
+EVT-0327,ISSUE-0053,,,issue_opened,2026-04-13T03:49:55+00:00,Fictional tracking item opened for demonstration.
+EVT-0328,ISSUE-0053,TASK-0140,PERSON-0035,task_created,2026-04-13T05:49:55+00:00,Fictional work item added to the queue.
+EVT-0329,ISSUE-0114,TASK-0304,PERSON-0024,task_started,2026-04-13T12:16:18+00:00,Fictional work item moved into progress.
+EVT-0330,ISSUE-0172,TASK-0458,PERSON-0004,task_created,2026-04-13T12:20:58+00:00,Fictional work item added to the queue.
+EVT-0331,ISSUE-0101,TASK-0268,PERSON-0029,task_created,2026-04-13T21:52:39+00:00,Fictional work item added to the queue.
+EVT-0332,ISSUE-0031,TASK-0083,,task_created,2026-04-13T23:46:02+00:00,Fictional work item added to the queue.
+EVT-0333,ISSUE-0101,TASK-0270,PERSON-0019,task_created,2026-04-14T00:52:39+00:00,Fictional work item added to the queue.
+EVT-0334,ISSUE-0031,TASK-0084,PERSON-0015,task_created,2026-04-14T01:46:02+00:00,Fictional work item added to the queue.
+EVT-0335,ISSUE-0129,,,issue_opened,2026-04-14T02:34:50+00:00,Fictional tracking item opened for demonstration.
+EVT-0336,ISSUE-0061,TASK-0160,PERSON-0032,task_created,2026-04-14T08:48:57+00:00,Fictional work item added to the queue.
+EVT-0337,ISSUE-0061,TASK-0160,PERSON-0032,task_assigned,2026-04-14T09:18:57+00:00,Fictional work item allocated to its recorded team and worker.
+EVT-0338,ISSUE-0031,TASK-0082,PERSON-0025,task_started,2026-04-14T09:46:02+00:00,Fictional work item moved into progress.
+EVT-0339,ISSUE-0053,TASK-0141,PERSON-0006,task_created,2026-04-14T12:49:55+00:00,Fictional work item added to the queue.
+EVT-0340,ISSUE-0172,TASK-0459,PERSON-0011,task_review_requested,2026-04-14T13:20:58+00:00,Fictional work item awaiting record review.
+EVT-0341,ISSUE-0146,,,issue_opened,2026-04-14T14:27:55+00:00,Fictional tracking item opened for demonstration.
+EVT-0342,ISSUE-0130,,,issue_opened,2026-04-14T16:03:54+00:00,Fictional tracking item opened for demonstration.
+EVT-0343,ISSUE-0053,TASK-0140,PERSON-0035,task_started,2026-04-14T17:49:55+00:00,Fictional work item moved into progress.
+EVT-0344,ISSUE-0130,TASK-0348,PERSON-0017,task_created,2026-04-14T23:03:54+00:00,Fictional work item added to the queue.
+EVT-0345,ISSUE-0130,TASK-0349,,task_created,2026-04-15T00:03:54+00:00,Fictional work item added to the queue.
+EVT-0346,ISSUE-0172,TASK-0458,PERSON-0004,task_started,2026-04-15T00:20:58+00:00,Fictional work item moved into progress.
+EVT-0347,ISSUE-0101,TASK-0269,PERSON-0030,task_created,2026-04-15T01:52:39+00:00,Fictional work item added to the queue.
+EVT-0348,ISSUE-0130,TASK-0347,,task_created,2026-04-15T02:03:54+00:00,Fictional work item added to the queue.
+EVT-0349,ISSUE-0146,TASK-0383,PERSON-0002,task_created,2026-04-15T14:27:55+00:00,Fictional work item added to the queue.
+EVT-0350,ISSUE-0105,,,issue_opened,2026-04-16T00:18:34+00:00,Fictional tracking item opened for demonstration.
+EVT-0351,ISSUE-0129,TASK-0346,PERSON-0022,task_created,2026-04-16T00:34:50+00:00,Fictional work item added to the queue.
+EVT-0352,ISSUE-0129,TASK-0345,PERSON-0021,task_created,2026-04-16T02:34:50+00:00,Fictional work item added to the queue.
+EVT-0353,ISSUE-0053,TASK-0141,PERSON-0006,task_review_requested,2026-04-16T12:49:55+00:00,Fictional work item awaiting record review.
+EVT-0354,ISSUE-0146,TASK-0384,,task_created,2026-04-16T14:27:55+00:00,Fictional work item added to the queue.
+EVT-0355,ISSUE-0146,TASK-0385,PERSON-0022,task_created,2026-04-16T14:27:55+00:00,Fictional work item added to the queue.
+EVT-0356,ISSUE-0101,TASK-0268,PERSON-0029,task_completed,2026-04-16T21:52:39+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0357,ISSUE-0146,TASK-0383,PERSON-0002,task_started,2026-04-17T02:27:55+00:00,Fictional work item moved into progress.
+EVT-0358,ISSUE-0105,TASK-0282,PERSON-0029,task_created,2026-04-17T13:18:34+00:00,Fictional work item added to the queue.
+EVT-0359,ISSUE-0105,TASK-0281,PERSON-0016,task_created,2026-04-17T14:18:34+00:00,Fictional work item added to the queue.
+EVT-0360,ISSUE-0105,TASK-0280,PERSON-0003,task_created,2026-04-17T20:18:34+00:00,Fictional work item added to the queue.
+EVT-0361,ISSUE-0086,,,issue_opened,2026-04-23T00:38:41+00:00,Fictional tracking item opened for demonstration.
+EVT-0362,ISSUE-0086,TASK-0228,,task_created,2026-04-23T23:38:41+00:00,Fictional work item added to the queue.
+EVT-0363,ISSUE-0086,TASK-0229,,task_created,2026-04-24T06:38:41+00:00,Fictional work item added to the queue.
+EVT-0364,ISSUE-0086,TASK-0230,PERSON-0028,task_created,2026-04-24T14:38:41+00:00,Fictional work item added to the queue.
+EVT-0365,ISSUE-0135,,,issue_opened,2026-04-27T06:16:34+00:00,Fictional tracking item opened for demonstration.
+EVT-0366,ISSUE-0135,TASK-0359,PERSON-0015,task_created,2026-04-28T09:16:34+00:00,Fictional work item added to the queue.
+EVT-0367,ISSUE-0135,TASK-0360,PERSON-0004,task_created,2026-04-28T20:16:34+00:00,Fictional work item added to the queue.
+EVT-0368,ISSUE-0167,,,issue_opened,2026-04-29T10:19:56+00:00,Fictional tracking item opened for demonstration.
+EVT-0369,ISSUE-0167,TASK-0444,PERSON-0023,task_created,2026-04-29T13:19:56+00:00,Fictional work item added to the queue.
+EVT-0370,ISSUE-0167,TASK-0446,PERSON-0013,task_created,2026-04-29T15:19:56+00:00,Fictional work item added to the queue.
+EVT-0371,ISSUE-0167,TASK-0445,PERSON-0036,task_created,2026-04-30T02:19:56+00:00,Fictional work item added to the queue.
+EVT-0372,ISSUE-0178,,,issue_opened,2026-04-30T08:16:48+00:00,Fictional tracking item opened for demonstration.
+EVT-0373,ISSUE-0178,TASK-0473,PERSON-0016,task_created,2026-04-30T13:16:48+00:00,Fictional work item added to the queue.
+EVT-0374,ISSUE-0178,TASK-0475,PERSON-0006,task_created,2026-05-01T10:16:48+00:00,Fictional work item added to the queue.
+EVT-0375,ISSUE-0167,TASK-0444,PERSON-0023,task_completed,2026-05-01T13:19:56+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0376,ISSUE-0167,TASK-0445,PERSON-0036,task_completed,2026-05-02T02:19:56+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0377,ISSUE-0178,TASK-0474,,task_created,2026-05-02T03:16:48+00:00,Fictional work item added to the queue.
+EVT-0378,ISSUE-0167,TASK-0446,PERSON-0013,task_completed,2026-05-02T15:19:56+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0379,ISSUE-0074,,,issue_opened,2026-05-03T04:28:26+00:00,Fictional tracking item opened for demonstration.
+EVT-0380,ISSUE-0074,TASK-0194,PERSON-0026,task_created,2026-05-04T00:28:26+00:00,Fictional work item added to the queue.
+EVT-0381,ISSUE-0118,,,issue_opened,2026-05-04T10:56:19+00:00,Fictional tracking item opened for demonstration.
+EVT-0382,ISSUE-0036,,,issue_opened,2026-05-04T16:07:35+00:00,Fictional tracking item opened for demonstration.
+EVT-0383,ISSUE-0074,TASK-0195,,task_created,2026-05-04T19:28:26+00:00,Fictional work item added to the queue.
+EVT-0384,ISSUE-0176,,,issue_opened,2026-05-05T01:05:52+00:00,Fictional tracking item opened for demonstration.
+EVT-0385,ISSUE-0036,TASK-0098,PERSON-0007,task_created,2026-05-05T09:07:35+00:00,Fictional work item added to the queue.
+EVT-0386,ISSUE-0155,,,issue_opened,2026-05-05T09:59:46+00:00,Fictional tracking item opened for demonstration.
+EVT-0387,ISSUE-0022,,,issue_opened,2026-05-05T14:50:53+00:00,Fictional tracking item opened for demonstration.
+EVT-0388,ISSUE-0036,TASK-0099,PERSON-0008,task_created,2026-05-05T22:07:35+00:00,Fictional work item added to the queue.
+EVT-0389,ISSUE-0036,TASK-0099,PERSON-0008,task_assigned,2026-05-05T22:37:35+00:00,Fictional work item allocated to its recorded team and worker.
+EVT-0390,ISSUE-0036,TASK-0097,PERSON-0006,task_created,2026-05-05T23:07:35+00:00,Fictional work item added to the queue.
+EVT-0391,ISSUE-0118,TASK-0315,PERSON-0022,task_created,2026-05-06T07:56:19+00:00,Fictional work item added to the queue.
+EVT-0392,ISSUE-0155,TASK-0411,PERSON-0024,task_created,2026-05-06T17:59:46+00:00,Fictional work item added to the queue.
+EVT-0393,ISSUE-0176,TASK-0468,PERSON-0020,task_created,2026-05-06T19:05:52+00:00,Fictional work item added to the queue.
+EVT-0394,ISSUE-0155,TASK-0412,PERSON-0019,task_created,2026-05-07T00:59:46+00:00,Fictional work item added to the queue.
+EVT-0395,ISSUE-0022,TASK-0059,,task_created,2026-05-07T07:50:53+00:00,Fictional work item added to the queue.
+EVT-0396,ISSUE-0155,TASK-0410,PERSON-0029,task_created,2026-05-07T07:59:46+00:00,Fictional work item added to the queue.
+EVT-0397,ISSUE-0167,,,issue_closed,2026-05-07T10:19:56+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0398,ISSUE-0022,TASK-0058,PERSON-0022,task_created,2026-05-07T10:50:53+00:00,Fictional work item added to the queue.
+EVT-0399,ISSUE-0036,TASK-0097,PERSON-0006,task_started,2026-05-07T11:07:35+00:00,Fictional work item moved into progress.
+EVT-0400,ISSUE-0118,TASK-0315,PERSON-0022,task_completed,2026-05-08T07:56:19+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0401,ISSUE-0110,,,issue_opened,2026-05-08T16:07:39+00:00,Fictional tracking item opened for demonstration.
+EVT-0402,ISSUE-0022,TASK-0058,PERSON-0022,task_started,2026-05-08T22:50:53+00:00,Fictional work item moved into progress.
+EVT-0403,ISSUE-0098,,,issue_opened,2026-05-09T04:34:50+00:00,Fictional tracking item opened for demonstration.
+EVT-0404,ISSUE-0176,TASK-0468,PERSON-0020,task_completed,2026-05-09T19:05:52+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0405,ISSUE-0098,TASK-0261,,task_created,2026-05-09T23:34:50+00:00,Fictional work item added to the queue.
+EVT-0406,ISSUE-0098,TASK-0262,PERSON-0027,task_created,2026-05-10T01:34:50+00:00,Fictional work item added to the queue.
+EVT-0407,ISSUE-0110,TASK-0294,PERSON-0020,task_created,2026-05-10T03:07:39+00:00,Fictional work item added to the queue.
+EVT-0408,ISSUE-0110,TASK-0295,PERSON-0015,task_created,2026-05-10T09:07:39+00:00,Fictional work item added to the queue.
+EVT-0409,ISSUE-0151,,,issue_opened,2026-05-11T04:49:42+00:00,Fictional tracking item opened for demonstration.
+EVT-0410,ISSUE-0179,,,issue_opened,2026-05-11T13:16:04+00:00,Fictional tracking item opened for demonstration.
+EVT-0411,ISSUE-0151,TASK-0400,,task_created,2026-05-11T17:49:42+00:00,Fictional work item added to the queue.
+EVT-0412,ISSUE-0179,TASK-0477,PERSON-0024,task_created,2026-05-11T19:16:04+00:00,Fictional work item added to the queue.
+EVT-0413,ISSUE-0151,TASK-0398,PERSON-0001,task_created,2026-05-12T09:49:42+00:00,Fictional work item added to the queue.
+EVT-0414,ISSUE-0151,TASK-0399,PERSON-0026,task_created,2026-05-12T09:49:42+00:00,Fictional work item added to the queue.
+EVT-0415,ISSUE-0143,,,issue_opened,2026-05-12T10:18:02+00:00,Fictional tracking item opened for demonstration.
+EVT-0416,ISSUE-0118,,,issue_closed,2026-05-12T10:56:19+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0417,ISSUE-0179,TASK-0476,PERSON-0005,task_created,2026-05-12T12:16:04+00:00,Fictional work item added to the queue.
+EVT-0418,ISSUE-0179,TASK-0478,PERSON-0031,task_created,2026-05-12T17:16:04+00:00,Fictional work item added to the queue.
+EVT-0419,ISSUE-0176,,,issue_closed,2026-05-13T01:05:52+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0420,ISSUE-0143,TASK-0377,PERSON-0017,task_created,2026-05-13T08:18:02+00:00,Fictional work item added to the queue.
+EVT-0421,ISSUE-0118,,,issue_reopened,2026-05-14T10:56:19+00:00,Fictional tracking item reopened for an additional record question.
+EVT-0422,ISSUE-0118,TASK-0316,PERSON-0023,task_created,2026-05-14T19:56:19+00:00,Fictional work item added to the queue.
+EVT-0423,ISSUE-0176,,,issue_reopened,2026-05-15T01:05:52+00:00,Fictional tracking item reopened for an additional record question.
+EVT-0424,ISSUE-0034,,,issue_opened,2026-05-15T03:06:15+00:00,Fictional tracking item opened for demonstration.
+EVT-0425,ISSUE-0176,TASK-0469,PERSON-0027,task_created,2026-05-16T01:05:52+00:00,Fictional work item added to the queue.
+EVT-0426,ISSUE-0034,TASK-0093,PERSON-0036,task_created,2026-05-16T01:06:15+00:00,Fictional work item added to the queue.
+EVT-0427,ISSUE-0072,,,issue_opened,2026-05-16T01:22:46+00:00,Fictional tracking item opened for demonstration.
+EVT-0428,ISSUE-0118,TASK-0317,PERSON-0036,task_created,2026-05-16T02:56:19+00:00,Fictional work item added to the queue.
+EVT-0429,ISSUE-0143,TASK-0377,PERSON-0017,task_completed,2026-05-16T08:18:02+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0430,ISSUE-0034,TASK-0092,PERSON-0029,task_created,2026-05-16T10:06:15+00:00,Fictional work item added to the queue.
+EVT-0431,ISSUE-0034,TASK-0091,PERSON-0022,task_created,2026-05-16T11:06:15+00:00,Fictional work item added to the queue.
+EVT-0432,ISSUE-0072,TASK-0190,PERSON-0032,task_created,2026-05-16T13:22:46+00:00,Fictional work item added to the queue.
+EVT-0433,ISSUE-0072,TASK-0189,PERSON-0001,task_created,2026-05-16T15:22:46+00:00,Fictional work item added to the queue.
+EVT-0434,ISSUE-0072,TASK-0188,PERSON-0006,task_created,2026-05-17T06:22:46+00:00,Fictional work item added to the queue.
+EVT-0435,ISSUE-0072,TASK-0188,PERSON-0006,task_assigned,2026-05-17T06:52:46+00:00,Fictional work item allocated to its recorded team and worker.
+EVT-0436,ISSUE-0034,TASK-0091,PERSON-0022,task_started,2026-05-17T23:06:15+00:00,Fictional work item moved into progress.
+EVT-0437,ISSUE-0034,TASK-0092,PERSON-0029,task_review_requested,2026-05-18T10:06:15+00:00,Fictional work item awaiting record review.
+EVT-0438,ISSUE-0072,TASK-0188,PERSON-0006,task_started,2026-05-18T18:22:46+00:00,Fictional work item moved into progress.
+EVT-0439,ISSUE-0175,,,issue_opened,2026-05-18T20:30:04+00:00,Fictional tracking item opened for demonstration.
+EVT-0440,ISSUE-0175,TASK-0467,PERSON-0015,task_created,2026-05-20T06:30:04+00:00,Fictional work item added to the queue.
+EVT-0441,ISSUE-0143,,,issue_closed,2026-05-20T10:18:02+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0442,ISSUE-0175,TASK-0465,PERSON-0031,task_created,2026-05-20T10:30:04+00:00,Fictional work item added to the queue.
+EVT-0443,ISSUE-0175,TASK-0466,PERSON-0026,task_created,2026-05-20T16:30:04+00:00,Fictional work item added to the queue.
+EVT-0444,ISSUE-0026,,,issue_opened,2026-05-20T22:45:36+00:00,Fictional tracking item opened for demonstration.
+EVT-0445,ISSUE-0026,TASK-0068,PERSON-0020,task_created,2026-05-21T04:45:36+00:00,Fictional work item added to the queue.
+EVT-0446,ISSUE-0033,,,issue_opened,2026-05-21T08:54:47+00:00,Fictional tracking item opened for demonstration.
+EVT-0447,ISSUE-0026,TASK-0070,PERSON-0022,task_created,2026-05-21T15:45:36+00:00,Fictional work item added to the queue.
+EVT-0448,ISSUE-0026,TASK-0069,PERSON-0009,task_created,2026-05-22T07:45:36+00:00,Fictional work item added to the queue.
+EVT-0449,ISSUE-0033,TASK-0088,PERSON-0015,task_created,2026-05-22T09:54:47+00:00,Fictional work item added to the queue.
+EVT-0450,ISSUE-0143,,,issue_reopened,2026-05-22T10:18:02+00:00,Fictional tracking item reopened for an additional record question.
+EVT-0451,ISSUE-0138,,,issue_opened,2026-05-23T08:05:23+00:00,Fictional tracking item opened for demonstration.
+EVT-0452,ISSUE-0143,TASK-0378,PERSON-0006,task_created,2026-05-23T16:18:02+00:00,Fictional work item added to the queue.
+EVT-0453,ISSUE-0138,TASK-0367,PERSON-0007,task_created,2026-05-23T20:05:23+00:00,Fictional work item added to the queue.
+EVT-0454,ISSUE-0015,,,issue_opened,2026-05-23T20:15:54+00:00,Fictional tracking item opened for demonstration.
+EVT-0455,ISSUE-0015,,,note_added,2026-05-23T20:30:54+00:00,Fictional queue context recorded for demonstration.
+EVT-0456,ISSUE-0138,TASK-0368,PERSON-0032,task_created,2026-05-23T21:05:23+00:00,Fictional work item added to the queue.
+EVT-0457,ISSUE-0119,,,issue_opened,2026-05-24T02:24:19+00:00,Fictional tracking item opened for demonstration.
+EVT-0458,ISSUE-0033,TASK-0088,PERSON-0015,task_completed,2026-05-24T09:54:47+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0459,ISSUE-0175,TASK-0465,PERSON-0031,task_completed,2026-05-24T10:30:04+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0460,ISSUE-0015,TASK-0041,PERSON-0017,task_created,2026-05-24T15:15:54+00:00,Fictional work item added to the queue.
+EVT-0461,ISSUE-0119,TASK-0318,PERSON-0023,task_created,2026-05-24T16:24:19+00:00,Fictional work item added to the queue.
+EVT-0462,ISSUE-0015,TASK-0040,PERSON-0004,task_created,2026-05-24T17:15:54+00:00,Fictional work item added to the queue.
+EVT-0463,ISSUE-0119,TASK-0319,PERSON-0018,task_created,2026-05-24T18:24:19+00:00,Fictional work item added to the queue.
+EVT-0464,ISSUE-0138,TASK-0366,,task_created,2026-05-24T19:05:23+00:00,Fictional work item added to the queue.
+EVT-0465,ISSUE-0147,,,issue_opened,2026-05-24T19:50:12+00:00,Fictional tracking item opened for demonstration.
+EVT-0466,ISSUE-0147,TASK-0386,PERSON-0009,task_created,2026-05-25T02:50:12+00:00,Fictional work item added to the queue.
+EVT-0467,ISSUE-0147,TASK-0386,PERSON-0009,task_assigned,2026-05-25T03:20:12+00:00,Fictional work item allocated to its recorded team and worker.
+EVT-0468,ISSUE-0015,TASK-0039,PERSON-0009,task_created,2026-05-25T18:15:54+00:00,Fictional work item added to the queue.
+EVT-0469,ISSUE-0147,TASK-0387,PERSON-0004,task_created,2026-05-25T20:50:12+00:00,Fictional work item added to the queue.
+EVT-0470,ISSUE-0147,TASK-0388,PERSON-0017,task_created,2026-05-25T21:50:12+00:00,Fictional work item added to the queue.
+EVT-0471,ISSUE-0147,TASK-0388,PERSON-0017,task_assigned,2026-05-25T22:20:12+00:00,Fictional work item allocated to its recorded team and worker.
+EVT-0472,ISSUE-0119,TASK-0320,PERSON-0013,task_created,2026-05-25T22:24:19+00:00,Fictional work item added to the queue.
+EVT-0473,ISSUE-0015,TASK-0039,PERSON-0009,task_blocked,2026-05-26T18:15:54+00:00,Fictional work item waiting for supporting information.
+EVT-0474,ISSUE-0089,,,issue_opened,2026-05-27T22:20:56+00:00,Fictional tracking item opened for demonstration.
+EVT-0475,ISSUE-0147,TASK-0386,PERSON-0009,task_completed,2026-05-28T02:50:12+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0476,ISSUE-0089,TASK-0238,PERSON-0036,task_created,2026-05-28T13:20:56+00:00,Fictional work item added to the queue.
+EVT-0477,ISSUE-0099,,,issue_opened,2026-05-28T19:28:54+00:00,Fictional tracking item opened for demonstration.
+EVT-0478,ISSUE-0033,,,issue_closed,2026-05-29T08:54:47+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0479,ISSUE-0089,TASK-0237,PERSON-0017,task_created,2026-05-29T11:20:56+00:00,Fictional work item added to the queue.
+EVT-0480,ISSUE-0099,TASK-0263,PERSON-0033,task_created,2026-05-29T15:28:54+00:00,Fictional work item added to the queue.
+EVT-0481,ISSUE-0089,TASK-0239,PERSON-0025,task_created,2026-05-29T21:20:56+00:00,Fictional work item added to the queue.
+EVT-0482,ISSUE-0099,TASK-0264,PERSON-0010,task_created,2026-05-29T22:28:54+00:00,Fictional work item added to the queue.
+EVT-0483,ISSUE-0032,,,issue_opened,2026-05-30T01:12:19+00:00,Fictional tracking item opened for demonstration.
+EVT-0484,ISSUE-0010,,,issue_opened,2026-05-30T05:39:45+00:00,Fictional tracking item opened for demonstration.
+EVT-0485,ISSUE-0010,,,note_added,2026-05-30T05:54:45+00:00,Fictional queue context recorded for demonstration.
+EVT-0486,ISSUE-0032,TASK-0086,PERSON-0021,task_created,2026-05-30T14:12:19+00:00,Fictional work item added to the queue.
+EVT-0487,ISSUE-0032,TASK-0085,PERSON-0008,task_created,2026-05-30T15:12:19+00:00,Fictional work item added to the queue.
+EVT-0488,ISSUE-0099,TASK-0263,PERSON-0033,task_started,2026-05-31T03:28:54+00:00,Fictional work item moved into progress.
+EVT-0489,ISSUE-0033,,,issue_reopened,2026-05-31T08:54:47+00:00,Fictional tracking item reopened for an additional record question.
+EVT-0490,ISSUE-0032,TASK-0085,PERSON-0008,task_blocked,2026-05-31T15:12:19+00:00,Fictional work item waiting for supporting information.
+EVT-0491,ISSUE-0033,TASK-0089,PERSON-0022,task_created,2026-05-31T23:54:47+00:00,Fictional work item added to the queue.
+EVT-0492,ISSUE-0032,TASK-0087,PERSON-0016,task_created,2026-06-01T00:12:19+00:00,Fictional work item added to the queue.
+EVT-0493,ISSUE-0010,TASK-0025,PERSON-0028,task_created,2026-06-01T02:39:45+00:00,Fictional work item added to the queue.
+EVT-0494,ISSUE-0035,,,issue_opened,2026-06-01T10:42:14+00:00,Fictional tracking item opened for demonstration.
+EVT-0495,ISSUE-0089,TASK-0237,PERSON-0017,task_completed,2026-06-01T11:20:56+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0496,ISSUE-0089,TASK-0238,PERSON-0036,task_completed,2026-06-01T13:20:56+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0497,ISSUE-0068,,,issue_opened,2026-06-01T13:29:16+00:00,Fictional tracking item opened for demonstration.
+EVT-0498,ISSUE-0152,,,issue_opened,2026-06-01T13:29:44+00:00,Fictional tracking item opened for demonstration.
+EVT-0499,ISSUE-0035,TASK-0094,PERSON-0035,task_created,2026-06-01T15:42:14+00:00,Fictional work item added to the queue.
+EVT-0500,ISSUE-0152,TASK-0403,PERSON-0016,task_created,2026-06-01T16:29:44+00:00,Fictional work item added to the queue.
+EVT-0501,ISSUE-0152,TASK-0401,PERSON-0002,task_created,2026-06-01T19:29:44+00:00,Fictional work item added to the queue.
+EVT-0502,ISSUE-0089,TASK-0239,PERSON-0025,task_completed,2026-06-01T21:20:56+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0503,ISSUE-0033,TASK-0090,PERSON-0005,task_created,2026-06-01T21:54:47+00:00,Fictional work item added to the queue.
+EVT-0504,ISSUE-0152,TASK-0402,PERSON-0027,task_created,2026-06-02T02:29:44+00:00,Fictional work item added to the queue.
+EVT-0505,ISSUE-0152,TASK-0401,PERSON-0002,task_blocked,2026-06-02T19:29:44+00:00,Fictional work item waiting for supporting information.
+EVT-0506,ISSUE-0035,TASK-0095,PERSON-0012,task_created,2026-06-02T22:42:14+00:00,Fictional work item added to the queue.
+EVT-0507,ISSUE-0035,TASK-0096,,task_created,2026-06-03T04:42:14+00:00,Fictional work item added to the queue.
+EVT-0508,ISSUE-0068,TASK-0178,PERSON-0015,task_created,2026-06-03T05:29:16+00:00,Fictional work item added to the queue.
+EVT-0509,ISSUE-0068,TASK-0177,PERSON-0026,task_created,2026-06-03T07:29:16+00:00,Fictional work item added to the queue.
+EVT-0510,ISSUE-0035,TASK-0094,PERSON-0035,task_completed,2026-06-03T15:42:14+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0511,ISSUE-0027,,,issue_opened,2026-06-04T20:46:57+00:00,Fictional tracking item opened for demonstration.
+EVT-0512,ISSUE-0089,,,issue_closed,2026-06-04T22:20:56+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0513,ISSUE-0010,TASK-0025,PERSON-0028,task_completed,2026-06-05T02:39:45+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0514,ISSUE-0027,TASK-0072,PERSON-0010,task_created,2026-06-05T07:46:57+00:00,Fictional work item added to the queue.
+EVT-0515,ISSUE-0069,,,issue_opened,2026-06-05T18:11:25+00:00,Fictional tracking item opened for demonstration.
+EVT-0516,ISSUE-0027,TASK-0071,PERSON-0009,task_created,2026-06-06T01:46:57+00:00,Fictional work item added to the queue.
+EVT-0517,ISSUE-0069,TASK-0179,PERSON-0015,task_created,2026-06-06T08:11:25+00:00,Fictional work item added to the queue.
+EVT-0518,ISSUE-0068,TASK-0178,PERSON-0015,task_completed,2026-06-07T05:29:16+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0519,ISSUE-0010,,,issue_closed,2026-06-07T05:39:45+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0520,ISSUE-0068,TASK-0177,PERSON-0026,task_completed,2026-06-07T07:29:16+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0521,ISSUE-0142,,,issue_opened,2026-06-07T16:05:52+00:00,Fictional tracking item opened for demonstration.
+EVT-0522,ISSUE-0023,,,issue_opened,2026-06-07T18:36:26+00:00,Fictional tracking item opened for demonstration.
+EVT-0523,ISSUE-0027,TASK-0072,PERSON-0010,task_completed,2026-06-08T07:46:57+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0524,ISSUE-0142,TASK-0376,PERSON-0029,task_created,2026-06-08T10:05:52+00:00,Fictional work item added to the queue.
+EVT-0525,ISSUE-0023,TASK-0060,PERSON-0005,task_created,2026-06-08T13:36:26+00:00,Fictional work item added to the queue.
+EVT-0526,ISSUE-0142,TASK-0375,PERSON-0016,task_created,2026-06-08T20:05:52+00:00,Fictional work item added to the queue.
+EVT-0527,ISSUE-0023,TASK-0061,,task_created,2026-06-08T23:36:26+00:00,Fictional work item added to the queue.
+EVT-0528,ISSUE-0023,TASK-0062,,task_created,2026-06-09T01:36:26+00:00,Fictional work item added to the queue.
+EVT-0529,ISSUE-0010,,,issue_reopened,2026-06-09T05:39:45+00:00,Fictional tracking item reopened for an additional record question.
+EVT-0530,ISSUE-0069,TASK-0179,PERSON-0015,task_completed,2026-06-09T08:11:25+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0531,ISSUE-0068,,,issue_closed,2026-06-09T13:29:16+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0532,ISSUE-0010,TASK-0026,PERSON-0017,task_created,2026-06-09T15:39:45+00:00,Fictional work item added to the queue.
+EVT-0533,ISSUE-0027,TASK-0071,PERSON-0009,task_completed,2026-06-10T01:46:57+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0534,ISSUE-0010,TASK-0027,PERSON-0024,task_created,2026-06-10T21:39:45+00:00,Fictional work item added to the queue.
+EVT-0535,ISSUE-0010,TASK-0027,PERSON-0024,task_assigned,2026-06-10T22:09:45+00:00,Fictional work item allocated to its recorded team and worker.
+EVT-0536,ISSUE-0025,,,issue_opened,2026-06-11T08:30:50+00:00,Fictional tracking item opened for demonstration.
+EVT-0537,ISSUE-0142,TASK-0376,PERSON-0029,task_completed,2026-06-11T10:05:52+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0538,ISSUE-0023,TASK-0060,PERSON-0005,task_completed,2026-06-11T13:36:26+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0539,ISSUE-0025,TASK-0067,PERSON-0015,task_created,2026-06-11T16:30:50+00:00,Fictional work item added to the queue.
+EVT-0540,ISSUE-0142,TASK-0375,PERSON-0016,task_completed,2026-06-11T20:05:52+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0541,ISSUE-0025,TASK-0066,PERSON-0026,task_created,2026-06-12T05:30:50+00:00,Fictional work item added to the queue.
+EVT-0542,ISSUE-0027,,,issue_closed,2026-06-12T20:46:57+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0543,ISSUE-0025,TASK-0065,PERSON-0013,task_created,2026-06-13T08:30:50+00:00,Fictional work item added to the queue.
+EVT-0544,ISSUE-0069,,,issue_closed,2026-06-13T18:11:25+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0545,ISSUE-0142,,,issue_closed,2026-06-15T16:05:52+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0546,ISSUE-0069,,,issue_reopened,2026-06-15T18:11:25+00:00,Fictional tracking item reopened for an additional record question.
+EVT-0547,ISSUE-0069,TASK-0181,,task_created,2026-06-15T21:11:25+00:00,Fictional work item added to the queue.
+EVT-0548,ISSUE-0069,TASK-0180,PERSON-0010,task_created,2026-06-17T14:11:25+00:00,Fictional work item added to the queue.
+EVT-0549,ISSUE-0169,,,issue_opened,2026-06-17T22:46:02+00:00,Fictional tracking item opened for demonstration.
+EVT-0550,ISSUE-0169,TASK-0449,PERSON-0025,task_created,2026-06-18T02:46:02+00:00,Fictional work item added to the queue.
+EVT-0551,ISSUE-0169,TASK-0451,PERSON-0033,task_created,2026-06-18T20:46:02+00:00,Fictional work item added to the queue.
+EVT-0552,ISSUE-0173,,,issue_opened,2026-06-19T01:38:31+00:00,Fictional tracking item opened for demonstration.
+EVT-0553,ISSUE-0173,TASK-0461,PERSON-0005,task_created,2026-06-19T04:38:31+00:00,Fictional work item added to the queue.
+EVT-0554,ISSUE-0169,TASK-0450,PERSON-0002,task_created,2026-06-19T12:46:02+00:00,Fictional work item added to the queue.
+EVT-0555,ISSUE-0173,TASK-0462,PERSON-0030,task_created,2026-06-20T06:38:31+00:00,Fictional work item added to the queue.
+EVT-0556,ISSUE-0112,,,issue_opened,2026-06-21T11:12:18+00:00,Fictional tracking item opened for demonstration.
+EVT-0557,ISSUE-0112,TASK-0299,PERSON-0005,task_created,2026-06-21T12:12:18+00:00,Fictional work item added to the queue.
+EVT-0558,ISSUE-0112,TASK-0298,PERSON-0028,task_created,2026-06-21T15:12:18+00:00,Fictional work item added to the queue.
+EVT-0559,ISSUE-0112,TASK-0300,PERSON-0030,task_created,2026-06-21T22:12:18+00:00,Fictional work item added to the queue.
+EVT-0560,ISSUE-0112,TASK-0298,PERSON-0028,task_started,2026-06-23T03:12:18+00:00,Fictional work item moved into progress.
+EVT-0561,ISSUE-0117,,,issue_opened,2026-06-23T15:54:04+00:00,Fictional tracking item opened for demonstration.
+EVT-0562,ISSUE-0058,,,issue_opened,2026-06-23T17:30:59+00:00,Fictional tracking item opened for demonstration.
+EVT-0563,ISSUE-0058,TASK-0153,PERSON-0011,task_created,2026-06-23T18:30:59+00:00,Fictional work item added to the queue.
+EVT-0564,ISSUE-0058,TASK-0152,PERSON-0028,task_created,2026-06-23T22:30:59+00:00,Fictional work item added to the queue.
+EVT-0565,ISSUE-0117,TASK-0313,PERSON-0034,task_created,2026-06-24T09:54:04+00:00,Fictional work item added to the queue.
+EVT-0566,ISSUE-0117,TASK-0312,,task_created,2026-06-24T10:54:04+00:00,Fictional work item added to the queue.
+EVT-0567,ISSUE-0117,TASK-0314,PERSON-0017,task_created,2026-06-24T12:54:04+00:00,Fictional work item added to the queue.
+EVT-0568,ISSUE-0073,,,issue_opened,2026-06-24T13:11:30+00:00,Fictional tracking item opened for demonstration.
+EVT-0569,ISSUE-0047,,,issue_opened,2026-06-24T17:27:27+00:00,Fictional tracking item opened for demonstration.
+EVT-0570,ISSUE-0073,TASK-0193,PERSON-0021,task_created,2026-06-24T20:11:30+00:00,Fictional work item added to the queue.
+EVT-0571,ISSUE-0058,TASK-0152,PERSON-0028,task_started,2026-06-25T10:30:59+00:00,Fictional work item moved into progress.
+EVT-0572,ISSUE-0073,TASK-0192,PERSON-0020,task_created,2026-06-25T13:11:30+00:00,Fictional work item added to the queue.
+EVT-0573,ISSUE-0073,TASK-0191,PERSON-0013,task_created,2026-06-25T20:11:30+00:00,Fictional work item added to the queue.
+EVT-0574,ISSUE-0047,TASK-0126,PERSON-0012,task_created,2026-06-26T11:27:27+00:00,Fictional work item added to the queue.
+EVT-0575,ISSUE-0047,TASK-0126,PERSON-0012,task_assigned,2026-06-26T11:57:27+00:00,Fictional work item allocated to its recorded team and worker.
+EVT-0576,ISSUE-0047,TASK-0125,PERSON-0023,task_created,2026-06-26T12:27:27+00:00,Fictional work item added to the queue.
+EVT-0577,ISSUE-0047,TASK-0127,PERSON-0013,task_created,2026-06-26T14:27:27+00:00,Fictional work item added to the queue.
+EVT-0578,ISSUE-0073,TASK-0193,PERSON-0021,task_completed,2026-06-26T20:11:30+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0579,ISSUE-0157,,,issue_opened,2026-06-27T13:05:06+00:00,Fictional tracking item opened for demonstration.
+EVT-0580,ISSUE-0073,TASK-0192,PERSON-0020,task_completed,2026-06-27T13:11:30+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0581,ISSUE-0073,TASK-0191,PERSON-0013,task_completed,2026-06-27T20:11:30+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0582,ISSUE-0047,TASK-0125,PERSON-0023,task_started,2026-06-28T00:27:27+00:00,Fictional work item moved into progress.
+EVT-0583,ISSUE-0047,TASK-0126,PERSON-0012,task_review_requested,2026-06-28T11:27:27+00:00,Fictional work item awaiting record review.
+EVT-0584,ISSUE-0157,TASK-0416,PERSON-0007,task_created,2026-06-28T15:05:06+00:00,Fictional work item added to the queue.
+EVT-0585,ISSUE-0157,TASK-0417,PERSON-0002,task_created,2026-06-28T16:05:06+00:00,Fictional work item added to the queue.
+EVT-0586,ISSUE-0123,,,issue_opened,2026-06-28T17:19:32+00:00,Fictional tracking item opened for demonstration.
+EVT-0587,ISSUE-0123,TASK-0329,PERSON-0033,task_created,2026-06-29T02:19:32+00:00,Fictional work item added to the queue.
+EVT-0588,ISSUE-0123,TASK-0330,,task_created,2026-06-29T02:19:32+00:00,Fictional work item added to the queue.
+EVT-0589,ISSUE-0113,,,issue_opened,2026-06-29T02:21:01+00:00,Fictional tracking item opened for demonstration.
+EVT-0590,ISSUE-0157,TASK-0418,,task_created,2026-06-29T05:05:06+00:00,Fictional work item added to the queue.
+EVT-0591,ISSUE-0161,,,issue_opened,2026-06-29T05:11:39+00:00,Fictional tracking item opened for demonstration.
+EVT-0592,ISSUE-0123,TASK-0331,PERSON-0017,task_created,2026-06-29T06:19:32+00:00,Fictional work item added to the queue.
+EVT-0593,ISSUE-0166,,,issue_opened,2026-06-29T08:10:12+00:00,Fictional tracking item opened for demonstration.
+EVT-0594,ISSUE-0157,TASK-0416,PERSON-0007,task_blocked,2026-06-29T15:05:06+00:00,Fictional work item waiting for supporting information.
+EVT-0595,ISSUE-0113,TASK-0301,PERSON-0011,task_created,2026-06-29T16:21:01+00:00,Fictional work item added to the queue.
+EVT-0596,ISSUE-0055,,,issue_opened,2026-06-29T20:00:22+00:00,Fictional tracking item opened for demonstration.
+EVT-0597,ISSUE-0055,TASK-0146,PERSON-0008,task_created,2026-06-30T01:00:22+00:00,Fictional work item added to the queue.
+EVT-0598,ISSUE-0166,TASK-0442,,task_created,2026-06-30T02:10:12+00:00,Fictional work item added to the queue.
+EVT-0599,ISSUE-0133,,,issue_opened,2026-06-30T03:46:18+00:00,Fictional tracking item opened for demonstration.
+EVT-0600,ISSUE-0113,TASK-0303,PERSON-0001,task_created,2026-06-30T06:21:01+00:00,Fictional work item added to the queue.
+EVT-0601,ISSUE-0113,TASK-0302,PERSON-0036,task_created,2026-06-30T10:21:01+00:00,Fictional work item added to the queue.
+EVT-0602,ISSUE-0161,TASK-0428,PERSON-0017,task_created,2026-06-30T12:11:39+00:00,Fictional work item added to the queue.
+EVT-0603,ISSUE-0166,TASK-0443,,task_created,2026-06-30T13:10:12+00:00,Fictional work item added to the queue.
+EVT-0604,ISSUE-0133,TASK-0354,PERSON-0031,task_created,2026-06-30T13:46:18+00:00,Fictional work item added to the queue.
+EVT-0605,ISSUE-0123,TASK-0329,PERSON-0033,task_started,2026-06-30T14:19:32+00:00,Fictional work item moved into progress.
+EVT-0606,ISSUE-0055,TASK-0145,,task_created,2026-06-30T15:00:22+00:00,Fictional work item added to the queue.
+EVT-0607,ISSUE-0113,TASK-0301,PERSON-0011,task_started,2026-07-01T04:21:01+00:00,Fictional work item moved into progress.
+EVT-0608,ISSUE-0055,TASK-0147,PERSON-0009,task_created,2026-07-01T08:00:22+00:00,Fictional work item added to the queue.
+EVT-0609,ISSUE-0133,TASK-0355,PERSON-0002,task_created,2026-07-01T17:46:18+00:00,Fictional work item added to the queue.
+EVT-0610,ISSUE-0002,,,issue_opened,2026-07-02T07:09:32+00:00,Fictional tracking item opened for demonstration.
+EVT-0611,ISSUE-0002,,,note_added,2026-07-02T07:24:32+00:00,Fictional queue context recorded for demonstration.
+EVT-0612,ISSUE-0113,TASK-0302,PERSON-0036,task_review_requested,2026-07-02T10:21:01+00:00,Fictional work item awaiting record review.
+EVT-0613,ISSUE-0073,,,issue_closed,2026-07-02T13:11:30+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0614,ISSUE-0136,,,issue_opened,2026-07-02T13:23:32+00:00,Fictional tracking item opened for demonstration.
+EVT-0615,ISSUE-0136,TASK-0361,PERSON-0016,task_created,2026-07-02T15:23:32+00:00,Fictional work item added to the queue.
+EVT-0616,ISSUE-0002,TASK-0004,PERSON-0027,task_created,2026-07-03T03:09:32+00:00,Fictional work item added to the queue.
+EVT-0617,ISSUE-0136,TASK-0362,PERSON-0023,task_created,2026-07-03T12:23:32+00:00,Fictional work item added to the queue.
+EVT-0618,ISSUE-0136,TASK-0363,PERSON-0012,task_created,2026-07-04T02:23:32+00:00,Fictional work item added to the queue.
+EVT-0619,ISSUE-0136,TASK-0361,PERSON-0016,task_started,2026-07-04T03:23:32+00:00,Fictional work item moved into progress.
+EVT-0620,ISSUE-0002,TASK-0003,PERSON-0032,task_created,2026-07-04T06:09:32+00:00,Fictional work item added to the queue.
+EVT-0621,ISSUE-0161,TASK-0428,PERSON-0017,task_completed,2026-07-04T12:11:39+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0622,ISSUE-0002,TASK-0003,PERSON-0032,task_completed,2026-07-06T06:09:32+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0623,ISSUE-0002,TASK-0004,PERSON-0027,task_completed,2026-07-07T03:09:32+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0624,ISSUE-0161,,,issue_closed,2026-07-07T05:11:39+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0625,ISSUE-0161,,,issue_reopened,2026-07-09T05:11:39+00:00,Fictional tracking item reopened for an additional record question.
+EVT-0626,ISSUE-0080,,,issue_opened,2026-07-09T13:54:59+00:00,Fictional tracking item opened for demonstration.
+EVT-0627,ISSUE-0080,TASK-0212,PERSON-0022,task_created,2026-07-09T15:54:59+00:00,Fictional work item added to the queue.
+EVT-0628,ISSUE-0044,,,issue_opened,2026-07-10T00:06:34+00:00,Fictional tracking item opened for demonstration.
+EVT-0629,ISSUE-0080,TASK-0210,PERSON-0014,task_created,2026-07-10T04:54:59+00:00,Fictional work item added to the queue.
+EVT-0630,ISSUE-0016,,,issue_opened,2026-07-10T06:54:38+00:00,Fictional tracking item opened for demonstration.
+EVT-0631,ISSUE-0002,,,issue_closed,2026-07-10T07:09:32+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0632,ISSUE-0016,,,note_added,2026-07-10T07:09:38+00:00,Fictional queue context recorded for demonstration.
+EVT-0633,ISSUE-0016,TASK-0043,PERSON-0035,task_created,2026-07-10T07:54:38+00:00,Fictional work item added to the queue.
+EVT-0634,ISSUE-0161,TASK-0429,,task_created,2026-07-10T09:11:39+00:00,Fictional work item added to the queue.
+EVT-0635,ISSUE-0016,TASK-0042,PERSON-0028,task_created,2026-07-10T11:54:38+00:00,Fictional work item added to the queue.
+EVT-0636,ISSUE-0161,TASK-0430,PERSON-0007,task_created,2026-07-11T00:11:39+00:00,Fictional work item added to the queue.
+EVT-0637,ISSUE-0080,TASK-0211,PERSON-0021,task_created,2026-07-11T11:54:59+00:00,Fictional work item added to the queue.
+EVT-0638,ISSUE-0080,TASK-0210,PERSON-0014,task_started,2026-07-11T16:54:59+00:00,Fictional work item moved into progress.
+EVT-0639,ISSUE-0044,TASK-0117,PERSON-0026,task_created,2026-07-11T18:06:34+00:00,Fictional work item added to the queue.
+EVT-0640,ISSUE-0016,TASK-0042,PERSON-0028,task_completed,2026-07-12T11:54:38+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0641,ISSUE-0016,TASK-0043,PERSON-0035,task_completed,2026-07-14T07:54:38+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0642,ISSUE-0044,TASK-0117,PERSON-0026,task_completed,2026-07-14T18:06:34+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0643,ISSUE-0044,,,issue_closed,2026-07-18T00:06:34+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0644,ISSUE-0028,,,issue_opened,2026-07-18T03:52:56+00:00,Fictional tracking item opened for demonstration.
+EVT-0645,ISSUE-0016,,,issue_closed,2026-07-18T06:54:38+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0646,ISSUE-0028,TASK-0073,PERSON-0034,task_created,2026-07-18T17:52:56+00:00,Fictional work item added to the queue.
+EVT-0647,ISSUE-0028,TASK-0073,PERSON-0034,task_assigned,2026-07-18T18:22:56+00:00,Fictional work item allocated to its recorded team and worker.
+EVT-0648,ISSUE-0028,TASK-0075,PERSON-0012,task_created,2026-07-19T15:52:56+00:00,Fictional work item added to the queue.
+EVT-0649,ISSUE-0028,TASK-0074,PERSON-0035,task_created,2026-07-19T19:52:56+00:00,Fictional work item added to the queue.
+EVT-0650,ISSUE-0044,,,issue_reopened,2026-07-20T00:06:34+00:00,Fictional tracking item reopened for an additional record question.
+EVT-0651,ISSUE-0044,TASK-0119,,task_created,2026-07-20T08:06:34+00:00,Fictional work item added to the queue.
+EVT-0652,ISSUE-0044,TASK-0118,,task_created,2026-07-20T12:06:34+00:00,Fictional work item added to the queue.
+EVT-0653,ISSUE-0115,,,issue_opened,2026-07-22T09:12:27+00:00,Fictional tracking item opened for demonstration.
+EVT-0654,ISSUE-0115,TASK-0308,PERSON-0014,task_created,2026-07-23T04:12:27+00:00,Fictional work item added to the queue.
+EVT-0655,ISSUE-0115,TASK-0309,,task_created,2026-07-23T10:12:27+00:00,Fictional work item added to the queue.
+EVT-0656,ISSUE-0115,TASK-0307,PERSON-0001,task_created,2026-07-23T11:12:27+00:00,Fictional work item added to the queue.
+EVT-0657,ISSUE-0115,TASK-0307,PERSON-0001,task_started,2026-07-24T23:12:27+00:00,Fictional work item moved into progress.
+EVT-0658,ISSUE-0021,,,issue_opened,2026-07-25T11:14:31+00:00,Fictional tracking item opened for demonstration.
+EVT-0659,ISSUE-0065,,,issue_opened,2026-07-25T19:27:17+00:00,Fictional tracking item opened for demonstration.
+EVT-0660,ISSUE-0021,TASK-0057,PERSON-0023,task_created,2026-07-26T11:14:31+00:00,Fictional work item added to the queue.
+EVT-0661,ISSUE-0065,TASK-0170,PERSON-0005,task_created,2026-07-26T11:27:17+00:00,Fictional work item added to the queue.
+EVT-0662,ISSUE-0065,TASK-0172,PERSON-0019,task_created,2026-07-26T13:27:17+00:00,Fictional work item added to the queue.
+EVT-0663,ISSUE-0021,TASK-0056,PERSON-0010,task_created,2026-07-26T15:14:31+00:00,Fictional work item added to the queue.
+EVT-0664,ISSUE-0021,TASK-0055,PERSON-0003,task_created,2026-07-27T04:14:31+00:00,Fictional work item added to the queue.
+EVT-0665,ISSUE-0065,TASK-0171,PERSON-0030,task_created,2026-07-27T13:27:17+00:00,Fictional work item added to the queue.
+EVT-0666,ISSUE-0021,TASK-0055,PERSON-0003,task_blocked,2026-07-28T04:14:31+00:00,Fictional work item waiting for supporting information.
+EVT-0667,ISSUE-0065,TASK-0170,PERSON-0005,task_completed,2026-07-29T11:27:17+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0668,ISSUE-0076,,,issue_opened,2026-08-01T07:00:42+00:00,Fictional tracking item opened for demonstration.
+EVT-0669,ISSUE-0076,TASK-0200,,task_created,2026-08-01T17:00:42+00:00,Fictional work item added to the queue.
+EVT-0670,ISSUE-0076,TASK-0199,PERSON-0016,task_created,2026-08-02T14:00:42+00:00,Fictional work item added to the queue.
+EVT-0671,ISSUE-0076,TASK-0201,PERSON-0036,task_created,2026-08-03T00:00:42+00:00,Fictional work item added to the queue.
+EVT-0672,ISSUE-0076,TASK-0199,PERSON-0016,task_started,2026-08-04T02:00:42+00:00,Fictional work item moved into progress.
+EVT-0673,ISSUE-0001,,,issue_opened,2026-08-04T21:27:13+00:00,Fictional tracking item opened for demonstration.
+EVT-0674,ISSUE-0001,,,note_added,2026-08-04T21:42:13+00:00,Fictional queue context recorded for demonstration.
+EVT-0675,ISSUE-0001,TASK-0001,PERSON-0031,task_created,2026-08-04T22:27:13+00:00,Fictional work item added to the queue.
+EVT-0676,ISSUE-0001,TASK-0002,PERSON-0020,task_created,2026-08-05T09:27:13+00:00,Fictional work item added to the queue.
+EVT-0677,ISSUE-0131,,,issue_opened,2026-08-05T15:48:32+00:00,Fictional tracking item opened for demonstration.
+EVT-0678,ISSUE-0131,TASK-0350,PERSON-0035,task_created,2026-08-06T12:48:32+00:00,Fictional work item added to the queue.
+EVT-0679,ISSUE-0131,TASK-0350,PERSON-0035,task_completed,2026-08-08T12:48:32+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0680,ISSUE-0125,,,issue_opened,2026-08-08T17:55:05+00:00,Fictional tracking item opened for demonstration.
+EVT-0681,ISSUE-0125,TASK-0334,PERSON-0005,task_created,2026-08-09T04:55:05+00:00,Fictional work item added to the queue.
+EVT-0682,ISSUE-0125,TASK-0336,PERSON-0001,task_created,2026-08-09T22:55:05+00:00,Fictional work item added to the queue.
+EVT-0683,ISSUE-0084,,,issue_opened,2026-08-10T01:24:35+00:00,Fictional tracking item opened for demonstration.
+EVT-0684,ISSUE-0084,TASK-0223,PERSON-0031,task_created,2026-08-10T14:24:35+00:00,Fictional work item added to the queue.
+EVT-0685,ISSUE-0125,TASK-0335,PERSON-0018,task_created,2026-08-10T14:55:05+00:00,Fictional work item added to the queue.
+EVT-0686,ISSUE-0125,TASK-0334,PERSON-0005,task_started,2026-08-10T16:55:05+00:00,Fictional work item moved into progress.
+EVT-0687,ISSUE-0153,,,issue_opened,2026-08-10T19:13:49+00:00,Fictional tracking item opened for demonstration.
+EVT-0688,ISSUE-0084,TASK-0222,PERSON-0012,task_created,2026-08-10T22:24:35+00:00,Fictional work item added to the queue.
+EVT-0689,ISSUE-0153,TASK-0404,PERSON-0009,task_created,2026-08-11T16:13:49+00:00,Fictional work item added to the queue.
+EVT-0690,ISSUE-0084,TASK-0222,PERSON-0012,task_blocked,2026-08-11T22:24:35+00:00,Fictional work item waiting for supporting information.
+EVT-0691,ISSUE-0084,TASK-0224,,task_created,2026-08-11T23:24:35+00:00,Fictional work item added to the queue.
+EVT-0692,ISSUE-0019,,,issue_opened,2026-08-12T15:16:01+00:00,Fictional tracking item opened for demonstration.
+EVT-0693,ISSUE-0019,TASK-0051,PERSON-0021,task_created,2026-08-12T23:16:01+00:00,Fictional work item added to the queue.
+EVT-0694,ISSUE-0131,,,issue_closed,2026-08-13T15:48:32+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0695,ISSUE-0153,TASK-0404,PERSON-0009,task_completed,2026-08-13T16:13:49+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0696,ISSUE-0019,TASK-0050,PERSON-0020,task_created,2026-08-13T16:16:01+00:00,Fictional work item added to the queue.
+EVT-0697,ISSUE-0019,TASK-0049,PERSON-0031,task_created,2026-08-14T15:16:01+00:00,Fictional work item added to the queue.
+EVT-0698,ISSUE-0075,,,issue_opened,2026-08-14T18:02:34+00:00,Fictional tracking item opened for demonstration.
+EVT-0699,ISSUE-0075,TASK-0197,PERSON-0028,task_created,2026-08-14T20:02:34+00:00,Fictional work item added to the queue.
+EVT-0700,ISSUE-0048,,,issue_opened,2026-08-14T21:53:49+00:00,Fictional tracking item opened for demonstration.
+EVT-0701,ISSUE-0075,TASK-0196,PERSON-0033,task_created,2026-08-15T10:02:34+00:00,Fictional work item added to the queue.
+EVT-0702,ISSUE-0075,TASK-0196,PERSON-0033,task_assigned,2026-08-15T10:32:34+00:00,Fictional work item allocated to its recorded team and worker.
+EVT-0703,ISSUE-0048,TASK-0128,,task_created,2026-08-15T14:53:49+00:00,Fictional work item added to the queue.
+EVT-0704,ISSUE-0131,,,issue_reopened,2026-08-15T15:48:32+00:00,Fictional tracking item reopened for an additional record question.
+EVT-0705,ISSUE-0048,TASK-0129,,task_created,2026-08-15T16:53:49+00:00,Fictional work item added to the queue.
+EVT-0706,ISSUE-0048,TASK-0130,PERSON-0014,task_created,2026-08-15T17:53:49+00:00,Fictional work item added to the queue.
+EVT-0707,ISSUE-0075,TASK-0198,PERSON-0005,task_created,2026-08-15T18:02:34+00:00,Fictional work item added to the queue.
+EVT-0708,ISSUE-0156,,,issue_opened,2026-08-16T07:50:06+00:00,Fictional tracking item opened for demonstration.
+EVT-0709,ISSUE-0156,TASK-0415,,task_created,2026-08-16T11:50:06+00:00,Fictional work item added to the queue.
+EVT-0710,ISSUE-0075,TASK-0197,PERSON-0028,task_completed,2026-08-16T20:02:34+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0711,ISSUE-0102,,,issue_opened,2026-08-17T01:40:11+00:00,Fictional tracking item opened for demonstration.
+EVT-0712,ISSUE-0131,TASK-0351,,task_created,2026-08-17T11:48:32+00:00,Fictional work item added to the queue.
+EVT-0713,ISSUE-0156,TASK-0413,,task_created,2026-08-17T16:50:06+00:00,Fictional work item added to the queue.
+EVT-0714,ISSUE-0156,TASK-0414,PERSON-0001,task_created,2026-08-17T22:50:06+00:00,Fictional work item added to the queue.
+EVT-0715,ISSUE-0102,TASK-0273,PERSON-0014,task_created,2026-08-18T05:40:11+00:00,Fictional work item added to the queue.
+EVT-0716,ISSUE-0075,TASK-0198,PERSON-0005,task_completed,2026-08-18T18:02:34+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0717,ISSUE-0153,,,issue_closed,2026-08-18T19:13:49+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0718,ISSUE-0102,TASK-0271,PERSON-0036,task_created,2026-08-18T20:40:11+00:00,Fictional work item added to the queue.
+EVT-0719,ISSUE-0102,TASK-0272,PERSON-0019,task_created,2026-08-19T01:40:11+00:00,Fictional work item added to the queue.
+EVT-0720,ISSUE-0075,TASK-0196,PERSON-0033,task_completed,2026-08-19T10:02:34+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0721,ISSUE-0092,,,issue_opened,2026-08-20T14:08:58+00:00,Fictional tracking item opened for demonstration.
+EVT-0722,ISSUE-0092,TASK-0246,PERSON-0003,task_created,2026-08-20T16:08:58+00:00,Fictional work item added to the queue.
+EVT-0723,ISSUE-0153,,,issue_reopened,2026-08-20T19:13:49+00:00,Fictional tracking item reopened for an additional record question.
+EVT-0724,ISSUE-0153,TASK-0406,PERSON-0023,task_created,2026-08-21T01:13:49+00:00,Fictional work item added to the queue.
+EVT-0725,ISSUE-0092,TASK-0245,PERSON-0032,task_created,2026-08-21T15:08:58+00:00,Fictional work item added to the queue.
+EVT-0726,ISSUE-0102,TASK-0271,PERSON-0036,task_completed,2026-08-21T20:40:11+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0727,ISSUE-0153,TASK-0405,PERSON-0016,task_created,2026-08-21T23:13:49+00:00,Fictional work item added to the queue.
+EVT-0728,ISSUE-0040,,,issue_opened,2026-08-22T15:59:43+00:00,Fictional tracking item opened for demonstration.
+EVT-0729,ISSUE-0075,,,issue_closed,2026-08-22T18:02:34+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0730,ISSUE-0085,,,issue_opened,2026-08-22T23:31:17+00:00,Fictional tracking item opened for demonstration.
+EVT-0731,ISSUE-0007,,,issue_opened,2026-08-23T01:45:10+00:00,Fictional tracking item opened for demonstration.
+EVT-0732,ISSUE-0007,,,note_added,2026-08-23T02:00:10+00:00,Fictional queue context recorded for demonstration.
+EVT-0733,ISSUE-0092,TASK-0245,PERSON-0032,task_started,2026-08-23T03:08:58+00:00,Fictional work item moved into progress.
+EVT-0734,ISSUE-0040,TASK-0108,PERSON-0017,task_created,2026-08-23T04:59:43+00:00,Fictional work item added to the queue.
+EVT-0735,ISSUE-0040,TASK-0109,,task_created,2026-08-23T06:59:43+00:00,Fictional work item added to the queue.
+EVT-0736,ISSUE-0085,TASK-0227,PERSON-0027,task_created,2026-08-23T10:31:17+00:00,Fictional work item added to the queue.
+EVT-0737,ISSUE-0085,TASK-0226,PERSON-0008,task_created,2026-08-23T11:31:17+00:00,Fictional work item added to the queue.
+EVT-0738,ISSUE-0085,TASK-0225,PERSON-0001,task_created,2026-08-23T15:31:17+00:00,Fictional work item added to the queue.
+EVT-0739,ISSUE-0007,TASK-0016,PERSON-0019,task_created,2026-08-23T16:45:10+00:00,Fictional work item added to the queue.
+EVT-0740,ISSUE-0007,TASK-0017,,task_created,2026-08-23T20:45:10+00:00,Fictional work item added to the queue.
+EVT-0741,ISSUE-0007,TASK-0018,,task_created,2026-08-24T07:45:10+00:00,Fictional work item added to the queue.
+EVT-0742,ISSUE-0040,TASK-0107,PERSON-0028,task_created,2026-08-24T11:59:43+00:00,Fictional work item added to the queue.
+EVT-0743,ISSUE-0012,,,issue_opened,2026-08-24T21:46:29+00:00,Fictional tracking item opened for demonstration.
+EVT-0744,ISSUE-0012,,,note_added,2026-08-24T22:01:29+00:00,Fictional queue context recorded for demonstration.
+EVT-0745,ISSUE-0040,TASK-0108,PERSON-0017,task_review_requested,2026-08-25T04:59:43+00:00,Fictional work item awaiting record review.
+EVT-0746,ISSUE-0085,TASK-0225,PERSON-0001,task_completed,2026-08-25T15:31:17+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0747,ISSUE-0012,TASK-0033,PERSON-0002,task_created,2026-08-25T21:46:29+00:00,Fictional work item added to the queue.
+EVT-0748,ISSUE-0040,TASK-0107,PERSON-0028,task_started,2026-08-25T23:59:43+00:00,Fictional work item moved into progress.
+EVT-0749,ISSUE-0012,TASK-0032,PERSON-0001,task_created,2026-08-26T13:46:29+00:00,Fictional work item added to the queue.
+EVT-0750,ISSUE-0012,TASK-0031,PERSON-0024,task_created,2026-08-26T20:46:29+00:00,Fictional work item added to the queue.
+EVT-0751,ISSUE-0128,,,issue_opened,2026-08-28T04:02:27+00:00,Fictional tracking item opened for demonstration.
+EVT-0752,ISSUE-0012,TASK-0031,PERSON-0024,task_started,2026-08-28T08:46:29+00:00,Fictional work item moved into progress.
+EVT-0753,ISSUE-0128,TASK-0344,PERSON-0027,task_created,2026-08-28T09:02:27+00:00,Fictional work item added to the queue.
+EVT-0754,ISSUE-0128,TASK-0343,PERSON-0002,task_created,2026-08-28T18:02:27+00:00,Fictional work item added to the queue.
+EVT-0755,ISSUE-0124,,,issue_opened,2026-08-29T11:25:04+00:00,Fictional tracking item opened for demonstration.
+EVT-0756,ISSUE-0128,TASK-0343,PERSON-0002,task_blocked,2026-08-29T18:02:27+00:00,Fictional work item waiting for supporting information.
+EVT-0757,ISSUE-0004,,,issue_opened,2026-08-29T22:06:03+00:00,Fictional tracking item opened for demonstration.
+EVT-0758,ISSUE-0004,,,note_added,2026-08-29T22:21:03+00:00,Fictional queue context recorded for demonstration.
+EVT-0759,ISSUE-0004,TASK-0008,PERSON-0016,task_created,2026-08-30T04:06:03+00:00,Fictional work item added to the queue.
+EVT-0760,ISSUE-0004,TASK-0008,PERSON-0016,task_assigned,2026-08-30T04:36:03+00:00,Fictional work item allocated to its recorded team and worker.
+EVT-0761,ISSUE-0124,TASK-0332,PERSON-0028,task_created,2026-08-30T05:25:04+00:00,Fictional work item added to the queue.
+EVT-0762,ISSUE-0004,TASK-0010,PERSON-0030,task_created,2026-08-30T14:06:03+00:00,Fictional work item added to the queue.
+EVT-0763,ISSUE-0079,,,issue_opened,2026-08-30T18:38:59+00:00,Fictional tracking item opened for demonstration.
+EVT-0764,ISSUE-0004,TASK-0009,PERSON-0011,task_created,2026-08-30T21:06:03+00:00,Fictional work item added to the queue.
+EVT-0765,ISSUE-0124,TASK-0332,PERSON-0028,task_blocked,2026-08-31T05:25:04+00:00,Fictional work item waiting for supporting information.
+EVT-0766,ISSUE-0124,TASK-0333,,task_created,2026-08-31T05:25:04+00:00,Fictional work item added to the queue.
+EVT-0767,ISSUE-0004,TASK-0008,PERSON-0016,task_started,2026-08-31T16:06:03+00:00,Fictional work item moved into progress.
+EVT-0768,ISSUE-0079,TASK-0208,PERSON-0026,task_created,2026-09-01T11:38:59+00:00,Fictional work item added to the queue.
+EVT-0769,ISSUE-0079,TASK-0209,PERSON-0027,task_created,2026-09-01T15:38:59+00:00,Fictional work item added to the queue.
+EVT-0770,ISSUE-0079,TASK-0207,PERSON-0007,task_created,2026-09-01T16:38:59+00:00,Fictional work item added to the queue.
+EVT-0771,ISSUE-0171,,,issue_opened,2026-09-04T14:35:58+00:00,Fictional tracking item opened for demonstration.
+EVT-0772,ISSUE-0159,,,issue_opened,2026-09-04T18:58:07+00:00,Fictional tracking item opened for demonstration.
+EVT-0773,ISSUE-0171,TASK-0456,PERSON-0010,task_created,2026-09-05T07:35:58+00:00,Fictional work item added to the queue.
+EVT-0774,ISSUE-0171,TASK-0457,PERSON-0005,task_created,2026-09-05T11:35:58+00:00,Fictional work item added to the queue.
+EVT-0775,ISSUE-0159,TASK-0424,PERSON-0011,task_created,2026-09-05T11:58:07+00:00,Fictional work item added to the queue.
+EVT-0776,ISSUE-0029,,,issue_opened,2026-09-05T22:36:26+00:00,Fictional tracking item opened for demonstration.
+EVT-0777,ISSUE-0159,TASK-0422,,task_created,2026-09-05T22:58:07+00:00,Fictional work item added to the queue.
+EVT-0778,ISSUE-0171,TASK-0455,,task_created,2026-09-06T06:35:58+00:00,Fictional work item added to the queue.
+EVT-0779,ISSUE-0159,TASK-0423,PERSON-0022,task_created,2026-09-06T11:58:07+00:00,Fictional work item added to the queue.
+EVT-0780,ISSUE-0029,TASK-0078,PERSON-0025,task_created,2026-09-06T15:36:26+00:00,Fictional work item added to the queue.
+EVT-0781,ISSUE-0029,TASK-0076,PERSON-0029,task_created,2026-09-06T22:36:26+00:00,Fictional work item added to the queue.
+EVT-0782,ISSUE-0170,,,issue_opened,2026-09-07T05:20:51+00:00,Fictional tracking item opened for demonstration.
+EVT-0783,ISSUE-0029,TASK-0077,,task_created,2026-09-07T09:36:26+00:00,Fictional work item added to the queue.
+EVT-0784,ISSUE-0170,TASK-0454,PERSON-0022,task_created,2026-09-07T19:20:51+00:00,Fictional work item added to the queue.
+EVT-0785,ISSUE-0029,TASK-0076,PERSON-0029,task_started,2026-09-08T10:36:26+00:00,Fictional work item moved into progress.
+EVT-0786,ISSUE-0170,TASK-0453,PERSON-0033,task_created,2026-09-08T19:20:51+00:00,Fictional work item added to the queue.
+EVT-0787,ISSUE-0170,TASK-0452,PERSON-0014,task_created,2026-09-08T21:20:51+00:00,Fictional work item added to the queue.
+EVT-0788,ISSUE-0024,,,issue_opened,2026-09-10T01:03:07+00:00,Fictional tracking item opened for demonstration.
+EVT-0789,ISSUE-0141,,,issue_opened,2026-09-10T04:39:11+00:00,Fictional tracking item opened for demonstration.
+EVT-0790,ISSUE-0170,TASK-0452,PERSON-0014,task_started,2026-09-10T09:20:51+00:00,Fictional work item moved into progress.
+EVT-0791,ISSUE-0170,TASK-0453,PERSON-0033,task_review_requested,2026-09-10T19:20:51+00:00,Fictional work item awaiting record review.
+EVT-0792,ISSUE-0024,TASK-0064,PERSON-0007,task_created,2026-09-11T01:03:07+00:00,Fictional work item added to the queue.
+EVT-0793,ISSUE-0141,TASK-0374,PERSON-0028,task_created,2026-09-11T06:39:11+00:00,Fictional work item added to the queue.
+EVT-0794,ISSUE-0024,TASK-0063,PERSON-0006,task_created,2026-09-11T09:03:07+00:00,Fictional work item added to the queue.
+EVT-0795,ISSUE-0141,TASK-0373,PERSON-0027,task_created,2026-09-11T16:39:11+00:00,Fictional work item added to the queue.
+EVT-0796,ISSUE-0030,,,issue_opened,2026-09-11T17:42:24+00:00,Fictional tracking item opened for demonstration.
+EVT-0797,ISSUE-0030,TASK-0081,PERSON-0014,task_created,2026-09-11T18:42:24+00:00,Fictional work item added to the queue.
+EVT-0798,ISSUE-0030,TASK-0079,PERSON-0006,task_created,2026-09-12T06:42:24+00:00,Fictional work item added to the queue.
+EVT-0799,ISSUE-0030,TASK-0080,PERSON-0001,task_created,2026-09-12T16:42:24+00:00,Fictional work item added to the queue.
+EVT-0800,ISSUE-0141,TASK-0373,PERSON-0027,task_completed,2026-09-13T16:39:11+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0801,ISSUE-0030,TASK-0079,PERSON-0006,task_completed,2026-09-15T06:42:24+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0802,ISSUE-0137,,,issue_opened,2026-09-19T12:52:25+00:00,Fictional tracking item opened for demonstration.
+EVT-0803,ISSUE-0137,TASK-0365,,task_created,2026-09-20T04:52:25+00:00,Fictional work item added to the queue.
+EVT-0804,ISSUE-0137,TASK-0364,PERSON-0005,task_created,2026-09-20T11:52:25+00:00,Fictional work item added to the queue.
+EVT-0805,ISSUE-0137,TASK-0364,PERSON-0005,task_started,2026-09-21T23:52:25+00:00,Fictional work item moved into progress.
+EVT-0806,ISSUE-0063,,,issue_opened,2026-09-23T22:31:16+00:00,Fictional tracking item opened for demonstration.
+EVT-0807,ISSUE-0063,TASK-0165,PERSON-0016,task_created,2026-09-24T01:31:16+00:00,Fictional work item added to the queue.
+EVT-0808,ISSUE-0063,TASK-0166,PERSON-0023,task_created,2026-09-24T04:31:16+00:00,Fictional work item added to the queue.
+EVT-0809,ISSUE-0038,,,issue_opened,2026-09-24T12:01:47+00:00,Fictional tracking item opened for demonstration.
+EVT-0810,ISSUE-0059,,,issue_opened,2026-09-24T13:19:40+00:00,Fictional tracking item opened for demonstration.
+EVT-0811,ISSUE-0038,TASK-0103,PERSON-0008,task_created,2026-09-24T18:01:47+00:00,Fictional work item added to the queue.
+EVT-0812,ISSUE-0038,TASK-0104,PERSON-0003,task_created,2026-09-24T21:01:47+00:00,Fictional work item added to the queue.
+EVT-0813,ISSUE-0063,TASK-0164,PERSON-0027,task_created,2026-09-24T21:31:16+00:00,Fictional work item added to the queue.
+EVT-0814,ISSUE-0059,TASK-0154,,task_created,2026-09-25T02:19:40+00:00,Fictional work item added to the queue.
+EVT-0815,ISSUE-0038,TASK-0103,PERSON-0008,task_blocked,2026-09-25T18:01:47+00:00,Fictional work item waiting for supporting information.
+EVT-0816,ISSUE-0096,,,issue_opened,2026-09-26T06:30:54+00:00,Fictional tracking item opened for demonstration.
+EVT-0817,ISSUE-0059,TASK-0155,PERSON-0012,task_created,2026-09-26T13:19:40+00:00,Fictional work item added to the queue.
+EVT-0818,ISSUE-0017,,,issue_opened,2026-09-27T03:56:47+00:00,Fictional tracking item opened for demonstration.
+EVT-0819,ISSUE-0017,,,note_added,2026-09-27T04:11:47+00:00,Fictional queue context recorded for demonstration.
+EVT-0820,ISSUE-0017,TASK-0044,PERSON-0017,task_created,2026-09-27T06:56:47+00:00,Fictional work item added to the queue.
+EVT-0821,ISSUE-0096,TASK-0257,PERSON-0020,task_created,2026-09-27T13:30:54+00:00,Fictional work item added to the queue.
+EVT-0822,ISSUE-0096,TASK-0256,PERSON-0031,task_created,2026-09-27T20:30:54+00:00,Fictional work item added to the queue.
+EVT-0823,ISSUE-0096,TASK-0255,PERSON-0006,task_created,2026-09-27T22:30:54+00:00,Fictional work item added to the queue.
+EVT-0824,ISSUE-0095,,,issue_opened,2026-09-28T03:38:58+00:00,Fictional tracking item opened for demonstration.
+EVT-0825,ISSUE-0095,TASK-0254,PERSON-0012,task_created,2026-09-28T09:38:58+00:00,Fictional work item added to the queue.
+EVT-0826,ISSUE-0095,TASK-0253,PERSON-0011,task_created,2026-09-28T14:38:58+00:00,Fictional work item added to the queue.
+EVT-0827,ISSUE-0017,TASK-0044,PERSON-0017,task_started,2026-09-28T18:56:47+00:00,Fictional work item moved into progress.
+EVT-0828,ISSUE-0017,TASK-0045,PERSON-0006,task_created,2026-09-28T23:56:47+00:00,Fictional work item added to the queue.
+EVT-0829,ISSUE-0083,,,issue_opened,2026-09-29T07:06:16+00:00,Fictional tracking item opened for demonstration.
+EVT-0830,ISSUE-0096,TASK-0255,PERSON-0006,task_started,2026-09-29T10:30:54+00:00,Fictional work item moved into progress.
+EVT-0831,ISSUE-0042,,,issue_opened,2026-09-29T23:20:51+00:00,Fictional tracking item opened for demonstration.
+EVT-0832,ISSUE-0083,TASK-0220,,task_created,2026-09-30T04:06:16+00:00,Fictional work item added to the queue.
+EVT-0833,ISSUE-0083,TASK-0221,PERSON-0031,task_created,2026-09-30T08:06:16+00:00,Fictional work item added to the queue.
+EVT-0834,ISSUE-0042,TASK-0113,PERSON-0031,task_created,2026-09-30T14:20:51+00:00,Fictional work item added to the queue.
+EVT-0835,ISSUE-0083,TASK-0219,PERSON-0011,task_created,2026-09-30T18:06:16+00:00,Fictional work item added to the queue.
+EVT-0836,ISSUE-0042,TASK-0112,PERSON-0012,task_created,2026-09-30T23:20:51+00:00,Fictional work item added to the queue.
+EVT-0837,ISSUE-0042,TASK-0114,PERSON-0002,task_created,2026-10-01T08:20:51+00:00,Fictional work item added to the queue.
+EVT-0838,ISSUE-0006,,,issue_opened,2026-10-01T08:25:50+00:00,Fictional tracking item opened for demonstration.
+EVT-0839,ISSUE-0006,,,note_added,2026-10-01T08:40:50+00:00,Fictional queue context recorded for demonstration.
+EVT-0840,ISSUE-0103,,,issue_opened,2026-10-01T15:39:53+00:00,Fictional tracking item opened for demonstration.
+EVT-0841,ISSUE-0083,TASK-0219,PERSON-0011,task_started,2026-10-02T06:06:16+00:00,Fictional work item moved into progress.
+EVT-0842,ISSUE-0006,TASK-0014,PERSON-0006,task_created,2026-10-02T07:25:50+00:00,Fictional work item added to the queue.
+EVT-0843,ISSUE-0006,TASK-0015,,task_created,2026-10-02T13:25:50+00:00,Fictional work item added to the queue.
+EVT-0844,ISSUE-0103,TASK-0276,PERSON-0021,task_created,2026-10-02T13:39:53+00:00,Fictional work item added to the queue.
+EVT-0845,ISSUE-0100,,,issue_opened,2026-10-02T18:53:18+00:00,Fictional tracking item opened for demonstration.
+EVT-0846,ISSUE-0103,TASK-0275,PERSON-0026,task_created,2026-10-03T10:39:53+00:00,Fictional work item added to the queue.
+EVT-0847,ISSUE-0103,TASK-0274,PERSON-0013,task_created,2026-10-03T11:39:53+00:00,Fictional work item added to the queue.
+EVT-0848,ISSUE-0006,TASK-0014,PERSON-0006,task_started,2026-10-03T19:25:50+00:00,Fictional work item moved into progress.
+EVT-0849,ISSUE-0100,TASK-0265,PERSON-0034,task_created,2026-10-04T17:53:18+00:00,Fictional work item added to the queue.
+EVT-0850,ISSUE-0103,TASK-0274,PERSON-0013,task_started,2026-10-04T23:39:53+00:00,Fictional work item moved into progress.
+EVT-0851,ISSUE-0082,,,issue_opened,2026-10-07T13:28:00+00:00,Fictional tracking item opened for demonstration.
+EVT-0852,ISSUE-0180,,,issue_opened,2026-10-07T16:54:51+00:00,Fictional tracking item opened for demonstration.
+EVT-0853,ISSUE-0100,TASK-0265,PERSON-0034,task_completed,2026-10-07T17:53:18+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0854,ISSUE-0082,TASK-0218,,task_created,2026-10-07T21:28:00+00:00,Fictional work item added to the queue.
+EVT-0855,ISSUE-0180,TASK-0479,PERSON-0024,task_created,2026-10-08T11:54:51+00:00,Fictional work item added to the queue.
+EVT-0856,ISSUE-0082,TASK-0217,PERSON-0029,task_created,2026-10-08T18:28:00+00:00,Fictional work item added to the queue.
+EVT-0857,ISSUE-0014,,,issue_opened,2026-10-08T20:04:14+00:00,Fictional tracking item opened for demonstration.
+EVT-0858,ISSUE-0014,,,note_added,2026-10-08T20:19:14+00:00,Fictional queue context recorded for demonstration.
+EVT-0859,ISSUE-0082,TASK-0216,PERSON-0004,task_created,2026-10-08T21:28:00+00:00,Fictional work item added to the queue.
+EVT-0860,ISSUE-0051,,,issue_opened,2026-10-09T15:46:27+00:00,Fictional tracking item opened for demonstration.
+EVT-0861,ISSUE-0180,TASK-0480,PERSON-0001,task_created,2026-10-09T16:54:51+00:00,Fictional work item added to the queue.
+EVT-0862,ISSUE-0014,TASK-0038,PERSON-0034,task_created,2026-10-09T19:04:14+00:00,Fictional work item added to the queue.
+EVT-0863,ISSUE-0051,TASK-0137,PERSON-0022,task_created,2026-10-09T22:46:27+00:00,Fictional work item added to the queue.
+EVT-0864,ISSUE-0180,TASK-0479,PERSON-0024,task_started,2026-10-09T23:54:51+00:00,Fictional work item moved into progress.
+EVT-0865,ISSUE-0005,,,issue_opened,2026-10-10T03:37:43+00:00,Fictional tracking item opened for demonstration.
+EVT-0866,ISSUE-0005,,,note_added,2026-10-10T03:52:43+00:00,Fictional queue context recorded for demonstration.
+EVT-0867,ISSUE-0005,TASK-0011,PERSON-0017,task_created,2026-10-10T05:37:43+00:00,Fictional work item added to the queue.
+EVT-0868,ISSUE-0005,TASK-0011,PERSON-0017,task_assigned,2026-10-10T06:07:43+00:00,Fictional work item allocated to its recorded team and worker.
+EVT-0869,ISSUE-0014,TASK-0036,PERSON-0032,task_created,2026-10-10T12:04:14+00:00,Fictional work item added to the queue.
+EVT-0870,ISSUE-0150,,,issue_opened,2026-10-10T15:00:53+00:00,Fictional tracking item opened for demonstration.
+EVT-0871,ISSUE-0100,,,issue_closed,2026-10-10T18:53:18+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0872,ISSUE-0150,TASK-0397,PERSON-0032,task_created,2026-10-10T19:00:53+00:00,Fictional work item added to the queue.
+EVT-0873,ISSUE-0014,TASK-0037,PERSON-0003,task_created,2026-10-10T20:04:14+00:00,Fictional work item added to the queue.
+EVT-0874,ISSUE-0051,TASK-0136,PERSON-0003,task_created,2026-10-10T21:46:27+00:00,Fictional work item added to the queue.
+EVT-0875,ISSUE-0150,TASK-0396,,task_created,2026-10-11T01:00:53+00:00,Fictional work item added to the queue.
+EVT-0876,ISSUE-0005,TASK-0012,PERSON-0018,task_created,2026-10-11T03:37:43+00:00,Fictional work item added to the queue.
+EVT-0877,ISSUE-0150,TASK-0395,PERSON-0024,task_created,2026-10-11T07:00:53+00:00,Fictional work item added to the queue.
+EVT-0878,ISSUE-0005,TASK-0013,PERSON-0001,task_created,2026-10-11T17:37:43+00:00,Fictional work item added to the queue.
+EVT-0879,ISSUE-0082,TASK-0216,PERSON-0004,task_completed,2026-10-11T21:28:00+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0880,ISSUE-0014,TASK-0036,PERSON-0032,task_completed,2026-10-12T12:04:14+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0881,ISSUE-0054,,,issue_opened,2026-10-12T15:23:13+00:00,Fictional tracking item opened for demonstration.
+EVT-0882,ISSUE-0054,TASK-0143,PERSON-0019,task_created,2026-10-12T17:23:13+00:00,Fictional work item added to the queue.
+EVT-0883,ISSUE-0100,,,issue_reopened,2026-10-12T18:53:18+00:00,Fictional tracking item reopened for an additional record question.
+EVT-0884,ISSUE-0150,TASK-0395,PERSON-0024,task_started,2026-10-12T19:00:53+00:00,Fictional work item moved into progress.
+EVT-0885,ISSUE-0051,TASK-0136,PERSON-0003,task_completed,2026-10-12T21:46:27+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0886,ISSUE-0106,,,issue_opened,2026-10-13T03:13:25+00:00,Fictional tracking item opened for demonstration.
+EVT-0887,ISSUE-0014,TASK-0038,PERSON-0034,task_completed,2026-10-13T19:04:14+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0888,ISSUE-0054,TASK-0144,PERSON-0032,task_created,2026-10-13T20:23:13+00:00,Fictional work item added to the queue.
+EVT-0889,ISSUE-0066,,,issue_opened,2026-10-13T21:35:00+00:00,Fictional tracking item opened for demonstration.
+EVT-0890,ISSUE-0106,TASK-0284,PERSON-0029,task_created,2026-10-13T22:13:25+00:00,Fictional work item added to the queue.
+EVT-0891,ISSUE-0051,TASK-0137,PERSON-0022,task_completed,2026-10-13T22:46:27+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0892,ISSUE-0100,TASK-0266,PERSON-0023,task_created,2026-10-14T00:53:18+00:00,Fictional work item added to the queue.
+EVT-0893,ISSUE-0005,TASK-0012,PERSON-0018,task_completed,2026-10-14T03:37:43+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0894,ISSUE-0005,TASK-0011,PERSON-0017,task_completed,2026-10-14T05:37:43+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0895,ISSUE-0054,TASK-0142,PERSON-0030,task_created,2026-10-14T07:23:13+00:00,Fictional work item added to the queue.
+EVT-0896,ISSUE-0100,TASK-0267,PERSON-0036,task_created,2026-10-14T09:53:18+00:00,Fictional work item added to the queue.
+EVT-0897,ISSUE-0005,TASK-0013,PERSON-0001,task_completed,2026-10-14T17:37:43+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0898,ISSUE-0106,TASK-0283,PERSON-0034,task_created,2026-10-14T18:13:25+00:00,Fictional work item added to the queue.
+EVT-0899,ISSUE-0014,TASK-0037,PERSON-0003,task_completed,2026-10-14T20:04:14+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0900,ISSUE-0066,TASK-0174,PERSON-0019,task_created,2026-10-15T12:35:00+00:00,Fictional work item added to the queue.
+EVT-0901,ISSUE-0066,TASK-0173,PERSON-0030,task_created,2026-10-15T18:35:00+00:00,Fictional work item added to the queue.
+EVT-0902,ISSUE-0054,TASK-0142,PERSON-0030,task_completed,2026-10-16T07:23:13+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0903,ISSUE-0014,,,issue_closed,2026-10-16T20:04:14+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0904,ISSUE-0094,,,issue_opened,2026-10-16T21:54:41+00:00,Fictional tracking item opened for demonstration.
+EVT-0905,ISSUE-0057,,,issue_opened,2026-10-17T01:07:41+00:00,Fictional tracking item opened for demonstration.
+EVT-0906,ISSUE-0094,TASK-0250,PERSON-0034,task_created,2026-10-17T05:54:41+00:00,Fictional work item added to the queue.
+EVT-0907,ISSUE-0066,TASK-0173,PERSON-0030,task_started,2026-10-17T06:35:00+00:00,Fictional work item moved into progress.
+EVT-0908,ISSUE-0164,,,issue_opened,2026-10-17T07:58:55+00:00,Fictional tracking item opened for demonstration.
+EVT-0909,ISSUE-0057,TASK-0150,PERSON-0015,task_created,2026-10-17T12:07:41+00:00,Fictional work item added to the queue.
+EVT-0910,ISSUE-0066,TASK-0174,PERSON-0019,task_review_requested,2026-10-17T12:35:00+00:00,Fictional work item awaiting record review.
+EVT-0911,ISSUE-0051,,,issue_closed,2026-10-17T15:46:27+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0912,ISSUE-0057,TASK-0151,PERSON-0028,task_created,2026-10-18T01:07:41+00:00,Fictional work item added to the queue.
+EVT-0913,ISSUE-0005,,,issue_closed,2026-10-18T03:37:43+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0914,ISSUE-0164,TASK-0437,PERSON-0014,task_created,2026-10-18T06:58:55+00:00,Fictional work item added to the queue.
+EVT-0915,ISSUE-0164,TASK-0438,PERSON-0033,task_created,2026-10-18T11:58:55+00:00,Fictional work item added to the queue.
+EVT-0916,ISSUE-0094,TASK-0250,PERSON-0034,task_completed,2026-10-19T05:54:41+00:00,Fictional work item marked complete; issue status is independent.
+EVT-0917,ISSUE-0094,,,issue_closed,2026-10-24T21:54:41+00:00,Fictional tracking item administratively closed; no technical judgment.
+EVT-0918,ISSUE-0094,,,issue_reopened,2026-10-26T21:54:41+00:00,Fictional tracking item reopened for an additional record question.
+EVT-0919,ISSUE-0094,TASK-0252,,task_created,2026-10-27T08:54:41+00:00,Fictional work item added to the queue.
+EVT-0920,ISSUE-0094,TASK-0251,PERSON-0023,task_created,2026-10-27T15:54:41+00:00,Fictional work item added to the queue.
