@@ -1,2 +1,4 @@
 -r requirements-api.in
 github-copilot-sdk==1.0.28
+anthropic==2.6.0
+mcp==2.3.0
