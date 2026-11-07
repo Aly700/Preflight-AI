@@ -20,11 +20,11 @@ All data is made up: 12 demo aircraft, 180 issues, 480 tasks and their history, 
 
 ## Run it locally
 
-You need Docker Compose v2 and an Anthropic or OpenAI key. No cloud account is needed.
+You need Docker Compose v2 and one model credential: an Anthropic or OpenAI key, or a GitHub token with Copilot access. No cloud account is needed.
 
 ```sh
 python3 -B scripts/init_secrets.py
-# put your key in .secrets/model-api-key
+# put your key in .secrets/model-api-key   (Copilot: .secrets/copilot-token and MODEL_PROVIDER=copilot)
 docker compose build
 docker compose up -d --wait
 python3 -B scripts/load_postgres.py --container preflight-oss-postgres --database preflight_oss
