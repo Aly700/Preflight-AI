@@ -1,0 +1,54 @@
+# Tool configuration only. There is deliberately no [project] table: the
+# repository is not a distributable package while LICENSE_DECISION.md is pending.
+
+[tool.ruff]
+target-version = "py314"
+line-length = 120
+extend-exclude = ["frontend", "data", "evidence"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM", "ASYNC", "RUF", "T20"]
+ignore = [
+    "SIM905",  # "a b c".split() is a deliberate column-list idiom in the generator and loader
+    "RUF012",  # pydantic/dataclass class attributes are typed by the frameworks
+]
+
+[tool.ruff.lint.per-file-ignores]
+"scripts/*" = ["T201"]  # command-line scripts print their JSON result
+# Preserved baseline files are not edited in this increment (see docs/CODE_QUALITY_AUDIT.md).
+"scripts/generate_synthetic.py" = ["I001", "E501", "B905", "UP017", "C408"]
+"tests/test_synthetic_contract.py" = ["I001", "E501", "B905", "UP017", "C408"]
+
+[tool.ruff.lint.isort]
+force-sort-within-sections = true
+known-first-party = ["backend", "mcp_service", "preflight_core", "scripts"]
+
+[tool.ruff.format]
+quote-style = "single"
+# Preserved baseline files stay byte-identical; CSV reproducibility is the contract.
+exclude = ["scripts/generate_synthetic.py", "tests/test_synthetic_contract.py"]
+
+[tool.mypy]
+python_version = "3.14"
+files = ["backend", "mcp_service", "preflight_core", "scripts", "tests"]
+check_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_unreachable = true
+no_implicit_optional = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+# Service packages are fully annotated and checked strictly.
+module = ["backend.*", "mcp_service.*", "preflight_core.*"]
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_any_generics = true
+disallow_untyped_decorators = false
+warn_return_any = true
+no_implicit_reexport = true
+
+[[tool.mypy.overrides]]
+# Preserved baseline files are not edited in this increment.
+module = ["generate_synthetic", "test_synthetic_contract"]
+ignore_errors = true

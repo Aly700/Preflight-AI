@@ -1,0 +1,5 @@
+-r requirements-mcp.in
+-r requirements-chat.in
+httpx2==2.16.0
+mypy==2.4.1
+ruff==0.17.4

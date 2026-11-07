@@ -1,0 +1,12 @@
+*
+!backend/
+!backend/**
+!requirements-api.txt
+!mcp_service/
+!mcp_service/**
+!preflight_core/
+!preflight_core/**
+!requirements-mcp.txt
+!requirements-chat.txt
+**/__pycache__/
+**/*.pyc

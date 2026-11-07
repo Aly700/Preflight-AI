@@ -1,0 +1,2 @@
+-r requirements-api.in
+github-copilot-sdk==1.0.28
