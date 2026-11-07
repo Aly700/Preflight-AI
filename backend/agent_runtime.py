@@ -73,8 +73,8 @@ def result_block(call_id: str, content: str, *, error: bool = False) -> dict[str
 def claims_prompt(calls: list[tuple[str, str, dict[str, Any]]]) -> str:
     """The user turn that asks for the declaration, listing the exact ids the model must reference."""
     lines = [
-        'Declare the claims in your answer above with final_answer: '
-        'every record ID you cited and every number you stated.'
+        'Now call the final_answer tool, the only tool available, to declare the claims in your answer above: '
+        'every record ID you cited and every number you stated. Do not write any more answer text.'
     ]
     if calls:
         lines.append('Tool calls in this conversation and their ids; use these exact ids as call_id:')
@@ -143,11 +143,12 @@ class Loop:
                 break
         # Claims round: forced, its text is not part of the answer.
         messages.append({'role': 'user', 'content': claims_prompt(self.calls_log)})
+        # Not every model accepts a forced tool choice, so the claims tool is simply the only tool offered.
         turn = await self.model.stream_turn(
             system=SYSTEM,
             messages=messages,
             tools=[FINAL_ANSWER_TOOL],
-            tool_choice={'type': 'tool', 'name': FINAL},
+            tool_choice={'type': 'auto'},
             on_text=lambda _: None,
         )
         final_call = next((c for c in turn.tool_calls if c.name == FINAL), None)

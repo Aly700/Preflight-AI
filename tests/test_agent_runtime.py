@@ -42,7 +42,9 @@ def claims(cited=(), numbers=()):
     return Turn('', [final(cited, numbers)], 'tool_use')
 
 
-FORCED = {'type': 'tool', 'name': 'final_answer'}
+CLAIMS_CHOICE = {
+    'type': 'auto'
+}  # a forced tool choice is not supported by every model; the only tool offered is final_answer
 
 
 class FakeModel:
@@ -124,7 +126,7 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(model.calls), 3)
         self.assertNotIn('final_answer', [t['name'] for t in model.calls[0]['tools']])
         self.assertEqual([t['name'] for t in model.calls[2]['tools']], ['final_answer'])
-        self.assertEqual(model.calls[2]['tool_choice'], FORCED)
+        self.assertEqual(model.calls[2]['tool_choice'], CLAIMS_CHOICE)
         self.assertIn('t1', model.calls[2]['messages'][-1]['content'])
         self.assertIn('list_open_issues', model.calls[2]['messages'][-1]['content'])
         kinds = [e['event'] for e in events]
@@ -204,7 +206,7 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
         events = await collect(model, tools)
         self.assertEqual(len(model.calls), 8)  # six rounds, a wrap-up round without tools, the claims round
         self.assertEqual(model.calls[6]['tool_choice'], {'type': 'none'})
-        self.assertEqual(model.calls[7]['tool_choice'], FORCED)
+        self.assertEqual(model.calls[7]['tool_choice'], CLAIMS_CHOICE)
         self.assertEqual(events[-1]['data']['rounds'], 6)
         self.assertIn('Done from what I have.', ''.join(e['data']['text'] for e in events if e['event'] == 'delta'))
         many = Turn('', [ToolCall(f'c{i}', 'list_open_issues', {'limit': 1}) for i in range(13)], 'tool_use')
@@ -223,7 +225,7 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
         )
         events = await collect(model, FakeTools())
         self.assertEqual(len(model.calls), 2)
-        self.assertEqual(model.calls[1]['tool_choice'], FORCED)
+        self.assertEqual(model.calls[1]['tool_choice'], CLAIMS_CHOICE)
         self.assertEqual(events[-1]['data']['rounds'], 1)
         self.assertEqual(''.join(e['data']['text'] for e in events if e['event'] == 'delta'), 'Plain text answer.')
 
