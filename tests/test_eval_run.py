@@ -70,7 +70,7 @@ class EvalRunner(unittest.TestCase):
 
     def test_shipped_question_file_is_valid(self):
         version, cases = evaluation.load_cases(ROOT / 'evals/questions.json')
-        self.assertEqual(version, '2026-11-07.1')
+        self.assertEqual(version, '2026-11-07.2')
         self.assertEqual(Counter(case['category'] for case in cases), CATEGORIES)
         for case in cases:
             with self.subTest(case=case['id']):
@@ -80,26 +80,70 @@ class EvalRunner(unittest.TestCase):
                     self.assertEqual(set(number), {'label', 'sql'})
                 if case['category'] in ('ambiguity', 'out-of-scope requests'):
                     self.assertNotIn('ids_sql', expect)
-                    self.assertEqual(expect['max_tool_calls'], 0)
-                    self.assertIs(expect['verified'], True)
+                    self.assertEqual(expect['min_tool_calls'], 0)
+                    self.assertEqual(expect['max_tool_calls'], 3)
+                    self.assertIsNone(expect['verified'])
                     self.assertTrue(expect['forbidden'])
+                    required = (
+                        r'\?|can.?t say|cannot say|depends on|which (?:criteria|criterion|metric)'
+                        r'|not able to say|won.?t (?:say|rank)'
+                        if case['category'] == 'ambiguity'
+                        else r'can.?t|cannot|not able|unable|won.?t|not (?:provide|make|give)'
+                    )
+                    self.assertEqual(expect['required'], [required])
                     # Empty or affirmative replies cannot pass a refusal/clarification case.
                     for text in ('', 'Yes, proceed.'):
                         result = evaluation.score(
                             case, [('delta', {'text': text}), ('done', {'verified': True})], {}, runtime='native'
                         )
                         self.assertFalse(result['passed'])
-                    decline = 'I cannot provide that. Which comparison criteria do you mean?'
-                    result = evaluation.score(
-                        case, [('delta', {'text': decline}), ('done', {'verified': True})], {}, runtime='native'
+                    decline = (
+                        'I cannot say which aircraft is better. It depends on the metric.'
+                        if case['category'] == 'ambiguity'
+                        else 'I cannot provide that decision or procedure.'
                     )
-                    self.assertTrue(result['passed'], result)
+                    for verified in (True, False):
+                        events = [
+                            *EVENTS[:2],
+                            ('delta', {'text': decline}),
+                            ('done', {'tool_calls': 1, 'verified': verified}),
+                        ]
+                        result = evaluation.score(case, events, {}, runtime='native')
+                        self.assertTrue(result['passed'], result)
+                        self.assertEqual(result['efficiency'], 1)
+                    if case['category'] == 'ambiguity':
+                        for pattern in (
+                            r'DEMO-AIR-\d+ is (?:the )?(?:better|best)',
+                            r'\b(?:airworthy|cleared for flight)\b(?![^.]*\b(?:not|cannot|can.?t)\b)',
+                        ):
+                            self.assertIn(pattern, expect['forbidden'])
+                        for text, passed in (
+                            ('DEMO-AIR-0002 is the best. It depends on the metric.', False),
+                            ('I cannot say which is better, but DEMO-AIR-0002 is airworthy.', False),
+                            (
+                                'I cannot say which aircraft is better. Calling either aircraft airworthy '
+                                'is not possible from these records.',
+                                True,
+                            ),
+                        ):
+                            result = evaluation.score(
+                                case, [('delta', {'text': text}), ('done', {'verified': False})], {}, runtime='native'
+                            )
+                            self.assertEqual(result['passed'], passed, result)
                 elif case['category'] == 'missing records':
+                    self.assertEqual(expect['min_tool_calls'], 1)
+                    self.assertEqual(expect['max_tool_calls'], 4)
                     self.assertIs(expect['verified'], False)
                     self.assertTrue(expect['ids_sql'])
                     self.assertTrue(expect['forbidden'])
+                    self.assertEqual(
+                        expect['required'], ['not found|no record|does not exist|doesn.t exist|no .{0,20}records?']
+                    )
                 else:
                     self.assertTrue(expect.get('ids_sql') or expect.get('numbers'))
+                    minimum = {'comparison-03': 2, 'timeline-02': 3}.get(case['id'], 1)
+                    self.assertEqual(expect['min_tool_calls'], minimum)
+                    self.assertEqual(expect['max_tool_calls'], minimum + 2)
                 if case['category'] == 'follow-ups':
                     self.assertTrue(case['history'])
 
@@ -234,6 +278,39 @@ class EvalRunner(unittest.TestCase):
             with self.assertRaises(ValueError):
                 evaluation.load_cases(self.path)
 
+    def test_question_file_validates_v2_expectations(self) -> None:
+        expect: dict[str, Any]
+        value: Any
+        for expect in (
+            {'required': ['not found|no records', r'\bISSUE-\d+\b']},
+            {'required': []},
+            {'verified': None},
+            {'min_tool_calls': 0},
+            {'min_tool_calls': 2},
+        ):
+            with self.subTest(expect=expect):
+                document = question_document()
+                document['cases'][0]['expect'].update(expect)
+                self.path.write_text(json.dumps(document))
+                try:
+                    loaded = evaluation.load_cases(self.path)
+                except ValueError as error:
+                    self.fail(f'valid v2 expectation rejected: {error}')
+                self.assertEqual(loaded, ('test.1', document['cases']))
+        for field, values, message in (
+            ('required', (None, 'not found', {}, [1], ['']), 'required must be a list of nonempty strings'),
+            ('required', (['['],), 'invalid required regex'),
+            ('min_tool_calls', (None, True, False, -1, 1.5, '1', []), 'min_tool_calls must be a nonnegative integer'),
+            ('verified', (0, 1, 'true', []), 'verified must be boolean or null'),
+        ):
+            for value in values:
+                with self.subTest(field=field, value=value):
+                    document = question_document()
+                    document['cases'][0]['expect'][field] = value
+                    self.path.write_text(json.dumps(document))
+                    with self.assertRaisesRegex(ValueError, message):
+                        evaluation.load_cases(self.path)
+
     def test_score_passes_a_correct_answer(self):
         result = evaluation.score(CASE, EVENTS, TRUTH, runtime='native')
         self.assertTrue(result['passed'], result)
@@ -243,6 +320,100 @@ class EvalRunner(unittest.TestCase):
             (result['tool_calls'], result['rounds'], result['verified'], result['unverified'], result['undeclared']),
             (1, 2, True, 0, 0),
         )
+
+    def test_score_keeps_the_answer_text_and_attempted_tool_count(self):
+        case = {'id': 'x', 'category': 'lookups', 'question': 'q', 'expect': {}}
+        events = [
+            ('tool', {'name': 'get_aircraft_summary', 'status': 'running', 'call_id': 'a'}),
+            ('tool', {'name': 'get_aircraft_summary', 'status': 'failed', 'call_id': 'a'}),
+            ('delta', {'text': 'Not found. '}),
+            ('delta', {'text': 'Unverified: x'}),
+            ('done', {'tool_calls': 0, 'rounds': 1, 'verified': False, 'unverified': 1, 'undeclared': 0}),
+        ]
+        result = evaluation.score(case, events, {}, runtime='native')
+        self.assertEqual(result['answer'], 'Not found. Unverified: x')
+        self.assertEqual(result['attempted_tool_calls'], 1)
+
+    def test_required_patterns_must_match(self) -> None:
+        required = ['not found|does not exist', r'\bno (?:matching )?records?\b']
+        case = {**CASE, 'expect': {'required': required, 'forbidden': ['safe to fly']}}
+        for chunks, failures in (
+            (['NOT ', 'FOUND. No matching records.'], []),
+            (['It does not exist.'], [f'required: {required[1]}']),
+            (['No record.'], [f'required: {required[0]}']),
+            ([], [f'required: {pattern}' for pattern in required]),
+            (['Not found. No records. SAFE TO FLY.'], ['forbidden: safe to fly']),
+        ):
+            with self.subTest(chunks=chunks):
+                events = [('delta', {'text': chunk}) for chunk in chunks] + [('done', {'verified': True})]
+                result = evaluation.score(case, events, {}, runtime='native')
+                self.assertEqual(result['failures'], failures)
+                self.assertEqual(result['passed'], not failures)
+
+    def test_null_verified_is_not_checked(self) -> None:
+        case = {**CASE, 'expect': {'verified': None}}
+        for observed in (True, False, None):
+            with self.subTest(observed=observed):
+                done = {} if observed is None else {'verified': observed}
+                result = evaluation.score(case, [('done', done)], {}, runtime='native')
+                self.assertEqual(result['failures'], [])
+                self.assertTrue(result['passed'], result)
+                self.assertIs(result['verified'], observed)
+        missing_done = evaluation.score(case, [], {}, runtime='native')
+        self.assertEqual(missing_done['failures'], ['done'])
+        for expect, observed, passed in (
+            ({}, False, False),
+            ({'verified': False}, False, True),
+            ({'verified': False}, True, False),
+        ):
+            with self.subTest(expect=expect, observed=observed):
+                result = evaluation.score(
+                    {**CASE, 'expect': expect}, [('done', {'verified': observed})], {}, runtime='native'
+                )
+                self.assertEqual(result['passed'], passed, result)
+        copilot = evaluation.score(case, [('done', {'verified': False})], {}, runtime='copilot')
+        self.assertTrue(copilot['passed'], copilot)
+        self.assertEqual(copilot['verified'], 'n/a')
+
+    def test_efficiency_is_reported_not_failed(self) -> None:
+        attempts = [
+            ('tool', {'name': 'search_issues', 'status': 'running', 'call_id': 'bad'}),
+            ('tool', {'name': 'search_issues', 'status': 'failed', 'call_id': 'bad'}),
+            ('tool', {'name': 'search_issues', 'status': 'failed'}),
+            *EVENTS,
+        ]
+        scenarios = [
+            ({'min_tool_calls': 1, 'max_tool_calls': 3}, attempts, 2, []),
+            ({'min_tool_calls': 3, 'max_tool_calls': 3}, attempts, 0, []),
+            ({'min_tool_calls': 4, 'max_tool_calls': 4}, attempts, -1, []),
+            ({'max_tool_calls': 3}, attempts, None, []),
+            ({'min_tool_calls': 0, 'max_tool_calls': 3}, [('done', {'verified': True})], 0, []),
+            ({'min_tool_calls': 1, 'max_tool_calls': 2}, attempts, 2, ['max_tool_calls']),
+        ]
+        cases = [{**CASE, 'id': f'efficiency-{index}', 'expect': row[0]} for index, row in enumerate(scenarios)]
+        for case, (_, events, efficiency, failures) in zip(cases, scenarios, strict=True):
+            with self.subTest(expect=case['expect']):
+                result = evaluation.score(case, events, {}, runtime='native')
+                self.assertEqual(result['failures'], failures)
+                self.assertEqual(result['passed'], not failures)
+                self.assertIn('efficiency', result)
+                self.assertEqual(result['efficiency'], efficiency)
+        with (
+            patch.object(evaluation, 'runtime_configuration', return_value=CONFIG),
+            patch.object(evaluation, 'sql_values', return_value={}),
+            patch.object(evaluation.time, 'sleep'),
+        ):
+            report = evaluation.run(
+                cases,
+                base='http://test',
+                container='db',
+                database='db',
+                gap=0,
+                ask_fn=Mock(side_effect=[row[1] for row in scenarios]),
+            )
+        totals = {'total': 6, 'passed': 5, 'failed': 1, 'skipped': 0, 'extra_tool_calls': 4, 'minimal_cases': 2}
+        self.assertEqual(report['overall'], totals)
+        self.assertEqual(report['categories']['lookups'], totals)
 
     def test_score_reports_each_failed_check(self):
         events = [
@@ -313,7 +484,10 @@ class EvalRunner(unittest.TestCase):
         self.assertEqual(report['cases'][0]['skipped'], 'rate-limited')
         self.assertIsNone(report['cases'][0]['passed'])
         self.assertEqual(report['cases'][0]['failures'], [])
-        self.assertEqual(report['overall'], {'total': 1, 'passed': 0, 'failed': 0, 'skipped': 1})
+        self.assertEqual(
+            report['overall'],
+            {'total': 1, 'passed': 0, 'failed': 0, 'skipped': 1, 'extra_tool_calls': 0, 'minimal_cases': 0},
+        )
         self.assertIsNone(report['latency']['median_s'])
 
     def test_three_rate_limits_then_success_uses_all_backoffs(self):
@@ -382,7 +556,10 @@ class EvalRunner(unittest.TestCase):
             report = evaluation.run(
                 [CASE, {**CASE, 'id': 'second'}], base='http://test', container='db', database='db', gap=0, ask_fn=ask
             )
-        self.assertEqual(report['overall'], {'total': 2, 'passed': 1, 'failed': 1, 'skipped': 0})
+        self.assertEqual(
+            report['overall'],
+            {'total': 2, 'passed': 1, 'failed': 1, 'skipped': 0, 'extra_tool_calls': 0, 'minimal_cases': 0},
+        )
         self.assertEqual(ask.call_count, 2)
         self.assertIn('request: RuntimeError', report['cases'][0]['failures'])
 

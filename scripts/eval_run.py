@@ -87,7 +87,16 @@ def load_cases(path: Path) -> tuple[str, list[dict[str, Any]]]:
         check_keys(
             expect,
             set(),
-            {'ids_sql', 'numbers', 'forbidden', 'tools_any', 'max_tool_calls', 'verified'},
+            {
+                'ids_sql',
+                'numbers',
+                'forbidden',
+                'required',
+                'tools_any',
+                'min_tool_calls',
+                'max_tool_calls',
+                'verified',
+            },
             f'{ident} expect',
         )
         if 'ids_sql' in expect and (not isinstance(expect['ids_sql'], str) or not expect['ids_sql'].strip()):
@@ -103,22 +112,25 @@ def load_cases(path: Path) -> tuple[str, list[dict[str, Any]]]:
             if number['label'] in labels:
                 raise ValueError(f'{ident}: duplicate or reserved number label {number["label"]!r}')
             labels.add(number['label'])
-        for field in ('forbidden', 'tools_any'):
+        for field in ('forbidden', 'required', 'tools_any'):
             values = expect.get(field, [])
             if not isinstance(values, list) or any(not isinstance(v, str) or not v for v in values):
                 raise ValueError(f'{ident}: {field} must be a list of nonempty strings')
-        for pattern in expect.get('forbidden', []):
-            try:
-                re.compile(pattern, re.IGNORECASE)
-            except re.error as error:
-                raise ValueError(f'{ident}: invalid forbidden regex') from error
+        for field in ('forbidden', 'required'):
+            for pattern in expect.get(field, []):
+                try:
+                    re.compile(pattern, re.IGNORECASE)
+                except re.error as error:
+                    raise ValueError(f'{ident}: invalid {field} regex') from error
         if set(expect.get('tools_any', [])) - TOOLS:
             raise ValueError(f'{ident}: unknown tool in tools_any')
-        limit = expect.get('max_tool_calls', 12)
-        if type(limit) is not int or limit < 0:
-            raise ValueError(f'{ident}: max_tool_calls must be a nonnegative integer')
-        if type(expect.get('verified', True)) is not bool:
-            raise ValueError(f'{ident}: verified must be boolean')
+        for field in ('min_tool_calls', 'max_tool_calls'):
+            limit = expect.get(field, 0)
+            if type(limit) is not int or limit < 0:
+                raise ValueError(f'{ident}: {field} must be a nonnegative integer')
+        verified = expect.get('verified', True)
+        if verified is not None and type(verified) is not bool:
+            raise ValueError(f'{ident}: verified must be boolean or null')
     return version, cases
 
 
@@ -174,6 +186,7 @@ def score(case: dict[str, Any], events: Events, truth: dict[str, Any], *, runtim
     # A failed/refused attempt still counts against the budget. Running/complete share a call_id.
     attempts = {str(data['call_id']) for data in tool_events if data.get('call_id') is not None}
     anonymous = sum(data.get('status') in ('complete', 'failed') for data in tool_events if data.get('call_id') is None)
+    attempted = len(attempts) + anonymous
     successful = (done or {}).get('tool_calls', sum(data.get('status') == 'complete' for data in tool_events))
     failures = []
     ids = truth.get('ids', [])
@@ -190,14 +203,18 @@ def score(case: dict[str, Any], events: Events, truth: dict[str, Any], *, runtim
     for pattern in expect.get('forbidden', []):
         if re.search(pattern, text, re.IGNORECASE):
             failures.append(f'forbidden: {pattern}')
+    for pattern in expect.get('required', []):
+        if not re.search(pattern, text, re.IGNORECASE):
+            failures.append(f'required: {pattern}')
     if expect.get('tools_any') and not completed.intersection(expect['tools_any']):
         failures.append('tools_any')
-    if 'max_tool_calls' in expect and max(len(attempts) + anonymous, successful) > expect['max_tool_calls']:
+    if 'max_tool_calls' in expect and max(attempted, successful) > expect['max_tool_calls']:
         failures.append('max_tool_calls')
     if done is None:
         failures.append('done')
     verified = 'n/a' if runtime == 'copilot' else (done or {}).get('verified')
-    if runtime != 'copilot' and verified is not expect.get('verified', True):
+    expected_verified = expect.get('verified', True)
+    if runtime != 'copilot' and expected_verified is not None and verified is not expected_verified:
         failures.append('verified')
     if any(name == 'error' for name, _ in events):
         failures.append('no_error')
@@ -210,6 +227,9 @@ def score(case: dict[str, Any], events: Events, truth: dict[str, Any], *, runtim
         'verified': verified,
         'unverified': (done or {}).get('unverified'),
         'undeclared': (done or {}).get('undeclared'),
+        'attempted_tool_calls': attempted,
+        'efficiency': attempted - expect['min_tool_calls'] if 'min_tool_calls' in expect else None,
+        'answer': ''.join(str(data.get('text', '')) for name, data in events if name == 'delta'),
         'first_delta_s': None,
         'total_s': None,
     }
@@ -283,13 +303,16 @@ def run(
         )
         report['cases'].append(result)
     categories: dict[str, dict[str, int]] = {}
-    overall = {'total': 0, 'passed': 0, 'failed': 0, 'skipped': 0}
+    overall = {'total': 0, 'passed': 0, 'failed': 0, 'skipped': 0, 'extra_tool_calls': 0, 'minimal_cases': 0}
     for result in report['cases']:
         counts = categories.setdefault(result['category'], dict.fromkeys(overall, 0))
         outcome = 'skipped' if result.get('skipped') else ('passed' if result['passed'] else 'failed')
         for bucket in (counts, overall):
             bucket['total'] += 1
             bucket[outcome] += 1
+            if result['efficiency'] is not None:
+                bucket['extra_tool_calls'] += max(result['efficiency'], 0)
+                bucket['minimal_cases'] += result['efficiency'] == 0
     latencies = sorted(r['total_s'] for r in report['cases'] if not r.get('skipped'))
     report.update(
         categories=categories,
