@@ -29,6 +29,7 @@ class ChatSettingsContract(unittest.TestCase):
         self.assertEqual(settings.mcp_token, 'c' * 64)
         self.assertEqual(settings.mcp_url, 'http://127.0.0.1:8001/mcp')
         self.assertIsNone(settings.model)
+        self.assertIsNone(settings.aws_region)
         for secret in ('aaaa', 'bbbb', 'cccc'):
             self.assertNotIn(secret, repr(settings))
 
@@ -99,7 +100,54 @@ class ChatSettingsContract(unittest.TestCase):
         with self.assertRaisesRegex(SettingsError, 'MODEL_API_KEY_FILE'):
             ChatSettings.from_environment({k: v for k, v in environ.items() if k != 'MODEL_API_KEY_FILE'})
         with self.assertRaisesRegex(SettingsError, 'MODEL_PROVIDER'):
-            ChatSettings.from_environment({**environ, 'MODEL_PROVIDER': 'bedrock'})
+            ChatSettings.from_environment({**environ, 'MODEL_PROVIDER': 'unknown'})
+
+    def test_bedrock_needs_a_model_and_a_region_and_no_key_file(self):
+        environ = {
+            **self.environ,
+            'MODEL_PROVIDER': 'bedrock',
+            'CHAT_RUNTIME': 'native',
+            'COPILOT_MODEL': 'us.anthropic.claude-sonnet-4-5-20250929-v1:0',
+            'AWS_REGION': 'us-east-1',
+        }
+        del environ['COPILOT_TOKEN_FILE']
+        for region in ('us-east-1', 'ca-central-1', 'us-gov-west-1'):
+            with self.subTest(region=region):
+                settings = ChatSettings.from_environment({**environ, 'AWS_REGION': region})
+                self.assertEqual(settings.provider, 'bedrock')
+                self.assertEqual(settings.runtime, 'native')
+                self.assertEqual(settings.model, environ['COPILOT_MODEL'])
+                self.assertEqual(settings.aws_region, region)
+                self.assertIsNone(settings.model_api_key)
+                self.assertIsNone(settings.copilot_token)
+        # Even configured key paths must be ignored for this provider.
+        unused = str(Path(self.temp.name) / 'absent')
+        settings = ChatSettings.from_environment(
+            {**environ, 'COPILOT_TOKEN_FILE': unused, 'MODEL_API_KEY_FILE': unused}
+        )
+        self.assertIsNone(settings.model_api_key)
+        self.assertIsNone(settings.copilot_token)
+        for name in ('COPILOT_MODEL', 'AWS_REGION'):
+            with self.subTest(missing=name), self.assertRaisesRegex(SettingsError, name):
+                ChatSettings.from_environment({k: v for k, v in environ.items() if k != name})
+            with self.subTest(blank=name), self.assertRaisesRegex(SettingsError, name):
+                ChatSettings.from_environment({**environ, name: ' '})
+        for region in ('US-east-1', 'us_east_1', 'us-east', 'us-east-12', 'usa-east-1', 'us--east-1', 'us-east-1/path'):
+            with self.subTest(invalid_region=region), self.assertRaisesRegex(SettingsError, 'AWS_REGION'):
+                ChatSettings.from_environment({**environ, 'AWS_REGION': region})
+
+    def test_bedrock_requires_the_native_runtime(self):
+        environ = {
+            **self.environ,
+            'MODEL_PROVIDER': 'bedrock',
+            'COPILOT_MODEL': 'us.anthropic.claude-sonnet-4-5-20250929-v1:0',
+            'AWS_REGION': 'us-east-1',
+        }
+        for runtime in (None, '', 'copilot'):
+            candidate = environ if runtime is None else {**environ, 'CHAT_RUNTIME': runtime}
+            with self.subTest(runtime=runtime), self.assertRaisesRegex(SettingsError, 'CHAT_RUNTIME'):
+                ChatSettings.from_environment(candidate)
+        self.assertEqual(ChatSettings.from_environment({**environ, 'CHAT_RUNTIME': 'native'}).runtime, 'native')
 
     def test_anthropic_workspace_id_is_optional_and_validated(self):
         key = Path(self.temp.name) / 'MODEL_API_KEY_FILE'

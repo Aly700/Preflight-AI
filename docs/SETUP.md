@@ -98,9 +98,9 @@ What each step does:
 
 `CHAT_RUNTIME` selects how an answer is produced:
 
-- `copilot` (default): the Copilot SDK's own loop. Works with every provider.
+- `copilot` (default): the Copilot SDK's own loop. Works with `copilot`, `anthropic` and `openai` providers.
 - `native`: this repository's loop over the Anthropic Messages API
-  (`MODEL_PROVIDER=anthropic`). The model discovers the tools from the MCP
+  (`MODEL_PROVIDER=anthropic` or `bedrock`). The model discovers the tools from the MCP
   service each answer, can call several in one turn and take up to
   `MAX_TOOL_ROUNDS` turns and `MAX_TOOL_CALLS` calls (6 and 12 by default), and
   every result is validated before it goes back to the model. When the answer
@@ -119,13 +119,23 @@ MODEL_PROVIDER=openai COPILOT_MODEL=gpt-5.5 docker compose up -d
 ANTHROPIC_WORKSPACE_ID=wrkspc_... docker compose up -d   # user-scoped Anthropic keys (sk-ant-usr-...) need their workspace
 ```
 
-The key reaches the model runtime as a session option, never through its
-environment. Each secret file is bind-mounted and read on each request: a key
+For API-key providers and Copilot, each secret file is bind-mounted and read on each request: a key
 written in place (`printf '%s\n' "$KEY" > .secrets/model-api-key`) takes effect at
 once; after editing the file with an editor that saves by renaming, run
 `docker compose up -d --force-recreate preflight-oss-api`. Compose also reads a
 `.env` file in the repository root for `${...}` interpolation; `.env.example` sets
 `MODEL_PROVIDER=copilot`, so copying it to `.env` switches the stack to Copilot.
+
+`MODEL_PROVIDER=bedrock` runs Claude on Amazon Bedrock with `CHAT_RUNTIME=native`
+only. Set `COPILOT_MODEL` to the Bedrock model or inference-profile ID (for example,
+`us.anthropic.claude-sonnet-4-5-20250929-v1:0`) and set `AWS_REGION`. Credentials
+come from the standard AWS credential chain at request time, including the
+instance role on EC2; containers using that role need the instance metadata hop
+limit set to 2. No model key file is read.
+
+For a single host behind an existing Nginx, [deploy/compose.host.yaml](../deploy/compose.host.yaml)
+selects Bedrock, publishes only the API on loopback and makes the web service opt-in:
+`docker compose -f compose.yaml -f deploy/compose.host.yaml up -d`.
 
 ### Service configuration
 

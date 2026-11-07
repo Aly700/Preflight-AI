@@ -12,7 +12,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any, Protocol
 
-from anthropic import AsyncAnthropic
+from anthropic import AsyncAnthropic, AsyncAnthropicBedrock
 
 from backend.settings import ChatSettings, SettingsError
 
@@ -57,14 +57,18 @@ class AnthropicClient:
     def __init__(
         self,
         *,
-        api_key: str,
+        api_key: str | None = None,
         model: str,
         max_tokens: int = DEFAULT_MAX_TOKENS,
         workspace_id: str | None = None,
         client_factory: Callable[..., Any] = AsyncAnthropic,
+        client: Any | None = None,
     ) -> None:
         self.model = model
         self.max_tokens = max_tokens
+        if client is not None:
+            self._client = client
+            return
         options: dict[str, Any] = {'api_key': api_key}
         if workspace_id:
             options['default_headers'] = {'anthropic-workspace-id': workspace_id}
@@ -109,7 +113,9 @@ class AnthropicClient:
 
 
 def build_model_client(settings: ChatSettings) -> ModelClient:
-    """The client for the configured provider; only `anthropic` is served by this runtime so far."""
+    """Claude through the Anthropic API or Amazon Bedrock for the native runtime."""
+    if settings.provider == 'bedrock' and settings.model and settings.aws_region:
+        return AnthropicClient(model=settings.model, client=AsyncAnthropicBedrock(aws_region=settings.aws_region))
     if settings.provider != 'anthropic' or not settings.model_api_key or not settings.model:
-        raise SettingsError('MODEL_PROVIDER must be anthropic for the native runtime')
+        raise SettingsError('MODEL_PROVIDER must be anthropic or bedrock for the native runtime')
     return AnthropicClient(api_key=settings.model_api_key, model=settings.model, workspace_id=settings.workspace_id)

@@ -6,7 +6,8 @@ mode this prevents (see docs/SETUP.md, "Local stack").
 
 The model provider is explicit too. `copilot` (the default) needs the GitHub
 Copilot token; `anthropic` and `openai` are bring-your-own-key providers that
-need the developer's API key file and a model name instead.
+need the developer's API key file and a model name instead. `bedrock` uses the
+standard AWS credential chain with an explicit model and region.
 """
 
 from collections.abc import Mapping
@@ -20,9 +21,10 @@ from preflight_core.settings import SettingsError, read_mcp_token, read_secret_f
 __all__ = ['ChatSettings', 'SettingsError']
 
 MODEL_NAME = re.compile(r'^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$')
-PROVIDERS = ('copilot', 'anthropic', 'openai')
+AWS_REGION = re.compile(r'^[a-z]{2}(?:-[a-z]+)+-[0-9]$')
+PROVIDERS = ('copilot', 'anthropic', 'openai', 'bedrock')
 RUNTIMES = ('copilot', 'native')
-NATIVE_PROVIDERS = ('anthropic',)
+NATIVE_PROVIDERS = ('anthropic', 'bedrock')
 WORKSPACE_ID = re.compile(r'^[A-Za-z0-9_-]{1,128}$')
 
 
@@ -72,6 +74,8 @@ def chat_runtime(environ: Mapping[str, str], provider: str) -> str:
         raise SettingsError('CHAT_RUNTIME must be one of ' + ', '.join(RUNTIMES))
     if value == 'native' and provider not in NATIVE_PROVIDERS:
         raise SettingsError('CHAT_RUNTIME=native requires MODEL_PROVIDER=' + ' or '.join(NATIVE_PROVIDERS))
+    if provider == 'bedrock' and value != 'native':
+        raise SettingsError('CHAT_RUNTIME must be native when MODEL_PROVIDER is bedrock')
     return value
 
 
@@ -104,6 +108,7 @@ class ChatSettings:
     runtime: str = 'copilot'
     max_tool_rounds: int = 6
     max_tool_calls: int = 12
+    aws_region: str | None = None
 
     @classmethod
     def from_environment(cls, environ: Mapping[str, str] | None = None) -> ChatSettings:
@@ -111,9 +116,18 @@ class ChatSettings:
         source = os.environ if environ is None else environ
         provider = model_provider(source)
         model = model_name(source)
+        aws_region = None
         if provider == 'copilot':
             copilot_token: str | None = read_secret_file(source, 'COPILOT_TOKEN_FILE')
             model_api_key: str | None = None
+        elif provider == 'bedrock':
+            copilot_token = None
+            model_api_key = None
+            if model is None:
+                raise SettingsError('COPILOT_MODEL is required when MODEL_PROVIDER is bedrock')
+            aws_region = required(source, 'AWS_REGION')
+            if AWS_REGION.fullmatch(aws_region) is None:
+                raise SettingsError('AWS_REGION has an invalid format')
         else:
             copilot_token = None
             model_api_key = read_secret_file(source, 'MODEL_API_KEY_FILE', minimum=20)
@@ -127,6 +141,7 @@ class ChatSettings:
             model=model,
             provider=provider,
             model_api_key=model_api_key,
+            aws_region=aws_region,
             workspace_id=workspace_id(source),
             runtime=chat_runtime(source, provider),
             max_tool_rounds=bounded_int(source, 'MAX_TOOL_ROUNDS', 6),

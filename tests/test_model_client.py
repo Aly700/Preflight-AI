@@ -1,7 +1,12 @@
 """The model client wrapper against a fake SDK; no provider is contacted."""
 
+from dataclasses import replace
 from types import SimpleNamespace
 import unittest
+from unittest.mock import patch
+
+from anthropic import APIConnectionError, CredentialsError
+import httpx2
 
 from backend.model_client import AnthropicClient, ModelError, build_model_client
 from backend.settings import ChatSettings, SettingsError
@@ -15,6 +20,13 @@ SETTINGS = ChatSettings(
     provider='anthropic',
     model_api_key='sk-ant-' + 'k' * 40,
     runtime='native',
+)
+BEDROCK_SETTINGS = replace(
+    SETTINGS,
+    provider='bedrock',
+    model='us.anthropic.claude-sonnet-4-5-20250929-v1:0',
+    model_api_key=None,
+    aws_region='us-east-1',
 )
 
 
@@ -109,11 +121,46 @@ class ModelClientContract(unittest.IsolatedAsyncioTestCase):
         client = build_model_client(SETTINGS)
         self.assertIsInstance(client, AnthropicClient)
         self.assertEqual(client.model, 'claude-sonnet-5-5')
-        for provider in ('openai', 'copilot', 'bedrock'):
+        for provider in ('openai', 'copilot', 'unknown'):
             with self.subTest(provider=provider), self.assertRaisesRegex(SettingsError, 'MODEL_PROVIDER'):
                 build_model_client(
                     ChatSettings('a' * 64, 'b' * 64, 'c' * 64, mcp_url='http://x/mcp', provider=provider)
                 )
+
+    async def test_build_model_client_uses_bedrock_with_the_region_and_no_keys(self):
+        final = block(stop_reason='end_turn', content=[block(type='text', text='Hello')])
+        factory, seen = fake_sdk(FakeStream([block(type='text', text='Hello')], final))
+        with patch('backend.model_client.AsyncAnthropicBedrock', factory):
+            client = build_model_client(BEDROCK_SETTINGS)
+        self.assertIsInstance(client, AnthropicClient)
+        self.assertEqual(client.model, BEDROCK_SETTINGS.model)
+        self.assertEqual(seen['client'], {'aws_region': 'us-east-1'})
+        chunks: list[str] = []
+        turn = await client.stream_turn(system='s', messages=[], tools=[], tool_choice=None, on_text=chunks.append)
+        self.assertEqual(chunks, ['Hello'])
+        self.assertEqual(turn.text, 'Hello')
+        self.assertEqual(seen['stream']['model'], BEDROCK_SETTINGS.model)
+
+    async def test_bedrock_sdk_error_becomes_model_error_without_details(self):
+        errors = (
+            CredentialsError('upstream-secret in credential resolution'),
+            APIConnectionError(
+                message='upstream-secret at https://bedrock.invalid',
+                request=httpx2.Request('POST', 'https://bedrock.invalid'),
+            ),
+        )
+        for error in errors:
+            with self.subTest(error=type(error).__name__):
+                factory, _ = fake_sdk(FakeStream([], None, raises=error))
+                with patch('backend.model_client.AsyncAnthropicBedrock', factory):
+                    client = build_model_client(BEDROCK_SETTINGS)
+                with self.assertRaises(ModelError) as caught:
+                    await client.stream_turn(
+                        system='s', messages=[], tools=[], tool_choice=None, on_text=lambda _: None
+                    )
+                self.assertEqual(str(caught.exception), f'Model request failed: {type(error).__name__}')
+                self.assertIsNone(caught.exception.__cause__)
+                self.assertTrue(caught.exception.__suppress_context__)
 
     def test_workspace_header_is_set_when_configured(self):
         factory, seen = fake_sdk(FakeStream([], None))

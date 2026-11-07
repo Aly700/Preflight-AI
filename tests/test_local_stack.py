@@ -7,6 +7,7 @@ reason when Docker is unavailable, as the built-page test does without a build.
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
 import stat
 import subprocess
@@ -91,6 +92,48 @@ class ComposeConfiguration(unittest.TestCase):
         self.assertNotIn("PASSWORD '$", text)
         self.assertIn('preflight_reader', text)
         self.assertTrue(script.stat().st_mode & stat.S_IXUSR, 'roles script must be executable')
+
+    def test_host_compose_config_publishes_only_the_api_on_loopback(self):
+        # These prerequisites can be checked without Docker or any secret files.
+        self.assertIn('AWS_REGION: ${AWS_REGION:-}', (ROOT / 'compose.yaml').read_text())
+        override = ROOT / 'deploy/compose.host.yaml'
+        self.assertTrue(override.is_file(), 'deploy/compose.host.yaml must exist')
+        if not docker_compose_available():
+            self.skipTest('docker is not available')
+        rendered = subprocess.run(
+            [
+                'docker',
+                'compose',
+                '--env-file',
+                os.devnull,
+                '-f',
+                str(ROOT / 'compose.yaml'),
+                '-f',
+                str(override),
+                'config',
+                '--format',
+                'json',
+            ],
+            capture_output=True,
+            text=True,
+            check=True,
+            cwd=ROOT,
+            env={**os.environ, 'COMPOSE_PROFILES': ''},
+            timeout=120,
+        ).stdout
+        services = json.loads(rendered)['services']
+        self.assertEqual(set(services), {'preflight-oss-postgres', 'preflight-oss-mcp', 'preflight-oss-api'})
+        published = {name: service['ports'] for name, service in services.items() if service.get('ports')}
+        self.assertEqual(list(published), ['preflight-oss-api'])
+        self.assertEqual(len(published['preflight-oss-api']), 1)
+        port = published['preflight-oss-api'][0]
+        self.assertEqual((port['host_ip'], str(port['published']), port['target']), ('127.0.0.1', '8100', 8000))
+        for name, service in services.items():
+            self.assertEqual(service['container_name'], name)
+        environment = services['preflight-oss-api']['environment']
+        self.assertEqual(environment['MODEL_PROVIDER'], 'bedrock')
+        self.assertEqual(environment['CHAT_RUNTIME'], 'native')
+        self.assertTrue({'127.0.0.1', 'localhost'}.issubset(environment['PREFLIGHT_ALLOWED_HOSTS'].split(',')))
 
     @unittest.skipUnless(docker_compose_available(), 'docker is not available')
     def test_compose_config_publishes_only_the_web_entry_point_and_uses_explicit_names(self):

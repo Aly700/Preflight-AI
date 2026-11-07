@@ -1,0 +1,14 @@
+# Single-host override behind an existing Nginx: native Bedrock chat with the local UI opt-in.
+# Start with: docker compose -f compose.yaml -f deploy/compose.host.yaml up -d
+services:
+  preflight-oss-api:
+    environment:
+      CHAT_RUNTIME: native
+      MODEL_PROVIDER: bedrock
+      COPILOT_MODEL: ${COPILOT_MODEL:-us.anthropic.claude-sonnet-4-5-20250929-v1:0}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      PREFLIGHT_ALLOWED_HOSTS: preflight-oss-api,127.0.0.1,localhost
+    ports: ['127.0.0.1:8100:8000']
+
+  preflight-oss-web:
+    profiles: ['local-ui']
