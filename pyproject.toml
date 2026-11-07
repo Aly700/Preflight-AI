@@ -1,4 +1,5 @@
 # Tool configuration only. There is deliberately no [project] table: the
+# repository is an application run from source, not a distributable package.
 
 [tool.ruff]
 target-version = "py314"
