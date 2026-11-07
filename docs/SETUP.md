@@ -209,10 +209,9 @@ to `.env` switches the stack to the Copilot provider.
 
 Platform: the API image links the Copilot runtime prebuild for the build
 container's own architecture (`x86_64` and `aarch64`/`arm64`); the stack was
-verified on an Apple Silicon host (`linux/arm64`). The CI definition builds the API
-and MCP images for `linux/amd64` and `linux/arm64` and its `compose` job runs the
-whole sequence without a model credential, but CI has not run anywhere yet (the
-repository has no remote), so a Linux run of the sequence is still unrecorded.
+verified on an Apple Silicon host (`linux/arm64`) and, through the `compose` CI job
+on GitHub's Ubuntu runner, on `linux/amd64` without a model credential. CI also
+builds the API and MCP images for both architectures.
 
 Labels, so evidence is not overstated: `unittest` and `npm test` use fixtures and a
 fake Copilot client (mocked); `compose_check.py` is the real stack without a model;

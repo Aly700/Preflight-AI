@@ -141,7 +141,8 @@ health check can report ready while roles are still being created (dependents
 self-heal); `compose_check.py` expects newline-delimited JSON from `docker compose
 ps`; role passwords pass to `psql` as arguments inside the one-shot init container;
 `dist/_headers` is served locally; CI has no failure-log step and does not build the
-web image. The sequence has not yet been run on a Linux host.
+web image. The first CI run on GitHub (Ubuntu, `linux/amd64`) passed every job, including
+the Compose sequence without a model credential.
 
 ## November 6, 2026 — Cloudflare deployment
 
