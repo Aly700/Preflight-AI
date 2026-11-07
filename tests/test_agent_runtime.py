@@ -282,6 +282,25 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
         sources = next(e['data'] for e in events if e['event'] == 'sources')
         self.assertIn('DEMO-AIR-0001', sources['records'])
 
+    async def test_aircraft_filtered_count_verifies_the_cited_aircraft(self):
+        model = FakeModel(
+            [
+                Turn(
+                    '',
+                    [ToolCall('t1', 'count_issues', {'group_by': 'status', 'aircraft_id': 'DEMO-AIR-0008'})],
+                    'tool_use',
+                ),
+                Turn('The status counts are for DEMO-AIR-0008.', [], 'end_turn'),
+                claims(['DEMO-AIR-0008']),
+            ]
+        )
+        events = await collect(model, FakeTools(), question='Issue count by status for DEMO-AIR-0008')
+        self.assertEqual(events[1]['data']['status'], 'complete')
+        self.assertEqual(events[-1]['event'], 'done')
+        self.assertTrue(events[-1]['data']['verified'], events[-1]['data'])
+        sources = next(e['data'] for e in events if e['event'] == 'sources')
+        self.assertIn('DEMO-AIR-0008', sources['records'])
+
     async def test_single_tool_round_streams_text_then_sources_evidence_done(self):
         model = FakeModel(
             [

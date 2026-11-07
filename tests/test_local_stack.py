@@ -221,6 +221,7 @@ FACTS: dict[str, Any] = {
 COUNTS: dict[str, Any] = {
     'group_by': 'subsystem',
     'unresolved_only': True,
+    'filters': {'aircraft_id': None, 'status': None, 'subsystem': None, 'priority': None},
     'total': 162,
     'groups': [{'key': k, 'count': c} for k, c in sorted(FACTS['unresolved_by_subsystem'].items())],
 }

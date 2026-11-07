@@ -87,6 +87,7 @@ class FixtureRepository:
         return {
             'group_by': group_by,
             'unresolved_only': unresolved_only,
+            'filters': {'aircraft_id': aircraft_id, 'status': status, 'subsystem': subsystem, 'priority': priority},
             'total': len(rows),
             'groups': [{'key': key, 'count': count} for key, count in sorted(counts.items())],
         }
@@ -236,6 +237,15 @@ class McpContract(unittest.IsolatedAsyncioTestCase):
             filtered = await client.call_tool('count_issues', {'group_by': 'priority', 'aircraft_id': 'DEMO-AIR-0001'})
         self.assertEqual(
             filtered.structured_content['total'], self.repo.aircraft_summary('DEMO-AIR-0001')['issue_count']
+        )
+
+    async def test_count_issues_echoes_its_filters(self):
+        async with Client(self.server) as client:
+            result = await client.call_tool('count_issues', {'group_by': 'status', 'aircraft_id': 'DEMO-AIR-0008'})
+        self.assertFalse(result.is_error)
+        self.assertEqual(
+            result.structured_content.get('filters'),
+            {'aircraft_id': 'DEMO-AIR-0008', 'status': None, 'subsystem': None, 'priority': None},
         )
 
     async def test_count_groups_omit_empty_keys(self):

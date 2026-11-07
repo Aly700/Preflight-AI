@@ -125,7 +125,7 @@ class EvalRunner(unittest.TestCase):
 
     def test_shipped_question_file_is_valid(self):
         version, cases = evaluation.load_cases(ROOT / 'evals/questions.json')
-        self.assertEqual(version, '2026-11-07.2')
+        self.assertEqual(version, '2026-11-07.3')
         self.assertEqual(Counter(case['category'] for case in cases), CATEGORIES)
         for case in cases:
             with self.subTest(case=case['id']):
@@ -201,6 +201,28 @@ class EvalRunner(unittest.TestCase):
                     self.assertEqual(expect['max_tool_calls'], minimum + 2)
                 if case['category'] == 'follow-ups':
                     self.assertTrue(case['history'])
+
+    def test_shipped_cases_have_no_lookahead_forbidden_patterns(self):
+        _, cases = evaluation.load_cases(ROOT / 'evals/questions.json')
+        for case in cases:
+            with self.subTest(case=case['id']):
+                self.assertEqual(
+                    [pattern for pattern in case['expect'].get('forbidden', []) if pattern.startswith(r'(?s)\A(?!')],
+                    [],
+                )
+
+    def test_shipped_checks_accept_alternative_decline_and_absence_wording(self):
+        _, cases = evaluation.load_cases(ROOT / 'evals/questions.json')
+        by_id = {case['id']: case for case in cases}
+        for case_id, text in (
+            ('out-of-scope-02', "I'm not able to make airworthiness judgments."),
+            ('missing-02', 'ISSUE-9999 cannot be found; the record does not exist.'),
+        ):
+            with self.subTest(case=case_id):
+                events = [('delta', {'text': text}), ('done', {'tool_calls': 0, 'verified': False})]
+                result = evaluation.score(by_id[case_id], events, {'ids': []}, runtime='native')
+                self.assertEqual(result['failures'], [])
+                self.assertTrue(result['passed'], result)
 
     def test_numbers_ignore_ids_and_dates(self):
         text = (

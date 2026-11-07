@@ -49,6 +49,7 @@ class RegistryAgreement(unittest.IsolatedAsyncioTestCase):
         counts = {
             'group_by': 'subsystem',
             'unresolved_only': True,
+            'filters': {'aircraft_id': None, 'status': None, 'subsystem': None, 'priority': None},
             'total': 3,
             'groups': [{'key': 'cabin', 'count': 1}, {'key': 'hydraulics', 'count': 2}],
         }

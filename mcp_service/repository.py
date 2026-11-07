@@ -133,10 +133,8 @@ class Repository:
         unresolved_only: bool,
     ) -> Row:
         column = GROUP_COLUMNS[group_by]
-        where, values = issue_filters(
-            {'aircraft_id': aircraft_id, 'status': status, 'subsystem': subsystem, 'priority': priority},
-            unresolved_only=unresolved_only,
-        )
+        filters = {'aircraft_id': aircraft_id, 'status': status, 'subsystem': subsystem, 'priority': priority}
+        where, values = issue_filters(filters, unresolved_only=unresolved_only)
         groups = self.connection.execute(
             'SELECT '
             + column
@@ -148,6 +146,7 @@ class Repository:
         return {
             'group_by': group_by,
             'unresolved_only': unresolved_only,
+            'filters': filters,
             'total': sum(g['count'] for g in groups),
             'groups': [{'key': g['key'], 'count': g['count']} for g in groups],
         }

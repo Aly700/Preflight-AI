@@ -22,6 +22,7 @@ class ClaimVerification(unittest.TestCase):
                 payload = {
                     'group_by': group_by,
                     'unresolved_only': True,
+                    'filters': {'aircraft_id': None, 'status': None, 'subsystem': None, 'priority': None},
                     'total': 3,
                     'groups': [{'key': key, 'count': 3}],
                 }
@@ -57,6 +58,7 @@ class ClaimVerification(unittest.TestCase):
         counts = {
             'group_by': 'subsystem',
             'unresolved_only': True,
+            'filters': {'aircraft_id': None, 'status': None, 'subsystem': None, 'priority': None},
             'total': 162,
             'groups': [{'key': 'avionics', 'count': 30}, {'key': 'cabin', 'count': 25}],
         }

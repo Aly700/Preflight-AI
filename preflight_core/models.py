@@ -103,11 +103,19 @@ class CountGroup(ResultModel):
     count: Count
 
 
+class CountFilters(ResultModel):
+    aircraft_id: AircraftId | None
+    status: IssueStatus | None
+    subsystem: Subsystem | None
+    priority: Priority | None
+
+
 class IssueCounts(ResultModel):
     """Issue counts grouped by one column; SQL does the counting, keys with no issues are absent."""
 
     group_by: GroupBy
     unresolved_only: bool
+    filters: CountFilters
     total: Count
     groups: list[CountGroup]
 
