@@ -21,6 +21,8 @@ __all__ = ['ChatSettings', 'SettingsError']
 
 MODEL_NAME = re.compile(r'^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$')
 PROVIDERS = ('copilot', 'anthropic', 'openai')
+RUNTIMES = ('copilot', 'native')
+NATIVE_PROVIDERS = ('anthropic',)
 WORKSPACE_ID = re.compile(r'^[A-Za-z0-9_-]{1,128}$')
 
 
@@ -63,6 +65,25 @@ def workspace_id(environ: Mapping[str, str]) -> str | None:
     return value
 
 
+def chat_runtime(environ: Mapping[str, str], provider: str) -> str:
+    """`copilot` (the SDK's own loop) or `native` (this repository's loop over the Messages API)."""
+    value = environ.get('CHAT_RUNTIME', '').strip() or 'copilot'
+    if value not in RUNTIMES:
+        raise SettingsError('CHAT_RUNTIME must be one of ' + ', '.join(RUNTIMES))
+    if value == 'native' and provider not in NATIVE_PROVIDERS:
+        raise SettingsError('CHAT_RUNTIME=native requires MODEL_PROVIDER=' + ' or '.join(NATIVE_PROVIDERS))
+    return value
+
+
+def bounded_int(environ: Mapping[str, str], name: str, default: int, *, low: int = 1, high: int = 20) -> int:
+    value = environ.get(name, '').strip()
+    if not value:
+        return default
+    if not value.isdigit() or not low <= int(value) <= high:
+        raise SettingsError(f'{name} must be an integer from {low} to {high}')
+    return int(value)
+
+
 def model_provider(environ: Mapping[str, str]) -> str:
     value = environ.get('MODEL_PROVIDER', '').strip() or 'copilot'
     if value not in PROVIDERS:
@@ -80,6 +101,9 @@ class ChatSettings:
     provider: str = 'copilot'
     model_api_key: str | None = field(default=None, repr=False)
     workspace_id: str | None = None
+    runtime: str = 'copilot'
+    max_tool_rounds: int = 6
+    max_tool_calls: int = 12
 
     @classmethod
     def from_environment(cls, environ: Mapping[str, str] | None = None) -> ChatSettings:
@@ -104,4 +128,7 @@ class ChatSettings:
             provider=provider,
             model_api_key=model_api_key,
             workspace_id=workspace_id(source),
+            runtime=chat_runtime(source, provider),
+            max_tool_rounds=bounded_int(source, 'MAX_TOOL_ROUNDS', 6),
+            max_tool_calls=bounded_int(source, 'MAX_TOOL_CALLS', 12),
         )

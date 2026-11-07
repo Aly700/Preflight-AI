@@ -62,6 +62,9 @@ services:
       MODEL_PROVIDER: ${MODEL_PROVIDER:-anthropic}
       COPILOT_MODEL: ${COPILOT_MODEL:-claude-sonnet-5-5}
       ANTHROPIC_WORKSPACE_ID: ${ANTHROPIC_WORKSPACE_ID:-}
+      CHAT_RUNTIME: ${CHAT_RUNTIME:-copilot}
+      MAX_TOOL_ROUNDS: ${MAX_TOOL_ROUNDS:-6}
+      MAX_TOOL_CALLS: ${MAX_TOOL_CALLS:-12}
       PREFLIGHT_MCP_URL: http://preflight-oss-mcp:8001/mcp
       PREFLIGHT_ALLOWED_HOSTS: preflight-oss-api,localhost,127.0.0.1
     depends_on:

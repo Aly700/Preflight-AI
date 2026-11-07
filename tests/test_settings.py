@@ -117,6 +117,30 @@ class ChatSettingsContract(unittest.TestCase):
         with self.assertRaisesRegex(SettingsError, 'ANTHROPIC_WORKSPACE_ID'):
             ChatSettings.from_environment({**environ, 'ANTHROPIC_WORKSPACE_ID': 'bad id\n'})
 
+    def test_runtime_defaults_to_copilot_and_native_requires_anthropic(self):
+        self.assertEqual(ChatSettings.from_environment(self.environ).runtime, 'copilot')
+        key = Path(self.temp.name) / 'MODEL_API_KEY_FILE'
+        key.write_text('sk-ant-' + 'k' * 40 + '\n')
+        native = {
+            **self.environ,
+            'CHAT_RUNTIME': 'native',
+            'MODEL_PROVIDER': 'anthropic',
+            'MODEL_API_KEY_FILE': str(key),
+            'COPILOT_MODEL': 'claude-sonnet-5-5',
+        }
+        del native['COPILOT_TOKEN_FILE']
+        settings = ChatSettings.from_environment(native)
+        self.assertEqual((settings.runtime, settings.max_tool_rounds, settings.max_tool_calls), ('native', 6, 12))
+        self.assertEqual(ChatSettings.from_environment({**native, 'MAX_TOOL_ROUNDS': '3'}).max_tool_rounds, 3)
+        with self.assertRaisesRegex(SettingsError, 'CHAT_RUNTIME'):
+            ChatSettings.from_environment({**self.environ, 'CHAT_RUNTIME': 'native'})
+        with self.assertRaisesRegex(SettingsError, 'CHAT_RUNTIME'):
+            ChatSettings.from_environment({**native, 'CHAT_RUNTIME': 'langchain'})
+        with self.assertRaisesRegex(SettingsError, 'MAX_TOOL_ROUNDS'):
+            ChatSettings.from_environment({**native, 'MAX_TOOL_ROUNDS': '0'})
+        with self.assertRaisesRegex(SettingsError, 'MAX_TOOL_CALLS'):
+            ChatSettings.from_environment({**native, 'MAX_TOOL_CALLS': 'many'})
+
     def test_empty_key_file_is_not_configured(self):
         key = Path(self.temp.name) / 'MODEL_API_KEY_FILE'
         key.write_text('')
