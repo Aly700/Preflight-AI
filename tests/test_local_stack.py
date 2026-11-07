@@ -173,6 +173,7 @@ FACTS: dict[str, Any] = {
         'task_status_counts': {'todo': 20, 'in_progress': 5, 'awaiting_review': 3, 'completed': 10, 'blocked': 2},
     },
     'closed_total': 18,
+    'first_closed': ['ISSUE-0002', 'ISSUE-0005', 'ISSUE-0008', 'ISSUE-0010', 'ISSUE-0011'],
 }
 COUNTS: dict[str, Any] = {
     'group_by': 'subsystem',
@@ -195,7 +196,7 @@ CLOSED: dict[str, Any] = {
     'total': 18,
     'limit': 5,
     'offset': 0,
-    'items': [{'issue_id': 'ISSUE-0002', 'status': 'closed'}] * 5,
+    'items': [{'issue_id': i, 'status': 'closed'} for i in FACTS['first_closed']],
 }
 PAGE = {
     'total': 162,
@@ -264,6 +265,63 @@ class StackCheck(unittest.TestCase):
         self.assertIn('compare_aircraft', mismatches[0])
         open_item = {**CLOSED, 'items': [{'issue_id': 'ISSUE-0001', 'status': 'open'}]}
         mismatches = self.check.compare_tools({**results, 'search_issues': open_item}, FACTS)
+        self.assertEqual(len(mismatches), 1)
+        self.assertIn('search_issues', mismatches[0])
+
+    def test_compare_tools_rejects_empty_aircraft_ranking(self):
+        results = {
+            'get_aircraft_summary': SUMMARY,
+            'list_open_issues': PAGE,
+            'get_issue_history': HISTORY,
+            'count_issues': COUNTS,
+            'compare_aircraft': {**COMPARISON, 'ranked_by_unresolved': []},
+            'search_issues': CLOSED,
+        }
+        mismatches = self.check.compare_tools(results, FACTS)
+        self.assertEqual(len(mismatches), 1)
+        self.assertIn('compare_aircraft', mismatches[0])
+
+    def test_compare_tools_rejects_swapped_aircraft_summary_ids(self):
+        swapped = [
+            {**COMPARISON['summaries'][0], 'aircraft': {'aircraft_id': 'DEMO-AIR-0002'}},
+            {**COMPARISON['summaries'][1], 'aircraft': {'aircraft_id': 'DEMO-AIR-0001'}},
+        ]
+        results = {
+            'get_aircraft_summary': SUMMARY,
+            'list_open_issues': PAGE,
+            'get_issue_history': HISTORY,
+            'count_issues': COUNTS,
+            'compare_aircraft': {**COMPARISON, 'summaries': swapped},
+            'search_issues': CLOSED,
+        }
+        mismatches = self.check.compare_tools(results, FACTS)
+        self.assertEqual(len(mismatches), 1)
+        self.assertIn('compare_aircraft', mismatches[0])
+
+    def test_compare_tools_rejects_empty_search_page(self):
+        results = {
+            'get_aircraft_summary': SUMMARY,
+            'list_open_issues': PAGE,
+            'get_issue_history': HISTORY,
+            'count_issues': COUNTS,
+            'compare_aircraft': COMPARISON,
+            'search_issues': {**CLOSED, 'items': []},
+        }
+        mismatches = self.check.compare_tools(results, FACTS)
+        self.assertEqual(len(mismatches), 1)
+        self.assertIn('search_issues', mismatches[0])
+
+    def test_compare_tools_rejects_wrong_first_search_id(self):
+        wrong_items = [{**CLOSED['items'][0], 'issue_id': 'ISSUE-9999'}, *CLOSED['items'][1:]]
+        results = {
+            'get_aircraft_summary': SUMMARY,
+            'list_open_issues': PAGE,
+            'get_issue_history': HISTORY,
+            'count_issues': COUNTS,
+            'compare_aircraft': COMPARISON,
+            'search_issues': {**CLOSED, 'items': wrong_items},
+        }
+        mismatches = self.check.compare_tools(results, FACTS)
         self.assertEqual(len(mismatches), 1)
         self.assertIn('search_issues', mismatches[0])
 

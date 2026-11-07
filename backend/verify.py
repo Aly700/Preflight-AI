@@ -47,13 +47,13 @@ FINAL_ANSWER_TOOL: dict[str, Any] = {
 
 
 def record_ids(payload: Any) -> list[str]:
-    """Collect fictional record IDs from `*_id` fields only, never from free text."""
+    """Collect fictional record IDs from `*_id` and `key` fields, never from free text."""
     found: set[str] = set()
 
     def visit(value: Any) -> None:
         if isinstance(value, dict):
             for key, item in value.items():
-                if key.endswith('_id') and isinstance(item, str) and RECORD_ID.fullmatch(item):
+                if (key.endswith('_id') or key == 'key') and isinstance(item, str) and RECORD_ID.fullmatch(item):
                     found.add(item)
                 else:
                     visit(item)

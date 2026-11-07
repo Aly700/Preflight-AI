@@ -2,7 +2,7 @@
 
 import unittest
 
-from backend.verify import Verification, resolve_path, verify_claims
+from backend.verify import Verification, record_ids, resolve_path, verify_claims
 
 RESULTS = {'t1': {'total': 162, 'limit': 5, 'items': [{'issue_id': 'ISSUE-0001', 'priority': 'high'}]}}
 SEEN = {'ISSUE-0001', 'ISSUE-0003'}
@@ -13,6 +13,20 @@ def number(value, path='total', call_id='t1', label='unresolved total'):
 
 
 class ClaimVerification(unittest.TestCase):
+    def test_record_ids_collects_aircraft_group_keys_only(self):
+        for group_by, key, expected in (
+            ('aircraft', 'DEMO-AIR-0001', ['DEMO-AIR-0001']),
+            ('subsystem', 'avionics', []),
+        ):
+            with self.subTest(group_by=group_by):
+                payload = {
+                    'group_by': group_by,
+                    'unresolved_only': True,
+                    'total': 3,
+                    'groups': [{'key': key, 'count': 3}],
+                }
+                self.assertEqual(record_ids(payload), expected)
+
     def test_resolve_path_handles_keys_and_list_indexes(self):
         self.assertEqual(resolve_path(RESULTS['t1'], 'items[0].issue_id'), 'ISSUE-0001')
         self.assertEqual(resolve_path(RESULTS['t1'], 'total'), 162)

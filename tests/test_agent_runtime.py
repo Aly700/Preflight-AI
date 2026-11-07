@@ -26,10 +26,18 @@ METHODS = {
     'get_aircraft_summary': 'aircraft_summary',
     'list_open_issues': 'open_issues',
     'get_issue_history': 'issue_history',
+    'count_issues': 'issue_counts',
 }
 DEFAULTS: dict[str, dict[str, Any]] = {
     'list_open_issues': {'aircraft_id': None, 'priority': None, 'limit': 50, 'offset': 0},
     'get_issue_history': {'limit': 100, 'offset': 0},
+    'count_issues': {
+        'aircraft_id': None,
+        'status': None,
+        'subsystem': None,
+        'priority': None,
+        'unresolved_only': False,
+    },
 }
 
 
@@ -105,6 +113,7 @@ ARGUMENT_ORDER = {
     'get_aircraft_summary': ['aircraft_id'],
     'list_open_issues': ['aircraft_id', 'priority', 'limit', 'offset'],
     'get_issue_history': ['issue_id', 'limit', 'offset'],
+    'count_issues': ['group_by', 'aircraft_id', 'status', 'subsystem', 'priority', 'unresolved_only'],
 }
 
 
@@ -113,6 +122,22 @@ async def collect(model, tools, question='Summary', settings=SETTINGS):
 
 
 class NativeLoop(unittest.IsolatedAsyncioTestCase):
+    async def test_aircraft_group_counts_verify_cited_records(self):
+        model = FakeModel(
+            [
+                Turn('', [ToolCall('t1', 'count_issues', {'group_by': 'aircraft'})], 'tool_use'),
+                Turn('The counts include DEMO-AIR-0001.', [], 'end_turn'),
+                claims(['DEMO-AIR-0001']),
+            ]
+        )
+        events = await collect(model, FakeTools())
+        self.assertEqual(events[1]['data']['status'], 'complete')
+        self.assertEqual(events[-1]['event'], 'done')
+        text = ''.join(e['data']['text'] for e in events if e['event'] == 'delta')
+        self.assertTrue(events[-1]['data']['verified'], text)
+        sources = next(e['data'] for e in events if e['event'] == 'sources')
+        self.assertIn('DEMO-AIR-0001', sources['records'])
+
     async def test_single_tool_round_streams_text_then_sources_evidence_done(self):
         model = FakeModel(
             [

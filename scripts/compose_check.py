@@ -67,7 +67,9 @@ SELECT json_build_object(
     'issue_count', count(*),
     'unresolved_issue_count', count(*) FILTER (WHERE status <> 'closed'))
     FROM preflight.issues WHERE aircraft_id = 'DEMO-AIR-0002'),
-  'closed_total', (SELECT count(*) FROM preflight.issues WHERE status = 'closed')
+  'closed_total', (SELECT count(*) FROM preflight.issues WHERE status = 'closed'),
+  'first_closed', (SELECT coalesce(json_agg(issue_id ORDER BY issue_id), '[]'::json) FROM
+    (SELECT issue_id FROM preflight.issues WHERE status = 'closed' ORDER BY issue_id LIMIT 5) first_five)
 );
 """
 
@@ -267,13 +269,27 @@ def compare_tools(results: dict[str, Any], facts: dict[str, Any]) -> list[str]:
     if 'compare_aircraft' in results:
         comparison = results['compare_aircraft']
         summaries = comparison.get('summaries', [])
+        aircraft_ids = [AIRCRAFT, 'DEMO-AIR-0002']
         wanted = [facts['aircraft_0001'], facts['aircraft_0002']]
-        if len(summaries) != 2 or any(
+        if [s.get('aircraft', {}).get('aircraft_id') for s in summaries] != aircraft_ids or any(
             s.get(k) != w[k]
             for s, w in zip(summaries, wanted, strict=False)
             for k in ('issue_count', 'unresolved_issue_count')
         ):
             mismatches.append('compare_aircraft: summaries differ from SQL')
+        ranking = sorted(
+            [
+                {
+                    'aircraft_id': aircraft_id,
+                    'unresolved_issue_count': fact['unresolved_issue_count'],
+                    'issue_count': fact['issue_count'],
+                }
+                for aircraft_id, fact in zip(aircraft_ids, wanted, strict=True)
+            ],
+            key=lambda entry: (-entry['unresolved_issue_count'], entry['aircraft_id']),
+        )
+        if comparison.get('ranked_by_unresolved') != ranking:
+            mismatches.append('compare_aircraft: ranking differs from SQL')
         spread = abs(
             facts['aircraft_0001']['unresolved_issue_count'] - facts['aircraft_0002']['unresolved_issue_count']
         )
@@ -282,14 +298,15 @@ def compare_tools(results: dict[str, Any], facts: dict[str, Any]) -> list[str]:
             mismatches.append(f'compare_aircraft: unresolved_spread {spread_seen!r} differs from SQL {spread!r}')
     if 'search_issues' in results:
         closed = results['search_issues']
-        if closed.get('total') != facts['closed_total'] or any(
-            i.get('status') != 'closed' for i in closed.get('items', [])
+        items = closed.get('items', [])
+        if (
+            closed.get('limit') != 5
+            or closed.get('offset') != 0
+            or closed.get('total') != facts['closed_total']
+            or [i.get('issue_id') for i in items] != facts['first_closed']
+            or any(i.get('status') != 'closed' for i in items)
         ):
-            observed, expected = closed.get('total'), facts['closed_total']
-            observed, expected = closed.get('total'), facts['closed_total']
-            mismatches.append(
-                f'search_issues: total {observed!r} differs from SQL {expected!r} or an item is not closed'
-            )
+            mismatches.append('search_issues: page differs from SQL or an item is not closed')
     return mismatches
 
 
