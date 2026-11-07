@@ -17,7 +17,7 @@ import logging
 from typing import Any
 
 from backend.mcp_tools import McpTools, ToolResult, ToolService, anthropic_tools
-from backend.model_client import ModelClient, ModelError, ToolCall, Turn, build_model_client
+from backend.model_client import USAGE_KEYS, ModelClient, ModelError, ToolCall, Turn, build_model_client
 from backend.settings import ChatSettings
 from backend.verify import FINAL_ANSWER_TOOL, record_ids, scan_prose, verify_claims
 from preflight_core.tools import TOOLS
@@ -105,6 +105,8 @@ class Loop:
         self.emit = emit
         self.rounds = 0
         self.calls_made = 0
+        self.model_calls = 0
+        self.usage = dict.fromkeys(USAGE_KEYS, 0)
         self.text_parts: list[str] = []
         self.text_length = 0
         self.results: dict[str, dict[str, Any]] = {}
@@ -127,13 +129,29 @@ class Loop:
         self.text_parts.append(text)
         self.emit({'event': 'delta', 'data': {'text': text}})
 
+    async def model_turn(
+        self,
+        *,
+        messages: list[dict[str, Any]],
+        tools: list[dict[str, Any]],
+        tool_choice: dict[str, Any],
+        on_text: Callable[[str], None],
+    ) -> Turn:
+        self.model_calls += 1
+        turn = await self.model.stream_turn(
+            system=SYSTEM, messages=messages, tools=tools, tool_choice=tool_choice, on_text=on_text
+        )
+        for key in self.usage:
+            self.usage[key] += turn.usage.get(key, 0)
+        return turn
+
     async def run(self, question: str) -> None:
         tool_defs = [tool for tool in anthropic_tools(await self.tools.discover()) if tool['name'] != FINAL]
         messages: list[dict[str, Any]] = [{'role': 'user', 'content': question}]
         while True:
             self.turn_has_text = False
-            turn = await self.model.stream_turn(
-                system=SYSTEM, messages=messages, tools=tool_defs, tool_choice={'type': 'auto'}, on_text=self.on_text
+            turn = await self.model_turn(
+                messages=messages, tools=tool_defs, tool_choice={'type': 'auto'}, on_text=self.on_text
             )
             self.rounds += 1
             messages.append({'role': 'assistant', 'content': assistant_blocks(turn)})
@@ -145,8 +163,7 @@ class Loop:
                 messages.append({'role': 'user', 'content': NO_MORE_TOOLS})
                 try:
                     self.turn_has_text = False
-                    turn = await self.model.stream_turn(
-                        system=SYSTEM,
+                    turn = await self.model_turn(
                         messages=messages,
                         tools=tool_defs,
                         tool_choice={'type': 'none'},
@@ -155,8 +172,7 @@ class Loop:
                 except ModelError:
                     # Not every model accepts tool_choice none; the instruction alone then has to do.
                     self.turn_has_text = False
-                    turn = await self.model.stream_turn(
-                        system=SYSTEM,
+                    turn = await self.model_turn(
                         messages=messages,
                         tools=tool_defs,
                         tool_choice={'type': 'auto'},
@@ -174,8 +190,7 @@ class Loop:
         messages.append({'role': 'user', 'content': claims_prompt(self.calls_log)})
         # Not every model accepts a forced tool choice, so the claims tool is simply the only tool offered.
         self.turn_has_text = False
-        turn = await self.model.stream_turn(
-            system=SYSTEM,
+        turn = await self.model_turn(
             messages=messages,
             tools=[FINAL_ANSWER_TOOL],
             tool_choice={'type': 'auto'},
@@ -243,6 +258,8 @@ class Loop:
                 'data': {
                     'tool_calls': len(self.evidence),
                     'rounds': self.rounds,
+                    'usage': dict(self.usage),
+                    'model_calls': self.model_calls,
                     'verified': verification.verified,
                     'unverified': len(verification.unverified),
                     'undeclared': verification.undeclared,

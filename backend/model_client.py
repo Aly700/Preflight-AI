@@ -17,6 +17,7 @@ from anthropic import AsyncAnthropic, AsyncAnthropicBedrock
 from backend.settings import ChatSettings, SettingsError
 
 DEFAULT_MAX_TOKENS = 4096
+USAGE_KEYS = ('input_tokens', 'output_tokens', 'cache_creation_input_tokens', 'cache_read_input_tokens')
 
 
 class ModelError(RuntimeError):
@@ -35,6 +36,7 @@ class Turn:
     text: str
     tool_calls: list[ToolCall] = field(default_factory=list)
     stop_reason: str = 'end_turn'
+    usage: dict[str, int] = field(default_factory=dict)
 
 
 class ModelClient(Protocol):
@@ -83,12 +85,15 @@ class AnthropicClient:
         tool_choice: dict[str, Any] | None,
         on_text: Callable[[str], None],
     ) -> Turn:
+        cached_tools = list(tools)
+        if cached_tools:
+            cached_tools[-1] = {**cached_tools[-1], 'cache_control': {'type': 'ephemeral'}}
         options: dict[str, Any] = {
             'model': self.model,
             'max_tokens': self.max_tokens,
-            'system': system,
+            'system': [{'type': 'text', 'text': system, 'cache_control': {'type': 'ephemeral'}}],
             'messages': messages,
-            'tools': tools,
+            'tools': cached_tools,
         }
         if tool_choice is not None:
             options['tool_choice'] = tool_choice
@@ -109,7 +114,13 @@ class AnthropicClient:
                 text_parts.append(item.text)
             elif kind == 'tool_use':
                 calls.append(ToolCall(id=str(item.id), name=str(item.name), input=dict(item.input or {})))
-        return Turn(text=''.join(text_parts), tool_calls=calls, stop_reason=str(final.stop_reason or 'end_turn'))
+        usage = getattr(final, 'usage', None)
+        return Turn(
+            text=''.join(text_parts),
+            tool_calls=calls,
+            stop_reason=str(final.stop_reason or 'end_turn'),
+            usage={key: int(getattr(usage, key, None) or 0) for key in USAGE_KEYS},
+        )
 
 
 def build_model_client(settings: ChatSettings) -> ModelClient:

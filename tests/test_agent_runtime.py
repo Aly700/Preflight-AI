@@ -1,6 +1,7 @@
 """The native loop against a scripted model and fixture-backed tools. This is not live-model evidence."""
 
 import asyncio
+from dataclasses import replace
 from typing import Any
 import unittest
 
@@ -8,7 +9,7 @@ from test_mcp import FixtureRepository
 
 from backend.agent_runtime import ANSWER_CHARS, SYSTEM, claims_prompt, stream_answer
 from backend.mcp_tools import ToolResult, ToolSpec
-from backend.model_client import ToolCall, Turn
+from backend.model_client import ModelError, ToolCall, Turn
 from backend.settings import ChatSettings
 from preflight_core.tools import TOOLS
 
@@ -56,6 +57,8 @@ CLAIMS_CHOICE = {
 
 
 class FakeModel:
+    """Scripted turns use Turn's empty usage default; exceptions model rejected requests."""
+
     model = 'fake-model'
 
     def __init__(self, turns):
@@ -65,6 +68,8 @@ class FakeModel:
     async def stream_turn(self, *, system, messages, tools, tool_choice, on_text):
         self.calls.append({'messages': [dict(m) for m in messages], 'tools': tools, 'tool_choice': tool_choice})
         turn = self.turns.pop(0)
+        if isinstance(turn, Exception):
+            raise turn
         half = len(turn.text) // 2
         for chunk in (turn.text[:half], turn.text[half:]):
             if chunk:
@@ -137,6 +142,54 @@ class NativePrompts(unittest.TestCase):
 
 
 class NativeLoop(unittest.IsolatedAsyncioTestCase):
+    async def test_done_reports_summed_usage_and_model_calls(self):
+        expected = {
+            'input_tokens': 90,
+            'output_tokens': 6,
+            'cache_creation_input_tokens': 20,
+            'cache_read_input_tokens': 100,
+        }
+        for max_rounds, rejected in ((3, False), (2, False), (2, True)):
+            with self.subTest(max_rounds=max_rounds, rejected=rejected):
+                turns = [
+                    Turn(
+                        '',
+                        [ToolCall('t1', 'list_open_issues', {'limit': 1})],
+                        'tool_use',
+                        usage={'input_tokens': 10, 'output_tokens': 1, 'cache_creation_input_tokens': 20},
+                    ),
+                    Turn('', [ToolCall('t2', 'list_open_issues', {'limit': 1})], 'tool_use'),
+                    Turn(
+                        'The results include ISSUE-0001.',
+                        usage={'input_tokens': 30, 'output_tokens': 2, 'cache_read_input_tokens': 40},
+                    ),
+                    replace(
+                        claims(['ISSUE-0001']),
+                        usage={'input_tokens': 50, 'output_tokens': 3, 'cache_read_input_tokens': 60},
+                    ),
+                ]
+                scripted: list[Turn | ModelError] = list(turns)
+                if rejected:
+                    scripted.insert(2, ModelError('Model request failed: BadRequestError'))
+                model = FakeModel(scripted)
+                events = await collect(model, FakeTools(), settings=replace(SETTINGS, max_tool_rounds=max_rounds))
+                self.assertEqual(events[-1]['event'], 'done')
+                done = events[-1]['data']
+                self.assertEqual(done.get('usage'), expected)
+                self.assertEqual(done.get('model_calls'), 5 if rejected else 4)
+                self.assertEqual(done['model_calls'], len(model.calls))
+                self.assertEqual(done['rounds'], max_rounds)
+                self.assertTrue(done['verified'])
+                if max_rounds == 2:
+                    self.assertEqual(model.calls[2]['tool_choice'], {'type': 'none'})
+                if rejected:
+                    self.assertEqual(model.calls[3]['tool_choice'], {'type': 'auto'})
+                self.assertEqual([tool['name'] for tool in model.calls[-1]['tools']], ['final_answer'])
+        model = FakeModel([Turn('Which criterion do you mean?')])
+        events = await collect(model, FakeTools())
+        self.assertEqual(events[-1]['data'].get('usage'), dict.fromkeys(expected, 0))
+        self.assertEqual(events[-1]['data']['model_calls'], 1)
+
     async def test_claims_round_is_skipped_when_the_answer_has_no_ids_or_numbers(self):
         for answer in (
             'Which criterion do you mean: unresolved issues or task completion?',
@@ -382,8 +435,6 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(outcome, {'cancelled': True})
 
     async def test_wrap_up_falls_back_to_auto_when_the_model_rejects_tool_choice_none(self):
-        from backend.model_client import ModelError
-
         class Picky(FakeModel):
             async def stream_turn(self, **kw):
                 if kw['tool_choice'] == {'type': 'none'}:

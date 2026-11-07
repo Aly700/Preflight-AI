@@ -41,7 +41,7 @@ CASE: dict[str, Any] = {
         'max_tool_calls': 1,
     },
 }
-EVENTS = [
+EVENTS: list[tuple[str, dict[str, Any]]] = [
     ('tool', {'name': 'get_aircraft_summary', 'call_id': 't1', 'status': 'running'}),
     ('tool', {'name': 'get_aircraft_summary', 'call_id': 't1', 'status': 'complete'}),
     ('delta', {'text': 'DEMO-AIR-0001 has 1,784 issues.'}),
@@ -49,6 +49,12 @@ EVENTS = [
 ]
 TRUTH = {'ids': 'DEMO-AIR-0001', 'issues': 1784}
 CONFIG = {'runtime': 'native', 'provider': 'anthropic', 'model': 'test-model'}
+ZERO_USAGE = {
+    'input_tokens': 0,
+    'output_tokens': 0,
+    'cache_creation_input_tokens': 0,
+    'cache_read_input_tokens': 0,
+}
 
 
 def question_document():
@@ -67,6 +73,54 @@ class EvalRunner(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.path = Path(self.temp.name) / 'questions.json'
+
+    def test_report_sums_usage_from_done_events(self):
+        first = {**ZERO_USAGE, 'input_tokens': 100, 'output_tokens': 10, 'cache_creation_input_tokens': 80}
+        second = {'input_tokens': 30, 'output_tokens': 5, 'cache_read_input_tokens': 80}
+        cases = [
+            {**CASE, 'id': 'first'},
+            {**CASE, 'id': 'second', 'category': 'comparisons'},
+            {**CASE, 'id': 'missing'},
+            {**CASE, 'id': 'null'},
+        ]
+        done = EVENTS[-1][1]
+        responses = [
+            [*EVENTS[:-1], ('done', {**done, 'usage': first, 'model_calls': 3})],
+            [*EVENTS[:-1], ('done', {**done, 'usage': second, 'model_calls': 2})],
+            EVENTS,
+            [*EVENTS[:-1], ('done', {**done, 'usage': None, 'model_calls': None})],
+        ]
+        for runtime in ('native', 'copilot'):
+            with (
+                self.subTest(runtime=runtime),
+                patch.object(evaluation, 'runtime_configuration', return_value={**CONFIG, 'runtime': runtime}),
+                patch.object(evaluation, 'sql_values', return_value=TRUTH),
+                patch.object(evaluation.time, 'sleep'),
+            ):
+                report = evaluation.run(
+                    cases,
+                    base='http://test',
+                    container='db',
+                    database='db',
+                    gap=0,
+                    ask_fn=Mock(side_effect=responses if runtime == 'native' else [EVENTS] * 4),
+                )
+                expected_usage = [first, second, None, None] if runtime == 'native' else [None] * 4
+                expected_calls = [3, 2, None, None] if runtime == 'native' else [None] * 4
+                for result, usage, calls in zip(report['cases'], expected_usage, expected_calls, strict=True):
+                    self.assertIn('usage', result)
+                    self.assertEqual(result['usage'], usage)
+                    self.assertIn('model_calls', result)
+                    self.assertEqual(result['model_calls'], calls)
+                summed = {**first, 'input_tokens': 130, 'output_tokens': 15, 'cache_read_input_tokens': 80}
+                self.assertEqual(report['overall']['usage'], summed if runtime == 'native' else ZERO_USAGE)
+                self.assertEqual(report['overall']['model_calls'], 5 if runtime == 'native' else 0)
+                for category, usage, calls in (('lookups', first, 3), ('comparisons', {**ZERO_USAGE, **second}, 2)):
+                    self.assertEqual(
+                        report['categories'][category]['usage'], usage if runtime == 'native' else ZERO_USAGE
+                    )
+                    self.assertEqual(report['categories'][category]['model_calls'], calls if runtime == 'native' else 0)
+                self.assertEqual(report['overall']['passed'], 4)
 
     def test_shipped_question_file_is_valid(self):
         version, cases = evaluation.load_cases(ROOT / 'evals/questions.json')
@@ -411,7 +465,16 @@ class EvalRunner(unittest.TestCase):
                 gap=0,
                 ask_fn=Mock(side_effect=[row[1] for row in scenarios]),
             )
-        totals = {'total': 6, 'passed': 5, 'failed': 1, 'skipped': 0, 'extra_tool_calls': 4, 'minimal_cases': 2}
+        totals = {
+            'total': 6,
+            'passed': 5,
+            'failed': 1,
+            'skipped': 0,
+            'extra_tool_calls': 4,
+            'minimal_cases': 2,
+            'usage': ZERO_USAGE,
+            'model_calls': 0,
+        }
         self.assertEqual(report['overall'], totals)
         self.assertEqual(report['categories']['lookups'], totals)
 
@@ -486,7 +549,16 @@ class EvalRunner(unittest.TestCase):
         self.assertEqual(report['cases'][0]['failures'], [])
         self.assertEqual(
             report['overall'],
-            {'total': 1, 'passed': 0, 'failed': 0, 'skipped': 1, 'extra_tool_calls': 0, 'minimal_cases': 0},
+            {
+                'total': 1,
+                'passed': 0,
+                'failed': 0,
+                'skipped': 1,
+                'extra_tool_calls': 0,
+                'minimal_cases': 0,
+                'usage': ZERO_USAGE,
+                'model_calls': 0,
+            },
         )
         self.assertIsNone(report['latency']['median_s'])
 
@@ -558,7 +630,16 @@ class EvalRunner(unittest.TestCase):
             )
         self.assertEqual(
             report['overall'],
-            {'total': 2, 'passed': 1, 'failed': 1, 'skipped': 0, 'extra_tool_calls': 0, 'minimal_cases': 0},
+            {
+                'total': 2,
+                'passed': 1,
+                'failed': 1,
+                'skipped': 0,
+                'extra_tool_calls': 0,
+                'minimal_cases': 0,
+                'usage': ZERO_USAGE,
+                'model_calls': 0,
+            },
         )
         self.assertEqual(ask.call_count, 2)
         self.assertIn('request: RuntimeError', report['cases'][0]['failures'])

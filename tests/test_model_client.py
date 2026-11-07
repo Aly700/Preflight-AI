@@ -1,5 +1,6 @@
 """The model client wrapper against a fake SDK; no provider is contacted."""
 
+from copy import deepcopy
 from dataclasses import replace
 from types import SimpleNamespace
 import unittest
@@ -8,7 +9,7 @@ from unittest.mock import patch
 from anthropic import APIConnectionError, CredentialsError
 import httpx2
 
-from backend.model_client import AnthropicClient, ModelError, build_model_client
+from backend.model_client import AnthropicClient, ModelError, Turn, build_model_client
 from backend.settings import ChatSettings, SettingsError
 
 SETTINGS = ChatSettings(
@@ -76,6 +77,34 @@ def fake_sdk(stream):
 
 
 class ModelClientContract(unittest.IsolatedAsyncioTestCase):
+    async def test_stream_turn_reports_usage(self):
+        usage = {
+            'input_tokens': 120,
+            'output_tokens': 25,
+            'cache_creation_input_tokens': 80,
+            'cache_read_input_tokens': 40,
+        }
+        zeros = dict.fromkeys(usage, 0)
+        for fields, expected in (
+            ({'usage': block(**usage)}, usage),
+            (
+                {'usage': block(input_tokens=7, output_tokens=None, cache_read_input_tokens=None)},
+                {**zeros, 'input_tokens': 7},
+            ),
+            ({'usage': None}, zeros),
+            ({}, zeros),
+        ):
+            with self.subTest(fields=fields):
+                final = block(stop_reason='end_turn', content=[], **fields)
+                factory, _ = fake_sdk(FakeStream([], final))
+                client = AnthropicClient(api_key='k' * 40, model='m', client_factory=factory)
+                turn = await client.stream_turn(
+                    system='sys', messages=[], tools=[], tool_choice=None, on_text=lambda _: None
+                )
+                self.assertEqual(getattr(turn, 'usage', None), expected)
+        self.assertEqual(getattr(Turn(''), 'usage', None), {})
+        self.assertIsNot(Turn('').usage, Turn('').usage)
+
     async def test_stream_turn_forwards_text_and_returns_tool_calls(self):
         final = block(
             stop_reason='tool_use',
@@ -102,10 +131,43 @@ class ModelClientContract(unittest.IsolatedAsyncioTestCase):
             [(c.id, c.name, c.input) for c in turn.tool_calls], [('toolu_1', 'list_open_issues', {'limit': 5})]
         )
         self.assertEqual(seen['stream']['model'], 'claude-sonnet-5-5')
-        self.assertEqual(seen['stream']['system'], 'sys')
+        self.assertEqual(
+            seen['stream']['system'], [{'type': 'text', 'text': 'sys', 'cache_control': {'type': 'ephemeral'}}]
+        )
         self.assertEqual(seen['stream']['tool_choice'], {'type': 'auto'})
         self.assertEqual(seen['stream']['tools'][0]['name'], 'list_open_issues')
         self.assertEqual(seen['client']['api_key'], 'sk-ant-' + 'k' * 40)
+
+    async def test_system_and_tools_are_marked_for_caching(self):
+        definitions = [
+            {'name': name, 'description': 'd', 'input_schema': {'type': 'object'}}
+            for name in ('list_open_issues', 'get_issue_history')
+        ]
+        for provider in ('anthropic', 'bedrock'):
+            for count in (2, 1, 0):
+                with self.subTest(provider=provider, tool_count=count):
+                    tools = deepcopy(definitions[:count])
+                    original = deepcopy(tools)
+                    factory, seen = fake_sdk(FakeStream([], block(stop_reason='end_turn', content=[])))
+                    if provider == 'bedrock':
+                        with patch('backend.model_client.AsyncAnthropicBedrock', factory):
+                            client = build_model_client(BEDROCK_SETTINGS)
+                    else:
+                        client = AnthropicClient(api_key='k' * 40, model='m', client_factory=factory)
+                    await client.stream_turn(
+                        system='sys', messages=[], tools=tools, tool_choice=None, on_text=lambda _: None
+                    )
+                    self.assertEqual(
+                        seen['stream']['system'],
+                        [{'type': 'text', 'text': 'sys', 'cache_control': {'type': 'ephemeral'}}],
+                    )
+                    expected = deepcopy(original)
+                    if expected:
+                        expected[-1]['cache_control'] = {'type': 'ephemeral'}
+                        self.assertIsNot(seen['stream']['tools'][-1], tools[-1])
+                    self.assertEqual(seen['stream']['tools'], expected)
+                    self.assertIsNot(seen['stream']['tools'], tools)
+                    self.assertEqual(tools, original)
 
     async def test_provider_error_becomes_model_error_without_details(self):
         stream = FakeStream([], None, raises=RuntimeError('https://api.anthropic.com/v1/messages key=sk-ant-secret'))

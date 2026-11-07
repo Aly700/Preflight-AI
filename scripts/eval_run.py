@@ -42,6 +42,7 @@ TOOLS = {
     'compare_aircraft',
     'search_issues',
 }
+USAGE_KEYS = ('input_tokens', 'output_tokens', 'cache_creation_input_tokens', 'cache_read_input_tokens')
 Events = list[tuple[str, dict[str, Any]]]
 Ask = Callable[..., Events]
 
@@ -224,6 +225,8 @@ def score(case: dict[str, Any], events: Events, truth: dict[str, Any], *, runtim
         'tool_calls': successful,
         'tools': sorted(completed),
         'rounds': (done or {}).get('rounds'),
+        'usage': (done or {}).get('usage'),
+        'model_calls': (done or {}).get('model_calls'),
         'verified': verified,
         'unverified': (done or {}).get('unverified'),
         'undeclared': (done or {}).get('undeclared'),
@@ -247,6 +250,19 @@ def runtime_configuration() -> dict[str, str]:
         compose_check.run(['docker', 'exec', 'preflight-oss-api', 'python', '-c', code])
     )
     return config
+
+
+def empty_totals() -> dict[str, Any]:
+    return {
+        'total': 0,
+        'passed': 0,
+        'failed': 0,
+        'skipped': 0,
+        'extra_tool_calls': 0,
+        'minimal_cases': 0,
+        'usage': dict.fromkeys(USAGE_KEYS, 0),
+        'model_calls': 0,
+    }
 
 
 def run(
@@ -302,14 +318,18 @@ def run(
             id=case['id'], category=case['category'], first_delta_s=first_delta, total_s=time.monotonic() - started
         )
         report['cases'].append(result)
-    categories: dict[str, dict[str, int]] = {}
-    overall = {'total': 0, 'passed': 0, 'failed': 0, 'skipped': 0, 'extra_tool_calls': 0, 'minimal_cases': 0}
+    categories: dict[str, dict[str, Any]] = {}
+    overall = empty_totals()
     for result in report['cases']:
-        counts = categories.setdefault(result['category'], dict.fromkeys(overall, 0))
+        counts = categories.setdefault(result['category'], empty_totals())
         outcome = 'skipped' if result.get('skipped') else ('passed' if result['passed'] else 'failed')
         for bucket in (counts, overall):
             bucket['total'] += 1
             bucket[outcome] += 1
+            bucket['model_calls'] += result['model_calls'] or 0
+            if result['usage'] is not None:
+                for key in USAGE_KEYS:
+                    bucket['usage'][key] += result['usage'].get(key, 0)
             if result['efficiency'] is not None:
                 bucket['extra_tool_calls'] += max(result['efficiency'], 0)
                 bucket['minimal_cases'] += result['efficiency'] == 0
