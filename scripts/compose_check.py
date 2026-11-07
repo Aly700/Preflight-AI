@@ -11,7 +11,7 @@ web entry point and compares the answer's tool evidence with the same SQL facts.
 from __future__ import annotations
 
 import argparse
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 import http.client
 import json
 from pathlib import Path
@@ -186,17 +186,29 @@ def parse_sse(stream: Iterable[bytes]) -> Iterator[tuple[str, dict[str, Any]]]:
             name, data = '', []
 
 
-def ask(base: str, question: str, *, timeout: float = 150) -> list[tuple[str, dict[str, Any]]]:
+def ask(
+    base: str,
+    question: str,
+    *,
+    timeout: float = 150,
+    history: list[dict[str, str]] | None = None,
+    on_event: Callable[[str, dict[str, Any]], None] | None = None,
+) -> list[tuple[str, dict[str, Any]]]:
     """One question through the web entry point; a socket silent for `timeout` seconds raises TimeoutError."""
     parts = urlsplit(base)
     connection = http.client.HTTPConnection(parts.hostname or '127.0.0.1', parts.port or 80, timeout=timeout)
-    body = json.dumps({'question': question, 'history': []})
-    connection.request('POST', '/api/chat', body=body, headers={'Content-Type': 'application/json'})
-    response = connection.getresponse()
-    if response.status != 200:
-        raise RuntimeError(f'chat answered {response.status}: {response.read(400).decode("utf-8", "replace")}')
+    body = json.dumps({'question': question, 'history': history or []})
     try:
-        return list(parse_sse(response))
+        connection.request('POST', '/api/chat', body=body, headers={'Content-Type': 'application/json'})
+        response = connection.getresponse()
+        if response.status != 200:
+            raise RuntimeError(f'chat answered {response.status}: {response.read(400).decode("utf-8", "replace")}')
+        events = []
+        for name, data in parse_sse(response):
+            if on_event is not None:
+                on_event(name, data)
+            events.append((name, data))
+        return events
     finally:
         connection.close()
 
