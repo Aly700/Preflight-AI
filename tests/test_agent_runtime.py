@@ -37,6 +37,14 @@ def final(cited=(), numbers=()):
     return ToolCall('final-1', 'final_answer', {'cited_ids': list(cited), 'numbers': list(numbers)})
 
 
+def claims(cited=(), numbers=()):
+    """The model's reply to the forced claims round."""
+    return Turn('', [final(cited, numbers)], 'tool_use')
+
+
+FORCED = {'type': 'tool', 'name': 'final_answer'}
+
+
 class FakeModel:
     model = 'fake-model'
 
@@ -107,11 +115,18 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
         model = FakeModel(
             [
                 Turn('', [ToolCall('t1', 'list_open_issues', {'limit': 5})], 'tool_use'),
-                Turn('Five unresolved issues, starting with ISSUE-0001.', [final(['ISSUE-0001'])], 'tool_use'),
+                Turn('Five unresolved issues, starting with ISSUE-0001.', [], 'end_turn'),
+                claims(['ISSUE-0001']),
             ]
         )
         tools = FakeTools()
         events = await collect(model, tools)
+        self.assertEqual(len(model.calls), 3)
+        self.assertNotIn('final_answer', [t['name'] for t in model.calls[0]['tools']])
+        self.assertEqual([t['name'] for t in model.calls[2]['tools']], ['final_answer'])
+        self.assertEqual(model.calls[2]['tool_choice'], FORCED)
+        self.assertIn('t1', model.calls[2]['messages'][-1]['content'])
+        self.assertIn('list_open_issues', model.calls[2]['messages'][-1]['content'])
         kinds = [e['event'] for e in events]
         self.assertEqual(kinds[:2], ['tool', 'tool'])
         self.assertEqual(events[0]['data'], {'name': 'list_open_issues', 'status': 'running', 'call_id': 't1'})
@@ -131,7 +146,6 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
         tool_result = model.calls[1]['messages'][-1]['content'][0]
         self.assertEqual((tool_result['type'], tool_result['tool_use_id']), ('tool_result', 't1'))
         self.assertIn('"total"', tool_result['content'])
-        self.assertEqual(model.calls[0]['tools'][-1]['name'], 'final_answer')
 
     async def test_parallel_tool_calls_run_concurrently(self):
         model = FakeModel(
@@ -144,7 +158,8 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
                     ],
                     'tool_use',
                 ),
-                Turn('Both compared.', [final(['DEMO-AIR-0001', 'DEMO-AIR-0002'])], 'tool_use'),
+                Turn('Both compared.', [], 'end_turn'),
+                claims(['DEMO-AIR-0001', 'DEMO-AIR-0002']),
             ]
         )
         tools = FakeTools(barrier=2)
@@ -156,7 +171,7 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
 
     async def test_unknown_tool_is_refused_without_calling_mcp(self):
         model = FakeModel(
-            [Turn('', [ToolCall('x', 'drop_table', {})], 'tool_use'), Turn('Nothing.', [final()], 'tool_use')]
+            [Turn('', [ToolCall('x', 'drop_table', {})], 'tool_use'), Turn('Nothing.', [], 'end_turn'), claims()]
         )
         tools = FakeTools()
         events = await collect(model, tools)
@@ -170,7 +185,8 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
         model = FakeModel(
             [
                 Turn('', [ToolCall('h', 'get_issue_history', {'issue_id': 'ISSUE-0001'})], 'tool_use'),
-                Turn('Unknown.', [final()], 'tool_use'),
+                Turn('Unknown.', [], 'end_turn'),
+                claims(),
             ]
         )
         tools = FakeTools(fail={'get_issue_history'})
@@ -182,15 +198,17 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(events[-2]['data']['results'], [])
 
     async def test_round_and_call_limits_are_enforced(self):
-        tool_turns = [Turn('', [ToolCall(f't{i}', 'list_open_issues', {'limit': 1})], 'tool_use') for i in range(7)]
-        model = FakeModel([*tool_turns, Turn('Done.', [final()], 'tool_use')])
+        tool_turns = [Turn('', [ToolCall(f't{i}', 'list_open_issues', {'limit': 1})], 'tool_use') for i in range(6)]
+        model = FakeModel([*tool_turns, Turn('Done from what I have.', [], 'end_turn'), claims()])
         tools = FakeTools()
         events = await collect(model, tools)
-        self.assertEqual(len(model.calls), 7)  # six rounds, then the forced final round
-        self.assertEqual(model.calls[-1]['tool_choice'], {'type': 'tool', 'name': 'final_answer'})
+        self.assertEqual(len(model.calls), 8)  # six rounds, a wrap-up round without tools, the claims round
+        self.assertEqual(model.calls[6]['tool_choice'], {'type': 'none'})
+        self.assertEqual(model.calls[7]['tool_choice'], FORCED)
         self.assertEqual(events[-1]['data']['rounds'], 6)
+        self.assertIn('Done from what I have.', ''.join(e['data']['text'] for e in events if e['event'] == 'delta'))
         many = Turn('', [ToolCall(f'c{i}', 'list_open_issues', {'limit': 1}) for i in range(13)], 'tool_use')
-        model = FakeModel([many, Turn('Done.', [final()], 'tool_use')])
+        model = FakeModel([many, Turn('Done.', [], 'end_turn'), claims()])
         tools = FakeTools()
         events = await collect(model, tools)
         self.assertEqual(len(tools.calls), 12)
@@ -199,11 +217,13 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(results[-1]['is_error'])
         self.assertEqual(events[-1]['data']['tool_calls'], 12)
 
-    async def test_missing_final_answer_gets_one_forced_round(self):
-        model = FakeModel([Turn('Plain text answer.', [], 'end_turn'), Turn('', [final()], 'tool_use')])
+    async def test_prose_is_followed_by_one_claims_round_whose_text_is_not_streamed(self):
+        model = FakeModel(
+            [Turn('Plain text answer.', [], 'end_turn'), Turn('Here are the claims.', [final()], 'tool_use')]
+        )
         events = await collect(model, FakeTools())
         self.assertEqual(len(model.calls), 2)
-        self.assertEqual(model.calls[1]['tool_choice'], {'type': 'tool', 'name': 'final_answer'})
+        self.assertEqual(model.calls[1]['tool_choice'], FORCED)
         self.assertEqual(events[-1]['data']['rounds'], 1)
         self.assertEqual(''.join(e['data']['text'] for e in events if e['event'] == 'delta'), 'Plain text answer.')
 
@@ -211,11 +231,8 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
         model = FakeModel(
             [
                 Turn('', [ToolCall('t1', 'list_open_issues', {'limit': 5})], 'tool_use'),
-                Turn(
-                    'There are 999 unresolved issues.',
-                    [final([], [{'label': 'unresolved total', 'value': 999, 'call_id': 't1', 'path': 'total'}])],
-                    'tool_use',
-                ),
+                Turn('There are 999 unresolved issues.', [], 'end_turn'),
+                claims([], [{'label': 'unresolved total', 'value': 999, 'call_id': 't1', 'path': 'total'}]),
             ]
         )
         events = await collect(model, FakeTools())
@@ -250,7 +267,7 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(outcome, {'cancelled': True})
 
     async def test_answer_text_cap_is_enforced(self):
-        model = FakeModel([Turn('x' * (ANSWER_CHARS + 1), [final()], 'tool_use')])
+        model = FakeModel([Turn('x' * (ANSWER_CHARS + 1), [], 'end_turn')])
         with self.assertRaisesRegex(RuntimeError, 'limit'):
             await collect(model, FakeTools())
 

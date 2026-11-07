@@ -103,14 +103,28 @@ def number_token(value: float) -> str:
     return str(int(value)) if float(value).is_integer() else str(value)
 
 
+def candidates(reference: str, results: dict[str, dict[str, Any]], names: dict[str, str]) -> list[dict[str, Any]]:
+    """The results a declared number may refer to: the exact call id, or every call of a tool named instead."""
+    if reference in results:
+        return [results[reference]]
+    return [results[call_id] for call_id, name in names.items() if name == reference and call_id in results]
+
+
 def verify_claims(
-    *, prose: str, claims: dict[str, Any] | None, results: dict[str, dict[str, Any]], seen_ids: set[str]
+    *,
+    prose: str,
+    claims: dict[str, Any] | None,
+    results: dict[str, dict[str, Any]],
+    seen_ids: set[str],
+    names: dict[str, str] | None = None,
 ) -> Verification:
     """Check declared numbers against the results they name and prose IDs against what tools returned.
 
     Declared mismatches are reported to the reader. Undeclared bare integers are
-    only counted (dates, times and years excluded), for evaluation.
+    only counted (dates, times and years excluded), for evaluation. A number may
+    name its tool call by id or, failing that, by tool name.
     """
+    names = names or {}
     unverified: list[str] = []
     declared_tokens: set[str] = set()
     numbers = list(claims.get('numbers') or []) if claims else []
@@ -125,17 +139,22 @@ def verify_claims(
             unverified.append(f'{label}: the declared value is not a number')
             continue
         declared_tokens.add(number_token(value))
-        payload = results.get(str(item.get('call_id', '')))
-        if payload is None:
+        options = candidates(str(item.get('call_id', '')), results, names)
+        if not options:
             unverified.append(f'{label} ({number_token(value)}) refers to a tool call that returned nothing')
             continue
-        try:
-            actual = resolve_path(payload, str(item.get('path', '')))
-        except LookupError:
-            unverified.append(f'{label} ({number_token(value)}) has no value at {item.get("path")!r} in that result')
+        path = str(item.get('path', ''))
+        actuals: list[Any] = []
+        for payload in options:
+            try:
+                actuals.append(resolve_path(payload, path))
+            except LookupError:
+                continue
+        if not actuals:
+            unverified.append(f'{label} ({number_token(value)}) has no value at {path!r} in that result')
             continue
-        if not same_number(value, actual):
-            unverified.append(f'{label} ({number_token(value)}) does not match the tool result ({actual!r})')
+        if not any(same_number(value, actual) for actual in actuals):
+            unverified.append(f'{label} ({number_token(value)}) does not match the tool result ({actuals[0]!r})')
     prose_ids = set(ID_PATTERN.findall(prose))
     for record in sorted(prose_ids - cited):
         unverified.append(f'{record} is not among the cited records')

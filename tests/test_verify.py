@@ -75,6 +75,16 @@ class ClaimVerification(unittest.TestCase):
         )
         self.assertTrue(cited.verified)
 
+    def test_number_may_reference_the_tool_name_when_the_value_is_found(self):
+        by_name = {'cited_ids': [], 'numbers': [number(162, 'total', 'list_open_issues')]}
+        names = {'t1': 'list_open_issues'}
+        result = verify_claims(prose='162', claims=by_name, results=RESULTS, seen_ids=SEEN, names=names)
+        self.assertTrue(result.verified)
+        wrong = {'cited_ids': [], 'numbers': [number(7, 'total', 'list_open_issues')]}
+        result = verify_claims(prose='7', claims=wrong, results=RESULTS, seen_ids=SEEN, names=names)
+        self.assertFalse(result.verified)
+        self.assertIn('162', result.unverified[0])
+
     def test_undeclared_integers_are_counted_not_shown(self):
         result = verify_claims(
             prose='There are 162 unresolved issues as of 2026-01-01 at 10:30, 3 of them high, opened in 2026.',
