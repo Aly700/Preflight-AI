@@ -1,0 +1,108 @@
+{
+  "application_and_test_source_unchanged": true,
+  "frontend": {
+    "build_exit_code": 0,
+    "checks": [
+      {
+        "command": "npm exec --yes --package=node@24 -- node --version",
+        "exit_code": 0,
+        "log": "logs/node-version.txt",
+        "step": "node-version"
+      },
+      {
+        "command": "npm exec --yes --package=node@24 -- npm ci --ignore-scripts",
+        "exit_code": 0,
+        "log": "logs/frontend-install.txt",
+        "step": "frontend-install"
+      },
+      {
+        "command": "npm exec --yes --package=node@24 -- npm test",
+        "exit_code": 0,
+        "log": "logs/frontend-tests.txt",
+        "step": "frontend-tests"
+      },
+      {
+        "command": "npm exec --yes --package=node@24 -- npm run build",
+        "exit_code": 0,
+        "log": "logs/frontend-build.txt",
+        "step": "frontend-build"
+      }
+    ],
+    "tests_failed": 0,
+    "tests_passed": 7
+  },
+  "generator": {
+    "counts": {
+      "activity_events": 920,
+      "aircraft": 12,
+      "issues": 180,
+      "people": 36,
+      "shifts": 150,
+      "tasks": 480,
+      "teams": 6
+    },
+    "csv_files_byte_identical_to_original_seeded_fixture": 7,
+    "manifest_hashes_match": true,
+    "seed": 20261102,
+    "total_records": 1784
+  },
+  "log_note": "Local filesystem paths in test output are redacted; test outcomes and diagnostics are retained.",
+  "operations": {
+    "aws_mutations": 0,
+    "frontend_deployments": 0,
+    "git_remote_configured": false,
+    "live_model_requests": 0,
+    "new_ec2_instances": 0,
+    "published": false
+  },
+  "original_workspace_files_unchanged": 92,
+  "python": {
+    "checked_at_utc": "2026-11-06T04:20:10.167574+00:00",
+    "command": ".venv/bin/python -B -W error -m unittest discover -s tests -v",
+    "exit_code": 0,
+    "failed": 0,
+    "log": "logs/python-tests.txt",
+    "passed": 43
+  },
+  "remaining_limits": [
+    "Frontend build succeeds with a chunk-size advisory: main JavaScript is 889.61 kB, 265.80 kB gzip.",
+    "Current Python page test depends on built frontend assets.",
+    "No local Docker/PostgreSQL/live-MCP/live-model integration or AWS capacity check ran for this new workspace.",
+    "Cloudflare deployment, public hostname, Gateway integration, full local stack installer, license selection and publication remain future increments.",
+    "API container runtime architecture portability remains to be verified."
+  ],
+  "repository_checks": {
+    "candidate_files_scanned": 92,
+    "credential_or_deployment_pattern_findings": 0,
+    "git_branch": "main",
+    "git_remotes": 0,
+    "ignored_sensitive_generated_paths_verified": 8,
+    "original_workspace_files_unchanged": 92,
+    "relative_markdown_links": "passed",
+    "scan_limit": "Targeted pattern scan only; not a comprehensive security or licensing audit.",
+    "workspace_config": "passed"
+  },
+  "resolved_setup_findings": [
+    {
+      "finding": "Default Node 23 is outside a locked dependency engine range",
+      "initial_install_exit_code": 0,
+      "resolution": "Used isolated Node 24.22.2 for install, tests and build; documented Node 24 in .nvmrc and setup"
+    },
+    {
+      "finding": "Initial Python run before frontend build returned HTTP 404 in the chat page test",
+      "initial_failures": 1,
+      "initial_tests_run": 43,
+      "log": "logs/python-before-frontend-build.txt",
+      "resolution": "Built frontend, verified all 11 chat tests, then reran all 43 Python tests without changing code or tests"
+    }
+  ],
+  "scope": "Independent local open-source workspace preparation only",
+  "source_import": "source-import.json",
+  "source_selected_files": 61,
+  "verified_at_utc": "2026-11-06T04:20:10.232805+00:00",
+  "versions": {
+    "node": "v24.22.2",
+    "npm": "10.9.2",
+    "python": "Python 3.14.8"
+  }
+}

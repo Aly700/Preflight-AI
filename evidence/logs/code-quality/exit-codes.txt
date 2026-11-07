@@ -1,0 +1,10 @@
+versions exit=0
+python-tests exit=0
+ruff-check exit=0
+ruff-format exit=0
+mypy exit=0
+frontend-tests-node24 exit=0
+frontend-tests-node26 exit=0
+frontend-build exit=0
+generator exit=0
+python-tests-without-frontend-build exit=0

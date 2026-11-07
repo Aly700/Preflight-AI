@@ -1,0 +1,265 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1520" height="1130" viewBox="0 0 1520 1130" role="img" aria-label="Preflight AI target deployment: a visitor's browser reaches a Cloudflare Worker, which proxies chat to Nginx on a reused EC2 host in Canada Central; inside a preflight-oss namespace the FastAPI container runs the Copilot runtime, which calls an external model and, through AgentCore Gateway or directly when self-hosting, the private MCP service over read-only PostgreSQL. GitHub Actions builds but does not deploy.">
+<style>
+  :root { --bg: #f5f6f8; --fg: #1b1f24; --muted: #5b6470; --card: #ffffff; --card2: #f5f6f8; --line: #8a929c;
+    --orange: #d9640a; --blue: #3b6fd6; --purple: #7a4ddb; --teal: #1f8f7a; --red: #c8323c; --cf: #e2711d; }
+  svg { font-family: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; color: var(--fg); }
+  text { fill: currentColor; font-size: 11px; }
+  .t { font-size: 12.5px; font-weight: 600; }
+  .grp { font-size: 12.5px; font-weight: 600; }
+  .m { fill: var(--muted); }
+  .i { font-style: italic; fill: var(--muted); font-size: 10.5px; }
+  .lab { font-size: 10.5px; fill: var(--muted); paint-order: stroke; stroke: var(--card2); stroke-width: 4px; stroke-linejoin: round; }
+  .card rect { fill: var(--card); stroke: var(--line); stroke-width: 1; }
+  .card.planned rect { stroke-dasharray: 5 4; }
+  .box { fill: none; stroke-width: 1.2; }
+  .cloud { stroke: var(--fg); }
+  .region { stroke: var(--teal); stroke-dasharray: 7 5; }
+  .vpc { stroke: var(--purple); stroke-dasharray: 7 5; }
+  .host { stroke: var(--orange); }
+  .ns { stroke: var(--line); stroke-dasharray: 4 4; }
+  .cfg { stroke: var(--cf); stroke-dasharray: 7 5; }
+  .edge { fill: none; stroke: currentColor; stroke-width: 1.4; }
+  .edge.plan { stroke-dasharray: 2 4; stroke-linecap: round; }
+  .edge.cfgline { stroke-dasharray: 6 4; stroke: var(--red); }
+  .badge circle { fill: var(--fg); stroke: var(--bg); stroke-width: 2; }
+  .badge text { fill: var(--bg); font-size: 11px; font-weight: 600; }
+  .chip rect { fill: var(--card2); stroke: var(--line); stroke-width: 0.8; }
+  .chip text { font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em; fill: var(--muted); }
+  .ic { color: var(--muted); }
+  .ic-orange { color: var(--orange); } .ic-blue { color: var(--blue); } .ic-purple { color: var(--purple); }
+  .ic-teal { color: var(--teal); } .ic-red { color: var(--red); } .ic-cf { color: var(--cf); } .ic-fg { color: var(--fg); }
+</style>
+<rect width="1520" height="1130" fill="#f5f6f8"/>
+
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="currentColor"/></marker>
+        <symbol id="i-cloud" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18h10a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.2 9.5 4.3 4.3 0 0 0 7 18z"/></g></symbol>
+        <symbol id="i-flag" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V4h10l-2 4 2 4H6"/></g></symbol>
+        <symbol id="i-cube" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M3 7l9 5 9-5M12 12v10"/></g></symbol>
+        <symbol id="i-server" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="6" rx="1"/><rect x="3" y="14" width="18" height="6" rx="1"/><path d="M7 7h.01M7 17h.01"/></g></symbol>
+        <symbol id="i-chip" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="1.5"/><rect x="9.5" y="9.5" width="5" height="5"/><path d="M9 3v3M12 3v3M15 3v3M9 18v3M12 18v3M15 18v3M3 9h3M3 12h3M3 15h3M18 9h3M18 12h3M18 15h3"/></g></symbol>
+        <symbol id="i-db" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></g></symbol>
+        <symbol id="i-tool" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.3 5.3L3 18l3 3 6.4-6.4a4 4 0 0 0 5.3-5.3l-2.6 2.6-2.1-.5-.5-2.1z"/></g></symbol>
+        <symbol id="i-gw" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8.7 5v10L12 22l-8.7-5V7z"/><path d="M8 12h8M13 9l3 3-3 3"/></g></symbol>
+        <symbol id="i-key" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l2 2M13.5 9.5l2 2"/></g></symbol>
+        <symbol id="i-globe" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></g></symbol>
+        <symbol id="i-person" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></g></symbol>
+        <symbol id="i-people" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><circle cx="17" cy="9" r="3"/><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6M16.5 14c3 0 5.5 2 5.5 5.5"/></g></symbol>
+        <symbol id="i-bolt" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></g></symbol>
+        <symbol id="i-git" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="4" r="2"/><circle cx="6" cy="20" r="2"/><circle cx="18" cy="8" r="2"/><path d="M6 6v12M18 10a6 6 0 0 1-6 6H9"/></g></symbol>
+        <symbol id="i-lock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="1.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></g></symbol>
+        <symbol id="i-layers" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 12l9 5 9-5M3 16l9 5 9-5"/></g></symbol>
+      </defs>
+
+      <!-- Group boxes, outermost first -->
+      <rect class="box cloud" x="320" y="40" width="905" height="1075" rx="3"/>
+      <use href="#i-cloud" x="334" y="50" width="22" height="22" class="ic ic-fg"/>
+      <text class="grp" x="364" y="66">AWS Cloud</text>
+
+      <rect class="box region" x="345" y="90" width="855" height="1010" rx="3"/>
+      <use href="#i-flag" x="357" y="100" width="22" height="22" class="ic ic-teal"/>
+      <text class="grp" x="387" y="116">Region ca-central-1 (Canada Central) · existing account</text>
+
+      <rect class="box vpc" x="370" y="145" width="590" height="925" rx="3"/>
+      <use href="#i-cube" x="382" y="155" width="22" height="22" class="ic ic-purple"/>
+      <text class="grp" x="412" y="171">Existing VPC · public subnet · encrypted EBS</text>
+
+      <rect class="box host" x="395" y="200" width="540" height="845" rx="3"/>
+      <use href="#i-server" x="407" y="210" width="22" height="22" class="ic ic-orange"/>
+      <text class="grp" x="437" y="226">EC2 host, reused · Nginx HTTPS entry</text>
+
+      <!-- Nginx: existing entry point, new route planned -->
+      <g class="card">
+        <rect x="445" y="245" width="440" height="70" rx="4"/>
+        <use href="#i-lock" x="457" y="257" width="22" height="22" class="ic"/>
+        <text class="t" x="487" y="264">Nginx · HTTPS · demo hostname</text>
+        <g class="chip"><rect x="830" y="251" width="46" height="18" rx="9"/><text x="853" y="263.5" text-anchor="middle">LIVE</text></g>
+        <text x="487" y="284">routes only /api/chat and /api/chat/status to the new API</text>
+        <text x="487" y="300">database, MCP and record-list routes stay off the public listener</text>
+        
+      </g>
+
+      <!-- Namespace -->
+      <rect class="box ns" x="420" y="345" width="490" height="675" rx="3"/>
+      <use href="#i-layers" x="432" y="356" width="22" height="22" class="ic"/>
+      <text class="grp" x="462" y="372">preflight-oss namespace</text>
+      <text class="lab" x="462" y="388">internal network · loopback bindings</text>
+
+      <!-- API container -->
+      <g class="card">
+        <rect x="445" y="400" width="440" height="100" rx="4"/>
+        <use href="#i-chip" x="457" y="412" width="22" height="22" class="ic ic-orange"/>
+        <text class="t" x="487" y="419">preflight-oss-api · FastAPI + uvicorn · tcp/8000</text>
+        <text x="487" y="439">Copilot SDK runtime · allowlist of 3 tools</text>
+        <text x="487" y="455">SSE chat · one answer at a time · 5 per minute · 120 s</text>
+        <text x="487" y="471">Bearer access key + origin check · record routes private</text>
+        <text class="m" x="487" y="487">tool results validated · source IDs collected</text>
+      </g>
+
+      <!-- MCP container -->
+      <g class="card">
+        <rect x="695" y="610" width="185" height="140" rx="4"/>
+        <use href="#i-tool" x="705" y="620" width="22" height="22" class="ic ic-purple"/>
+        <text class="t" x="733" y="629">preflight-oss-mcp</text>
+        <text x="705" y="655">streamable HTTP · tcp/8001</text>
+        <text x="705" y="671">Bearer token (64 hex)</text>
+        <text x="705" y="687">host allowlist · strict args</text>
+        <text class="m" x="705" y="705">get_aircraft_summary</text>
+        <text class="m" x="705" y="721">list_open_issues</text>
+        <text class="m" x="705" y="737">get_issue_history</text>
+        
+      </g>
+
+      <!-- PostgreSQL container -->
+      <g class="card">
+        <rect x="445" y="800" width="220" height="105" rx="4"/>
+        <use href="#i-db" x="457" y="812" width="22" height="22" class="ic ic-blue"/>
+        <text class="t" x="487" y="819">preflight-oss-postgres</text>
+        <text x="457" y="845">PostgreSQL · db preflight_oss</text>
+        <text x="457" y="861">read-only roles: api, mcp</text>
+        <text x="457" y="877">dedicated volume · loopback only</text>
+        <text x="457" y="893">constrained schema · tx loader</text>
+
+      </g>
+
+      <!-- Secret files -->
+      <g class="card">
+        <rect x="445" y="955" width="440" height="50" rx="4"/>
+        <use href="#i-key" x="457" y="969" width="22" height="22" class="ic ic-red"/>
+        <text class="t" x="487" y="975">Secret files, mounted server-side only</text>
+        <text x="487" y="993">chat · Copilot · MCP tokens · DB password</text>
+      </g>
+
+      <!-- Gateway (planned) -->
+      <g class="card planned">
+        <rect x="1000" y="640" width="195" height="110" rx="4"/>
+        <use href="#i-gw" x="1010" y="650" width="22" height="22" class="ic ic-teal"/>
+        <text class="t" x="1040" y="659">AgentCore Gateway</text>
+        <text x="1010" y="685">Amazon Bedrock · managed service</text>
+        <text x="1010" y="701">VPC egress to the private MCP</text>
+        <text x="1010" y="717">own IAM + usage charges</text>
+        <g class="chip"><rect x="1122" y="727" width="66" height="18" rx="9"/><text x="1155" y="739.5" text-anchor="middle">PLANNED</text></g>
+      </g>
+
+      
+
+      <!-- Left column: visitor, Cloudflare, contributor, legend -->
+      <g class="card">
+        <rect x="20" y="80" width="270" height="80" rx="4"/>
+        <use href="#i-person" x="32" y="92" width="22" height="22" class="ic ic-fg"/>
+        <text class="t" x="62" y="99">Visitor · public demo</text>
+        <text x="62" y="119">browser · React / assistant-ui</text>
+        <text x="62" y="135">bounded anonymous access</text>
+        
+      </g>
+
+      <rect class="box cfg" x="20" y="240" width="270" height="155" rx="3"/>
+      <use href="#i-globe" x="32" y="250" width="22" height="22" class="ic ic-cf"/>
+      <text class="grp" x="60" y="266">Cloudflare · outside AWS</text>
+      <g class="chip"><rect x="214" y="251" width="70" height="18" rx="9"/><text x="249" y="263.5" text-anchor="middle">DEPLOYED</text></g>
+      <g class="card">
+        <rect x="35" y="280" width="240" height="100" rx="4"/>
+        <text class="t" x="47" y="299">Workers Static Assets + Worker</text>
+        <text x="47" y="319">serves the React / assistant-ui build</text>
+        <text x="47" y="335">worker.mjs proxies /api/chat (SSE)</text>
+        <text x="47" y="351">holds only the upstream access key</text>
+        <text x="47" y="367">32 kB body · 125 s upstream timeout</text>
+
+      </g>
+
+      <g class="card">
+        <rect x="20" y="640" width="270" height="95" rx="4"/>
+        <use href="#i-people" x="32" y="652" width="22" height="22" class="ic ic-fg"/>
+        <text class="t" x="62" y="663">Contributor · self-hosting</text>
+        <text x="62" y="683">runs the same three containers locally</text>
+        <text x="62" y="699">own model key · direct MCP</text>
+        <text x="62" y="715">no AWS account needed</text>
+        
+      </g>
+
+      <g>
+        <text class="t" x="20" y="905">Legend</text>
+        <path class="edge" d="M20 925h52" marker-end="url(#ah)"/><text x="84" y="929">request or data path that exists in code</text>
+        <path class="edge plan" d="M20 947h52" marker-end="url(#ah)"/><text x="84" y="951">planned path, not built yet</text>
+        <path class="edge cfgline" d="M20 969h52" marker-end="url(#ah)"/><text x="84" y="973">secret files reaching a container</text>
+        <rect x="20" y="984" width="52" height="16" rx="3" fill="none" stroke="var(--line)" stroke-dasharray="5 4"/><text x="84" y="996">planned component</text>
+        <g class="badge"><circle cx="31" cy="1019" r="11"/><text x="31" y="1023" text-anchor="middle">n</text></g><text x="84" y="1023">step in the flow key below</text>
+      </g>
+
+      <!-- Right column, outside AWS -->
+      <g class="card">
+        <rect x="1255" y="395" width="245" height="90" rx="4"/>
+        <use href="#i-bolt" x="1267" y="407" width="22" height="22" class="ic ic-fg"/>
+        <text class="t" x="1297" y="414">Model provider</text>
+        <text x="1267" y="440">Claude, OpenAI or Copilot, one setting</text>
+        <text x="1267" y="456">inference stays off the EC2 host</text>
+        <text x="1267" y="472">key read from a mounted secret file</text>
+        
+      </g>
+
+      <g class="card">
+        <rect x="1255" y="1030" width="245" height="90" rx="4"/>
+        <use href="#i-git" x="1267" y="1042" width="22" height="22" class="ic ic-fg"/>
+        <text class="t" x="1297" y="1049">GitHub Actions · ci.yml</text>
+        <text x="1267" y="1075">lint · types · tests · frontend build</text>
+        <text x="1267" y="1091">docker build for amd64 and arm64</text>
+        <text x="1267" y="1107">no registry push · no deploy job</text>
+        
+      </g>
+
+      <!-- Flows -->
+      <!-- 1 visitor -> Cloudflare -->
+      <path class="edge plan" d="M155 160V240" marker-end="url(#ah)"/>
+      <g class="badge"><circle cx="155" cy="200" r="11"/><text x="155" y="204" text-anchor="middle">1</text></g>
+      <text class="lab" x="172" y="195">opens the app,</text>
+      <text class="lab" x="172" y="211">asks a question</text>
+
+      <!-- 2 Worker -> Nginx -->
+      <path class="edge plan" d="M290 300H445" marker-end="url(#ah)"/>
+      <g class="badge"><circle cx="420" cy="300" r="11"/><text x="420" y="304" text-anchor="middle">2</text></g>
+      <text class="lab" x="420" y="283" text-anchor="middle">HTTPS</text>
+
+      <!-- 3 Nginx -> API -->
+      <path class="edge plan" d="M860 315V400" marker-end="url(#ah)"/>
+      <g class="badge"><circle cx="860" cy="357" r="11"/><text x="860" y="361" text-anchor="middle">3</text></g>
+      <text class="lab" x="844" y="361" text-anchor="end">only /api/chat and /api/chat/status</text>
+
+      <!-- 4 API -> model provider -->
+      <path class="edge" d="M885 440H1255" marker-end="url(#ah)"/>
+      <g class="badge"><circle cx="1080" cy="440" r="11"/><text x="1080" y="444" text-anchor="middle">4</text></g>
+      <text class="lab" x="1080" y="423" text-anchor="middle">runtime session · deltas back</text>
+
+      <!-- 5 API -> MCP direct -->
+      <path class="edge" d="M787 500V610" marker-end="url(#ah)"/>
+      <g class="badge"><circle cx="787" cy="555" r="11"/><text x="787" y="559" text-anchor="middle">5</text></g>
+      <text class="lab" x="803" y="551">direct MCP · Bearer</text>
+      <text class="lab" x="803" y="565">self-hosting path</text>
+
+      <!-- 6 API -> Gateway (hosted demo) -->
+      <path class="edge plan" d="M885 480H1097V640" marker-end="url(#ah)"/>
+      <g class="badge"><circle cx="1097" cy="565" r="11"/><text x="1097" y="569" text-anchor="middle">6</text></g>
+      <text class="lab" x="1081" y="561" text-anchor="end">hosted demo:</text>
+      <text class="lab" x="1081" y="575" text-anchor="end">via Gateway</text>
+
+      <!-- 7 Gateway -> MCP -->
+      <path class="edge plan" d="M1000 682H880" marker-end="url(#ah)"/>
+      <g class="badge"><circle cx="980" cy="682" r="11"/><text x="980" y="686" text-anchor="middle">7</text></g>
+
+      <!-- 8 MCP -> PostgreSQL -->
+      <path class="edge" d="M740 750V865H665" marker-end="url(#ah)"/>
+      <g class="badge"><circle cx="740" cy="808" r="11"/><text x="740" y="812" text-anchor="middle">8</text></g>
+      <text class="lab" x="756" y="804">read-only</text>
+      <text class="lab" x="756" y="818">parameterized SQL</text>
+
+      <!-- 9 API -> PostgreSQL (record routes, health) -->
+      <path class="edge" d="M510 500V800" marker-end="url(#ah)"/>
+      <g class="badge"><circle cx="510" cy="660" r="11"/><text x="510" y="664" text-anchor="middle">9</text></g>
+      <text class="lab" x="526" y="656">record routes · /health</text>
+      <text class="lab" x="526" y="670">api role, read-only</text>
+
+      <!-- 10 secrets -> containers -->
+      <path class="edge cfgline" d="M445 980H432V460H445" marker-end="url(#ah)"/>
+      <path class="edge cfgline" d="M560 955V905" marker-end="url(#ah)"/>
+      <path class="edge cfgline" d="M865 955V750" marker-end="url(#ah)"/>
+      <g class="badge"><circle cx="432" cy="720" r="11"/><text x="432" y="724" text-anchor="middle">10</text></g>
+    </svg>

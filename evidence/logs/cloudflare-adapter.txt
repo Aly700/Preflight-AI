@@ -1,0 +1,147 @@
+Cloudflare Workers adapter: local verification, November 6, 2026
+================================================================
+Not a deployment. No Cloudflare account was used; nothing was published.
+The upstream for this check was a public HTTPS echo service, not the prototype API.
+
+Commands (from frontend/):
+  npm install --save-dev --save-exact --ignore-scripts wrangler   -> wrangler 4.158.0
+  npm test                                                          -> 21 tests, 21 pass, 0 fail
+  npm run build                                                     -> dist/ incl. _headers
+  printf 'API_BASE_URL=https://echo.free.beeceptor.com\nPREFLIGHT_ACCESS_KEY=local-dev-only\n' > .dev.vars
+  npx wrangler dev --port 8787 --ip 127.0.0.1                      -> "Ready on http://127.0.0.1:8787"; "Parsed 1 valid header rule."
+
+Observed through the local Workers runtime (curl against 127.0.0.1:8787):
+  GET  /                      200 text/html; CSP, Referrer-Policy and nosniff headers present
+  GET  /icon.svg              200 image/svg+xml; CSP and nosniff from dist/_headers (served without the Worker)
+  GET  /some/client/route     200 text/html (single-page fallback through the Worker), security headers present
+  GET  /api/chat/status       200 application/json, Cache-Control: no-store; the echo upstream reported
+                              path /api/chat/status and header "Authorization: Bearer local-dev-only"
+  POST /api/chat              200; the echo upstream reported method POST, path /api/chat and the JSON body
+  POST /api/chat (40 kB body) 413 {"detail":"Request is too large"}  (no upstream call)
+  GET  /api/aircraft          404 {"detail":"Not found"}            (not routed)
+  POST /api/chat, foreign Origin header  403 {"detail":"Origin not allowed"}
+
+Defect found and fixed during this check:
+  The Workers runtime rejects fetch(..., {redirect: 'error'}):
+    TypeError: Invalid redirect value, must be one of "follow" or "manual"
+  Both forwarded routes returned 502 in ~2 ms until server/forward.mjs switched to redirect: 'manual'
+  and refuses any 3xx with the fixed 502 (regression test added in tests/proxy.test.mjs).
+  AbortSignal.any, AbortSignal.timeout and Response.json are available in the runtime (probe Worker).
+
+Still required before the demo is live:
+  wrangler login; wrangler secret put API_BASE_URL; wrangler secret put PREFLIGHT_ACCESS_KEY; npm run deploy.
+  Workers cannot fetch a bare IP address: API_BASE_URL must be an https URL with a hostname whose
+  certificate is valid for that hostname.
+
+======================================================================
+Deployment, November 6, 2026 (evening), from frontend/
+Upstream: the prototype chat API (the owner's decision). API_BASE_URL came from the
+prototype's Vercel preview environment; PREFLIGHT_ACCESS_KEY was supplied by the owner.
+Both were written only to the ignored frontend/.dev.vars and piped into Worker secrets.
+
+Commands and observed results:
+  npx wrangler login                                   -> first attempt timed out waiting for browser approval;
+                                                          second attempt: "Successfully logged in."
+  npx wrangler whoami                                  -> one account; OAuth token with workers (write) and related scopes
+  printf '%s' "$API_BASE_URL" | npx wrangler secret put API_BASE_URL
+                                                       -> "Creating new Worker preflight-oss-demo"; "Success! Uploaded secret API_BASE_URL"
+  printf '%s' "$PREFLIGHT_ACCESS_KEY" | npx wrangler secret put PREFLIGHT_ACCESS_KEY
+                                                       -> "Success! Uploaded secret PREFLIGHT_ACCESS_KEY"
+  npm run deploy                                       -> build ok; 10 assets uploaded; Worker uploaded (5.43 KiB);
+                                                          ERROR "You need to register a workers.dev subdomain before publishing"
+  Cloudflare API PUT /accounts/<account>/workers/subdomain {"subdomain":"preflight-ai"}
+                                                       -> {"success": true}
+  npx wrangler deploy                                  -> "Deployed preflight-oss-demo triggers"
+                                                          https://preflight-oss-demo.preflight-ai.workers.dev
+  wrangler.jsonc: "preview_urls": false; npx wrangler deploy
+                                                       -> redeployed; no per-version preview hostnames
+  TLS for the new subdomain: curl handshake failure for about two minutes, then OK
+  (openssl: CN=preflight-ai.workers.dev, issuer Let's Encrypt, verify return code 0).
+
+Observed on the live hostname (curl):
+  GET  /                   200 text/html; Content-Security-Policy, Referrer-Policy: no-referrer, X-Content-Type-Options: nosniff
+  GET  /api/other          404 {"detail":"Not found"}
+  GET  /api/chat/status    502 {"detail":"The prototype API connection is unavailable"}   in about 0.07 s
+  POST /api/chat           502 same body                                                  in about 0.07 s
+  npx wrangler tail preflight-oss-demo --format json, during a GET /api/chat/status:
+    outcome "ok"; log level error: "chat proxy: upstream response refused" {"status": 403, "contentType": "text/plain; charset=UTF-8"}
+  Reading: the Worker's subrequest to the literal-IP origin was answered by the edge, not by the prototype API.
+  Workers do not fetch IP addresses (https://developers.cloudflare.com/workers/platform/known-issues/#fetch-to-ip-addresses).
+
+Same Worker, same secrets, local runtime (npx wrangler dev --port 8787; the upstream fetch leaves this machine):
+  GET  /api/chat/status    200 {"configured":true}
+  POST /api/chat  {"question":"Summarize DEMO-AIR-0001, including issue and task counts.","history":[]}
+                           200 text/event-stream; charset=utf-8, Cache-Control: no-store; 3,167 bytes
+                           events: status 1, tool 2 (get_aircraft_summary running, complete), delta 52, sources 1, evidence 1,
+                           done 1 ({"tool_calls": 1}); the evidence event carries the fictional DEMO-AIR-0001 summary
+                           (15 issues, 12 unresolved, 38 tasks)
+  POST /api/chat  {"messages":[...]} (not the UI's body shape)
+                           422 {"detail":"Supply one question of 1–2000 characters"} passed through unchanged
+  A remote preview session (npx wrangler dev --remote) returned "internal error" for every route, including the
+  plain asset route, minutes after the subdomain was created; not used as evidence.
+
+Code change during this check:
+  server/forward.mjs logs the cause of both 502 paths on the server (status and content type, or error name and
+  message). The client message is unchanged. npm test -> 21 tests, 21 pass, 0 fail.
+
+Origin certificate (openssl s_client against the configured upstream): Let's Encrypt, subjectAltName = IP Address
+only, six-day validity (short-lived profile). The Cloudflare account holds zero zones.
+
+Open before chat works on the live hostname (one of):
+  a) a domain in the Cloudflare account (registered there, or DNS moved there): a proxied A record for an API
+     hostname pointing at the host, SSL mode Full (the host's IP certificate is accepted in Full, not Strict),
+     then `npx wrangler secret put API_BASE_URL` with https://<that hostname>. No change on the host.
+  b) a hostname whose certificate the host itself presents (an ACME certificate for a DNS name that resolves to
+     the host), which needs access to the host.
+
+======================================================================
+Demo hostname on the prototype host and live chat, November 6, 2026 (late evening)
+Access: AWS Systems Manager (AWS-RunShellScript) with the profile the prototype already used; no SSH opened.
+Hostname: a free sslip.io name that resolves to the Elastic IP (written here as <demo-host>; it is held only in the
+Worker secret, the host's Nginx file and the certificate lineage).
+
+Read-only inspection (matches docs/HTTPS_RUNBOOK.md of the prototype): Amazon Linux 2023; nginx 1.30.6 active,
+`nginx -t` ok; one nginx.conf with the installer marker, ACME webroot /var/lib/preflight-acme on port 80, default TLS
+server on 443 proxying only /api/chat and /api/chat/status to 127.0.0.1:8000; certbot 5.9.0 in /opt/preflight/certbot
+with one lineage preflight-chat (IP identifier, shortlived profile, webroot authenticator); deploy hook
+reload-preflight-nginx; preflight-certbot-renew.timer active (`certbot renew --quiet`, twice daily); containers
+preflight-api, preflight-mcp, preflight-postgres healthy; 4.3 GiB free.
+
+Change script (run once; exit 0):
+  umask 022
+  certbot certonly --non-interactive --agree-tos --register-unsafely-without-email \
+    --webroot --webroot-path /var/lib/preflight-acme -d <demo-host> --cert-name preflight-demo-host --keep-until-expiring
+      -> "Successfully received certificate." expires 2027-02-05
+  cp nginx.conf /opt/preflight/nginx-before-demo-host.conf   (mode 600; first time only)
+  /etc/nginx/preflight-demo/demo-host.conf = the existing TLS server block (from "# BEGIN TLS" to its closing brace) with
+      listen 443 ssl default_server -> listen 443 ssl;  server_name _ -> server_name <demo-host>;
+      /etc/letsencrypt/live/preflight-chat/ -> /etc/letsencrypt/live/preflight-demo-host/
+      (proxy_set_header Host 127.0.0.1:8000, Authorization pass-through, buffering off, 130 s timeouts, the two exact
+      locations with limit_except, "location / { return 404; }" all copied unchanged)
+  sed -i '$ i\    include /etc/nginx/preflight-demo/*.conf;' /etc/nginx/nginx.conf   (last line inside http {})
+  nginx -t -> ok (on failure the script restores the backup and removes the new file)
+  systemctl reload nginx -> active
+  certbot renew --cert-name preflight-demo-host --dry-run --run-deploy-hooks --no-random-sleep-on-renew
+      -> "Congratulations, all simulated renewals succeeded" (hook ran nginx -t and reload)
+  certbot certificates -> preflight-chat (IP, 4 days left, unchanged) and preflight-demo-host (<demo-host>, 89 days)
+  diff of nginx.conf without the include line against the backup -> identical
+
+Origin checks from this machine after the change:
+  https://<demo-host>/api/chat/status     200 application/json (TLS verify return code 0)
+  https://<demo-host>/api/chat/status + key  200
+  https://<demo-host>/api/aircraft        404
+  GET  https://<demo-host>/api/chat       403 (method refused by Nginx)
+  POST https://<demo-host>/api/chat, no key  401 (API)
+  https://<ip>/api/chat/status            200;  https://<ip>/api/aircraft 404;  TLS verify 0   (existing path unchanged)
+
+Worker:
+  printf 'https://<demo-host>' | npx wrangler secret put API_BASE_URL   -> "Success! Uploaded secret API_BASE_URL"
+  GET  https://preflight-oss-demo.preflight-ai.workers.dev/api/chat/status  -> 200 {"configured":true} in 0.55 s
+  POST https://preflight-oss-demo.preflight-ai.workers.dev/api/chat
+       {"question":"List the first five unresolved issues and the total unresolved count.","history":[]}
+       -> 200 text/event-stream; charset=utf-8, cache-control: no-store; 8,705 bytes
+          events: status 1, tool 2 (list_open_issues running, complete), delta 173, sources 1, evidence 1, done 1
+          answer: ISSUE-0001, ISSUE-0003, ISSUE-0004, ISSUE-0006, ISSUE-0007 and "162 unresolved in total"; done {"tool_calls": 1}
+
+Note for operators: re-running the prototype's deploy_https.py rewrites nginx.conf from its template and drops the include
+line; the demo file and lineage survive, so the single include line is all that must be restored.

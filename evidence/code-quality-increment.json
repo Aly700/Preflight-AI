@@ -1,0 +1,146 @@
+{
+  "container_build_arm64": {
+    "api_build_exit_code": 1,
+    "command": "docker build --platform linux/arm64 -f backend/Dockerfile . ; docker build --platform linux/arm64 -f mcp_service/Dockerfile .",
+    "log": "logs/code-quality/docker-arm64-build.txt",
+    "mcp_build_exit_code": 1,
+    "note": "Not verified: the Docker Desktop engine did not reach running during the session (HTTP 500 from the daemon socket); the Dockerfile change is unverified by a real build.",
+    "verified": false
+  },
+  "frontend": {
+    "build": {
+      "advisory": "chunk larger than 500 kB",
+      "chunks": [
+        {
+          "file": "index-B_wZLmKB.css",
+          "gzip_kb": 3.1,
+          "kb": 10.6
+        },
+        {
+          "file": "rolldown-runtime-vfrPO-fZ.js",
+          "gzip_kb": 0.45,
+          "kb": 0.78
+        },
+        {
+          "file": "icons-ICyjTRdM.js",
+          "gzip_kb": 2.4,
+          "kb": 5.16
+        },
+        {
+          "file": "index-DKuBtNye.js",
+          "gzip_kb": 3.22,
+          "kb": 8.32
+        },
+        {
+          "file": "markdown-rWYfnuQY.js",
+          "gzip_kb": 35.48,
+          "kb": 117.33
+        },
+        {
+          "file": "react-BFgT_rhf.js",
+          "gzip_kb": 68.27,
+          "kb": 218.74
+        },
+        {
+          "file": "assistant-ui-C3kVRRE0.js",
+          "gzip_kb": 157.23,
+          "kb": 538.95
+        }
+      ],
+      "command": "npm exec --yes --package=node@24 -- npm run build",
+      "exit_code": 0,
+      "log": "logs/code-quality/frontend-build.txt",
+      "total_js_kb": 889.28
+    },
+    "tests_node24": {
+      "command": "npm exec --yes --package=node@24 -- npm test",
+      "exit_code": 0,
+      "fail": 0,
+      "log": "logs/code-quality/frontend-tests-node24.txt",
+      "pass": 14,
+      "tests": 14
+    },
+    "tests_node26": {
+      "command": "npm test",
+      "exit_code": 0,
+      "fail": 0,
+      "log": "logs/code-quality/frontend-tests-node26.txt",
+      "pass": 14,
+      "tests": 14
+    }
+  },
+  "generator": {
+    "byte_identical_csvs": 7,
+    "command": ".venv/bin/python -B scripts/generate_synthetic.py --config config/synthetic_spec.json --seed 20261102 --output <tmp>",
+    "exit_code": 0,
+    "log": "logs/code-quality/generator.txt",
+    "of": 7
+  },
+  "log_note": "Local filesystem paths in logs are redacted as <repo>, <tmp> and <home>.",
+  "operations": {
+    "aws_mutations": 0,
+    "deployments": 0,
+    "git_commits": 0,
+    "git_remote_configured": false,
+    "live_model_requests": 0,
+    "published": false
+  },
+  "preserved_files_byte_identical": [
+    "scripts/generate_synthetic.py",
+    "tests/test_synthetic_contract.py"
+  ],
+  "python": {
+    "mypy": {
+      "command": ".venv/bin/mypy",
+      "exit_code": 0,
+      "log": "logs/code-quality/mypy.txt",
+      "result": "Success: no issues found in 29 source files"
+    },
+    "ruff_check": {
+      "command": ".venv/bin/ruff check backend mcp_service preflight_core scripts tests",
+      "exit_code": 0,
+      "log": "logs/code-quality/ruff-check.txt"
+    },
+    "ruff_format": {
+      "command": ".venv/bin/ruff format --check backend mcp_service preflight_core scripts tests",
+      "exit_code": 0,
+      "log": "logs/code-quality/ruff-format.txt"
+    },
+    "tests": {
+      "command": ".venv/bin/python -B -W error -m unittest discover -s tests -v",
+      "exit_code": 0,
+      "log": "logs/code-quality/python-tests.txt",
+      "passed": 72,
+      "result": "OK",
+      "skipped": 0,
+      "tests_run": 72
+    },
+    "tests_without_frontend_build": {
+      "command": ".venv/bin/python -B -W error -m unittest discover -s tests -v",
+      "exit_code": 0,
+      "log": "logs/code-quality/python-tests-without-frontend-build.txt",
+      "passed": 71,
+      "result": "OK (skipped=1)",
+      "skipped": 1,
+      "tests_run": 72
+    }
+  },
+  "scope": "Code-quality increment: local verification only. No deployment, AWS change, publication or live model call.",
+  "slot_release_probe": {
+    "baseline_cases_refusing_next_request": 6,
+    "cases": 12,
+    "log": "logs/slot-release-probe.txt",
+    "rewrite_cases_refusing_next_request": 0,
+    "script": "probes/slot_release_probe.py"
+  },
+  "verified_at_utc": "2026-11-06T21:56:37.333996+00:00",
+  "versions": [
+    "Python 3.14.8",
+    "uv 0.11.6 (65950801c 2026-04-09 aarch64-apple-darwin)",
+    "ruff 0.17.4",
+    "mypy 2.4.1 (compiled: yes)",
+    "node (default) v26.8.1",
+    "npm (default) 11.19.0",
+    "node (isolated) v24.22.2"
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "command": ".venv/bin/python -B -W error -m unittest discover -s tests -v",
+  "exit_code": 0,
+  "log": "logs/python-tests.txt",
+  "checked_at_utc": "2026-11-06T04:20:10.167574+00:00"
+}

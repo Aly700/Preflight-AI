@@ -1,0 +1,24 @@
+
+> preflight-chat-ui@0.1.0 build
+> tsc --noEmit && vite build
+
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 2967 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                             0.94 kB │ gzip:   0.47 kB
+dist/assets/index-B_wZLmKB.css             10.60 kB │ gzip:   3.10 kB
+dist/assets/rolldown-runtime-vfrPO-fZ.js    0.78 kB │ gzip:   0.45 kB
+dist/assets/icons-ICyjTRdM.js               5.16 kB │ gzip:   2.40 kB
+dist/assets/index-DKuBtNye.js               8.32 kB │ gzip:   3.22 kB
+dist/assets/markdown-rWYfnuQY.js          117.33 kB │ gzip:  35.48 kB
+dist/assets/react-BFgT_rhf.js             218.74 kB │ gzip:  68.27 kB
+dist/assets/assistant-ui-C3kVRRE0.js      538.95 kB │ gzip: 157.23 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 237ms
