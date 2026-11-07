@@ -1,0 +1,3 @@
+# Local `wrangler dev` values. Copy to .dev.vars (ignored). Production uses `wrangler secret put`.
+API_BASE_URL=https://api.example.test
+PREFLIGHT_ACCESS_KEY=replace-me
