@@ -1,0 +1,95 @@
+# Continuous-integration plan for the open-source workspace.
+#
+# This file is part of the code-quality increment but has not run anywhere yet:
+# the repository has no remote. It mirrors docs/SETUP.md exactly so that the
+# first remote run checks the same things a contributor checks locally.
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm test
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+          retention-days: 1
+
+  python:
+    needs: frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - uses: astral-sh/setup-uv@v6
+      - run: uv venv .venv --python 3.14
+      - run: uv pip sync --python .venv/bin/python --require-hashes requirements-dev.txt
+      - run: .venv/bin/ruff check backend mcp_service preflight_core scripts tests
+      - run: .venv/bin/ruff format --check backend mcp_service preflight_core scripts tests
+      - run: .venv/bin/mypy
+      # The built page test needs the frontend build; every other test runs without it.
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+      - run: .venv/bin/python -B -W error -m unittest discover -s tests -v
+      - name: Regenerated CSVs are byte-identical to the committed fixture
+        run: |
+          .venv/bin/python -B scripts/generate_synthetic.py --config config/synthetic_spec.json --seed 20261102 --output /tmp/regenerated
+          for f in aircraft issues tasks activity_events teams people shifts; do cmp "data/synthetic/$f.csv" "/tmp/regenerated/$f.csv"; done
+
+  compose:
+    # The full local stack without a model credential: health, 1,784 rows and the three tools
+    # against SQL. The model answer (`compose_check.py --ask`) is checked locally, not in CI.
+    needs: python
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -B scripts/init_secrets.py
+      - run: docker compose build
+      - run: docker compose up -d --wait
+      - run: python3 -B scripts/load_postgres.py --container preflight-oss-postgres --database preflight_oss
+      - run: python3 -B scripts/compose_check.py --output compose-check.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: compose-check
+          path: compose-check.json
+          if-no-files-found: ignore
+          retention-days: 7
+      - run: docker compose down -v
+        if: always()
+
+  containers:
+    # Build only; nothing is pushed or deployed. Verifies both architectures the Dockerfile maps.
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [linux/amd64, linux/arm64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - run: docker build --platform ${{ matrix.platform }} -f backend/Dockerfile .
+      - run: docker build --platform ${{ matrix.platform }} -f mcp_service/Dockerfile .
