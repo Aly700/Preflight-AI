@@ -56,18 +56,25 @@ of answers by itself.
    and pagination. SQL does the arithmetic; each has a contract test against the
    CSV oracle and a stack-check comparison against independent SQL.
 
+4. **A first evaluation set.** 22 original questions across lookups, comparisons,
+   aggregates, timelines, follow-ups, pagination, missing records, ambiguity and
+   out-of-scope requests, scored against SQL at run time. First comparison on the same
+   model: the native runtime 21/22 and the Copilot runtime 19/22 on shared checks; the
+   native runtime also verifies claims (18/22 strict) and is slower
+   (median 6.7 s against 3.7 s).
+
 ## Next
 
-4. **Gateway and hosted demo on the same code.** Route the six tools through
+5. **Gateway and hosted demo on the same code.** Route the six tools through
    AgentCore Gateway; verify TLS, authentication, tool discovery, denied calls and
    SQL parity; deploy this stack behind the existing hosted entry; record
    direct-versus-Gateway latency and error behaviour.
-5. **Stronger structured-data answers.** A written question set drives further
+6. **Stronger structured-data answers.** A written question set drives further
    tools; the model selects tools, resolves follow-ups, asks for missing criteria and
    explains supported results within pagination and limits. Numeric claims are
    checked against tool output before an answer is complete; missing records and
    tool failures produce explicit limits, not invented facts.
-6. **Evaluation and adaptability.** A versioned benchmark of original cases
+7. **Evaluation and adaptability.** A versioned benchmark of original cases
    (lookups, comparisons, timelines, multi-step questions, follow-ups, ambiguity,
    pagination, missing evidence, tool failures, adversarial text inside records),
    tuning cases separate from held-out cases, several seeds and paraphrases, the
