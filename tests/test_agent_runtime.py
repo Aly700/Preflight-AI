@@ -6,7 +6,7 @@ import unittest
 
 from test_mcp import FixtureRepository
 
-from backend.agent_runtime import ANSWER_CHARS, stream_answer
+from backend.agent_runtime import ANSWER_CHARS, SYSTEM, claims_prompt, stream_answer
 from backend.mcp_tools import ToolResult, ToolSpec
 from backend.model_client import ToolCall, Turn
 from backend.settings import ChatSettings
@@ -121,7 +121,38 @@ async def collect(model, tools, question='Summary', settings=SETTINGS):
     return [event async for event in stream_answer(question, settings, model_client=model, tools=tools)]
 
 
+class NativePrompts(unittest.TestCase):
+    def test_claims_prompt_explains_paths_and_citations(self):
+        prompt = claims_prompt([('t1', 'list_open_issues', {'limit': 5})])
+        self.assertIn('.length', prompt)
+        self.assertIn('total', prompt)
+        self.assertIn('aircraft', prompt)
+
+    def test_system_prompt_asks_for_missing_criteria(self):
+        self.assertIn(
+            'When a question depends on a criterion the user has not given (for example better or worse), '
+            'ask which criterion they mean, and you may say which record-based comparisons you can make.',
+            ' '.join(SYSTEM.split()),
+        )
+
+
 class NativeLoop(unittest.IsolatedAsyncioTestCase):
+    async def test_claims_round_is_skipped_when_the_answer_has_no_ids_or_numbers(self):
+        for answer in (
+            'Which criterion do you mean: unresolved issues or task completion?',
+            'For 2026-01-01 at 10:30, which criterion do you mean?',
+            'For 2026, which criterion do you mean?',
+        ):
+            with self.subTest(answer=answer):
+                model = FakeModel([Turn(answer, [], 'end_turn')])
+                events = await collect(model, FakeTools(), question='Which is better, DEMO-AIR-0002 or DEMO-AIR-0007?')
+                self.assertEqual(len(model.calls), 1)
+                self.assertEqual(events[-1]['event'], 'done')
+                self.assertTrue(events[-1]['data']['verified'])
+                self.assertEqual(events[-1]['data']['unverified'], 0)
+                self.assertEqual(events[-1]['data']['undeclared'], 0)
+                self.assertEqual(''.join(e['data']['text'] for e in events if e['event'] == 'delta'), answer)
+
     async def test_adversarial_record_text_cannot_widen_the_tool_set(self):
         tools = FakeTools()
         issue = next(row for row in tools.repo.rows['issues'] if row['issue_id'] == 'ISSUE-0001')
@@ -246,7 +277,6 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
                     'tool_use',
                 ),
                 Turn('Both compared.', [], 'end_turn'),
-                claims(['DEMO-AIR-0001', 'DEMO-AIR-0002']),
             ]
         )
         tools = FakeTools(barrier=2)
@@ -257,9 +287,7 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(events[-1]['data']['tool_calls'], 2)
 
     async def test_unknown_tool_is_refused_without_calling_mcp(self):
-        model = FakeModel(
-            [Turn('', [ToolCall('x', 'drop_table', {})], 'tool_use'), Turn('Nothing.', [], 'end_turn'), claims()]
-        )
+        model = FakeModel([Turn('', [ToolCall('x', 'drop_table', {})], 'tool_use'), Turn('Nothing.', [], 'end_turn')])
         tools = FakeTools()
         events = await collect(model, tools)
         self.assertEqual(tools.calls, [])
@@ -273,7 +301,6 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
             [
                 Turn('', [ToolCall('h', 'get_issue_history', {'issue_id': 'ISSUE-0001'})], 'tool_use'),
                 Turn('Unknown.', [], 'end_turn'),
-                claims(),
             ]
         )
         tools = FakeTools(fail={'get_issue_history'})
@@ -286,16 +313,15 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
 
     async def test_round_and_call_limits_are_enforced(self):
         tool_turns = [Turn('', [ToolCall(f't{i}', 'list_open_issues', {'limit': 1})], 'tool_use') for i in range(6)]
-        model = FakeModel([*tool_turns, Turn('Done from what I have.', [], 'end_turn'), claims()])
+        model = FakeModel([*tool_turns, Turn('Done from what I have.', [], 'end_turn')])
         tools = FakeTools()
         events = await collect(model, tools)
-        self.assertEqual(len(model.calls), 8)  # six rounds, a wrap-up round without tools, the claims round
+        self.assertEqual(len(model.calls), 7)  # six rounds and a wrap-up round without tools
         self.assertEqual(model.calls[6]['tool_choice'], {'type': 'none'})
-        self.assertEqual(model.calls[7]['tool_choice'], CLAIMS_CHOICE)
         self.assertEqual(events[-1]['data']['rounds'], 6)
         self.assertIn('Done from what I have.', ''.join(e['data']['text'] for e in events if e['event'] == 'delta'))
         many = Turn('', [ToolCall(f'c{i}', 'list_open_issues', {'limit': 1}) for i in range(13)], 'tool_use')
-        model = FakeModel([many, Turn('Done.', [], 'end_turn'), claims()])
+        model = FakeModel([many, Turn('Done.', [], 'end_turn')])
         tools = FakeTools()
         events = await collect(model, tools)
         self.assertEqual(len(tools.calls), 12)
@@ -306,13 +332,15 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
 
     async def test_prose_is_followed_by_one_claims_round_whose_text_is_not_streamed(self):
         model = FakeModel(
-            [Turn('Plain text answer.', [], 'end_turn'), Turn('Here are the claims.', [final()], 'tool_use')]
+            [Turn('I can compare 2 aircraft.', [], 'end_turn'), Turn('Here are the claims.', [final()], 'tool_use')]
         )
         events = await collect(model, FakeTools())
         self.assertEqual(len(model.calls), 2)
         self.assertEqual(model.calls[1]['tool_choice'], CLAIMS_CHOICE)
         self.assertEqual(events[-1]['data']['rounds'], 1)
-        self.assertEqual(''.join(e['data']['text'] for e in events if e['event'] == 'delta'), 'Plain text answer.')
+        self.assertEqual(
+            ''.join(e['data']['text'] for e in events if e['event'] == 'delta'), 'I can compare 2 aircraft.'
+        )
 
     async def test_fabricated_number_marks_the_answer_unverified(self):
         model = FakeModel(
@@ -364,7 +392,7 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
                 return await super().stream_turn(**kw)
 
         tool_turns = [Turn('', [ToolCall(f't{i}', 'list_open_issues', {'limit': 1})], 'tool_use') for i in range(6)]
-        model = Picky([*tool_turns, Turn('Answer from what I have.', [], 'end_turn'), claims()])
+        model = Picky([*tool_turns, Turn('Answer from what I have.', [], 'end_turn')])
         events = await collect(model, FakeTools())
         choices = [c['tool_choice'] for c in model.calls]
         self.assertEqual(choices[6], {'type': 'none'})
@@ -381,7 +409,6 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
                     'tool_use',
                 ),
                 Turn('Here is what it shows.', [], 'end_turn'),
-                claims(['ISSUE-0001']),
             ]
         )
         events = await collect(model, FakeTools())

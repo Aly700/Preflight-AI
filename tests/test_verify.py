@@ -35,6 +35,24 @@ class ClaimVerification(unittest.TestCase):
         with self.assertRaises(LookupError):
             resolve_path(RESULTS['t1'], 'totals')
 
+    def test_length_suffix_resolves_list_size(self):
+        self.assertEqual(resolve_path(RESULTS['t1'], 'items.length'), 1)
+        self.assertEqual(resolve_path({'items': []}, 'items.length'), 0)
+        self.assertEqual(resolve_path({'pages': [RESULTS['t1']]}, 'pages[0].items.length'), 1)
+        for value in (None, 5, 'items', {'length': 3}):
+            with self.subTest(value=value), self.assertRaises(LookupError):
+                resolve_path({'items': value}, 'items.length')
+        with self.assertRaises(LookupError):
+            resolve_path(RESULTS['t1'], 'items.length.total')
+        result = verify_claims(
+            prose='This page shows 1 issue.',
+            claims={'cited_ids': [], 'numbers': [number(1, 'items.length', label='page size')]},
+            results=RESULTS,
+            seen_ids=SEEN,
+        )
+        self.assertTrue(result.verified, result.note)
+        self.assertEqual(result.undeclared, 0)
+
     def test_verifier_reads_new_result_shapes(self):
         counts = {
             'group_by': 'subsystem',
@@ -113,6 +131,28 @@ class ClaimVerification(unittest.TestCase):
             prose='See ISSUE-0001.', claims={'cited_ids': ['ISSUE-0001'], 'numbers': []}, results=RESULTS, seen_ids=SEEN
         )
         self.assertTrue(cited.verified)
+
+    def test_non_record_values_in_cited_ids_are_ignored(self):
+        result = verify_claims(
+            prose='See ISSUE-0001 in DEMO-PROGRAM-ALPHA at DEMO-STATION-01.',
+            claims={
+                'cited_ids': [
+                    'ISSUE-0001',
+                    'DEMO-PROGRAM-ALPHA',
+                    'DEMO-STATION-01',
+                    'ISSUE-0001-extra',
+                    'prefix-ISSUE-0001',
+                    42,
+                    None,
+                ],
+                'numbers': [],
+            },
+            results=RESULTS,
+            seen_ids=SEEN,
+        )
+        self.assertTrue(result.verified, result.note)
+        self.assertEqual(result.unverified, [])
+        self.assertEqual(result.note, '')
 
     def test_number_may_reference_the_tool_name_when_the_value_is_found(self):
         by_name = {'cited_ids': [], 'numbers': [number(162, 'total', 'list_open_issues')]}

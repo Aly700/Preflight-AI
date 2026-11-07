@@ -3,8 +3,8 @@
 One answer is one loop: discover the tools, let the model take up to
 `max_tool_rounds` turns in which it writes prose and calls tools, run each
 turn's tool calls concurrently (bounded), validate every result and feed it
-back, then force one claims round in which the model declares the record IDs
-and numbers it stated so they can be checked against what the tools returned.
+back, then request a claims round when the answer includes record IDs or bare
+integers so they can be checked against what the tools returned.
 The events emitted are the same the UI already reads from the Copilot runtime.
 """
 
@@ -19,7 +19,7 @@ from typing import Any
 from backend.mcp_tools import McpTools, ToolResult, ToolService, anthropic_tools
 from backend.model_client import ModelClient, ModelError, ToolCall, Turn, build_model_client
 from backend.settings import ChatSettings
-from backend.verify import FINAL_ANSWER_TOOL, record_ids, verify_claims
+from backend.verify import FINAL_ANSWER_TOOL, record_ids, scan_prose, verify_claims
 from preflight_core.tools import TOOLS
 
 logger = logging.getLogger('preflight.native')
@@ -43,7 +43,10 @@ once you have the records you need. After your answer you will be asked to
 declare the record IDs and numbers you stated; claims that cannot be verified
 against tool results are shown to the reader as unverified. Use supplied
 conversation context only to interpret follow-up questions; previous answers
-are not authoritative facts. Re-query the tools for each new answer."""
+are not authoritative facts. Re-query the tools for each new answer.
+When a question depends on a criterion the user has not given (for example better
+or worse), ask which criterion they mean, and you may say which record-based
+comparisons you can make."""
 
 Event = dict[str, Any]
 
@@ -74,7 +77,11 @@ def claims_prompt(calls: list[tuple[str, str, dict[str, Any]]]) -> str:
     """The user turn that asks for the declaration, listing the exact ids the model must reference."""
     lines = [
         'Now call the final_answer tool, the only tool available, to declare the claims in your answer above: '
-        'every record ID you cited and every number you stated. Do not write any more answer text.'
+        'declare only counts and quantities that come from tool results, not ranks, ordinals, dates or IDs. '
+        'Each path must point at a numeric field; use total or limit for page sizes or <list>.length for '
+        'the size of a list. Cite every record ID that appears in the answer, including aircraft IDs '
+        '(DEMO-AIR-...), issue IDs, task IDs, event IDs and person IDs. Program and station names are not '
+        'record IDs. Do not write any more answer text.'
     ]
     if calls:
         lines.append('Tool calls in this conversation and their ids; use these exact ids as call_id:')
@@ -160,7 +167,10 @@ class Loop:
                     refused = [result_block(c.id, LIMIT_REACHED, error=True) for c in turn.tool_calls]
                     messages.append({'role': 'user', 'content': refused})
                 break
-        # Claims round: forced, its text is not part of the answer.
+        prose_ids, integers = scan_prose(''.join(self.text_parts))
+        if not prose_ids and not integers:
+            return
+        # Claims round: its text is not part of the answer.
         messages.append({'role': 'user', 'content': claims_prompt(self.calls_log)})
         # Not every model accepts a forced tool choice, so the claims tool is simply the only tool offered.
         self.turn_has_text = False

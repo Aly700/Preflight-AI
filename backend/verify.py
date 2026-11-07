@@ -80,14 +80,27 @@ INTEGER = re.compile(r'(?<![\w.-])\d{1,9}(?![\w.-])')
 PATH_PART = re.compile(r'\[(\d+)\]|([^.\[\]]+)')
 
 
+def scan_prose(prose: str) -> tuple[set[str], list[str]]:
+    """Return record IDs and bare integer tokens, excluding dates, times and years."""
+    prose_ids = set(ID_PATTERN.findall(prose))
+    stripped = TIME.sub(' ', DATE.sub(' ', ID_PATTERN.sub(' ', prose)))
+    integers = [match.group() for match in INTEGER.finditer(stripped)]
+    return prose_ids, [token for token in integers if not (len(token) == 4 and 1900 <= int(token) <= 2100)]
+
+
 def resolve_path(payload: Any, path: str) -> Any:
-    """Follow dotted keys and [n] indexes into a tool result; LookupError when the path is absent."""
+    """Follow dotted keys and [n] indexes, with a final .length for lists; LookupError when absent."""
     value = payload
+    length_suffix = path.endswith('.length')
     try:
-        for index, key in PATH_PART.findall(path):
+        for index, key in PATH_PART.findall(path.removesuffix('.length') if length_suffix else path):
             value = value[int(index)] if index else value[key]
     except KeyError, IndexError, TypeError:
         raise LookupError(path) from None
+    if length_suffix:
+        if not isinstance(value, list):
+            raise LookupError(path)
+        return len(value)
     return value
 
 
@@ -146,7 +159,7 @@ def verify_claims(
     if raw_cited is None:
         pass
     elif isinstance(raw_cited, list):
-        cited = {str(c) for c in raw_cited}
+        cited = {c for c in raw_cited if isinstance(c, str) and RECORD_ID.fullmatch(c)}
     else:
         unverified.append('cited_ids is malformed')
     for item in numbers:
@@ -183,19 +196,12 @@ def verify_claims(
             continue
         if not any(same_number(value, actual) for actual in numeric):
             unverified.append(f'{label} ({number_token(value)}) does not match the tool result ({numeric[0]!r})')
-    prose_ids = set(ID_PATTERN.findall(prose))
+    prose_ids, integers = scan_prose(prose)
     for record in sorted(prose_ids - cited):
         unverified.append(f'{record} is not among the cited records')
     for record in sorted(cited - seen_ids):
         unverified.append(f'{record} was cited but no tool returned it')
-    stripped = TIME.sub(' ', DATE.sub(' ', ID_PATTERN.sub(' ', prose)))
-    undeclared = 0
-    for match in INTEGER.finditer(stripped):
-        token = match.group()
-        if len(token) == 4 and 1900 <= int(token) <= 2100:
-            continue
-        if token not in declared_tokens:
-            undeclared += 1
+    undeclared = sum(token not in declared_tokens for token in integers)
     if claims is None and (prose_ids or undeclared):
         unverified.append('no claims were declared for the records or numbers in this answer')
     note = ('Unverified: ' + '; '.join(unverified)) if unverified else ''
