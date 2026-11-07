@@ -372,6 +372,23 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(events[-1]['data']['rounds'], 6)
         self.assertIn('Answer from what I have.', ''.join(e['data']['text'] for e in events if e['event'] == 'delta'))
 
+    async def test_text_from_consecutive_turns_is_separated(self):
+        model = FakeModel(
+            [
+                Turn(
+                    'I can pull the record.',
+                    [ToolCall('t1', 'get_issue_history', {'issue_id': 'ISSUE-0001'})],
+                    'tool_use',
+                ),
+                Turn('Here is what it shows.', [], 'end_turn'),
+                claims(['ISSUE-0001']),
+            ]
+        )
+        events = await collect(model, FakeTools())
+        text = ''.join(e['data']['text'] for e in events if e['event'] == 'delta')
+        self.assertIn('I can pull the record.\n\nHere is what it shows.', text)
+        self.assertFalse(text.startswith('\n'))
+
     async def test_answer_text_cap_is_enforced(self):
         model = FakeModel([Turn('x' * (ANSWER_CHARS + 1), [], 'end_turn')])
         with self.assertRaisesRegex(RuntimeError, 'limit'):

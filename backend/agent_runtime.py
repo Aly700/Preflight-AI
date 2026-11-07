@@ -106,8 +106,14 @@ class Loop:
         self.evidence: list[dict[str, Any]] = []
         self.seen: set[str] = set()
         self.claims: dict[str, Any] | None = None
+        self.turn_has_text = False
 
     def on_text(self, text: str) -> None:
+        if text and not self.turn_has_text and self.text_parts and not self.text_parts[-1].endswith('\n'):
+            # A new turn's text would otherwise run straight on from the previous turn's last sentence.
+            text = '\n\n' + text
+        if text:
+            self.turn_has_text = True
         self.text_length += len(text)
         if self.text_length > ANSWER_CHARS:
             raise AnswerLimitExceeded('Answer limit exceeded')
@@ -118,6 +124,7 @@ class Loop:
         tool_defs = [tool for tool in anthropic_tools(await self.tools.discover()) if tool['name'] != FINAL]
         messages: list[dict[str, Any]] = [{'role': 'user', 'content': question}]
         while True:
+            self.turn_has_text = False
             turn = await self.model.stream_turn(
                 system=SYSTEM, messages=messages, tools=tool_defs, tool_choice={'type': 'auto'}, on_text=self.on_text
             )
@@ -130,6 +137,7 @@ class Loop:
                 # Wrap-up: the model answers from what it has; no further tools are offered.
                 messages.append({'role': 'user', 'content': NO_MORE_TOOLS})
                 try:
+                    self.turn_has_text = False
                     turn = await self.model.stream_turn(
                         system=SYSTEM,
                         messages=messages,
@@ -139,6 +147,7 @@ class Loop:
                     )
                 except ModelError:
                     # Not every model accepts tool_choice none; the instruction alone then has to do.
+                    self.turn_has_text = False
                     turn = await self.model.stream_turn(
                         system=SYSTEM,
                         messages=messages,
@@ -154,6 +163,7 @@ class Loop:
         # Claims round: forced, its text is not part of the answer.
         messages.append({'role': 'user', 'content': claims_prompt(self.calls_log)})
         # Not every model accepts a forced tool choice, so the claims tool is simply the only tool offered.
+        self.turn_has_text = False
         turn = await self.model.stream_turn(
             system=SYSTEM,
             messages=messages,
