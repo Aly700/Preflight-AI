@@ -1,3 +1,7 @@
-# Open-source license decision — pending
+# Open-source license decision
 
-Choose a license (for example MIT or Apache-2.0) only after confirming ownership, dependencies, and repository publication rights. A repository without an explicit license does not automatically grant public reuse rights. This starter package is for planning and should not be represented as a licensed open-source release until the decision is completed.
+Decided on November 7, 2026: this repository is released under the MIT License
+(see `LICENSE`). The fictional dataset, the generator and the application code are
+original work by the copyright holder. Third-party notices for bundled frontend
+dependencies are kept in `frontend/public/THIRD_PARTY_NOTICES.txt` and remain under
+their own licenses.

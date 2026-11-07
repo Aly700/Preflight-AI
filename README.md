@@ -59,4 +59,4 @@ These use fixtures and a fake model client. The stack check above is the real th
 
 ## License
 
-Not decided yet. See [LICENSE_DECISION.md](LICENSE_DECISION.md). Third-party notices are kept in `frontend/public/`.
+MIT. See [LICENSE](LICENSE). Third-party notices for bundled frontend dependencies are kept in `frontend/public/THIRD_PARTY_NOTICES.txt`.
