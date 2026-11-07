@@ -61,7 +61,9 @@ of answers by itself.
    out-of-scope requests, scored against SQL at run time. First comparison on the same
    model: the native runtime 21/22 and the Copilot runtime 19/22 on shared checks; the
    native runtime also verifies claims (18/22 strict) and is slower
-   (median 6.7 s against 3.7 s).
+   (median 6.7 s against 3.7 s). After fixes the evaluation pointed to, the native
+   runtime passes 22/22 strict at a median of 6.2 s; these cases now count as tuning
+   cases, and a held-out set is next.
 
 ## Next
 

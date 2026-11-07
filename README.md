@@ -17,7 +17,7 @@ All data is made up: 12 demo aircraft, 180 issues, 480 tasks and their history, 
 - **Model choice** with one setting: Claude or OpenAI with your own key, or GitHub Copilot.
 - **Two runtimes.** The Copilot SDK's loop, or this repository's own loop over the Anthropic API: multi-step and parallel tool calls, every result validated, and the record IDs and numbers in the answer checked against the tool results before it is marked complete.
 - **Hosted demo** on Cloudflare Workers, calling an earlier build of the same backend on AWS.
-- **An evaluation set**: 22 original questions scored against SQL (`evals/`). Latest run with Claude Sonnet: this repository's runtime 21/22, the Copilot runtime 19/22.
+- **An evaluation set**: 22 original questions scored against SQL (`evals/`). With Claude Sonnet, this repository's runtime passes all 22 with every stated number and record ID verified; the Copilot runtime passes 19. These cases were used to tune the prompt, so a held-out set comes next.
 - **Setup notes and the data contract** in `docs/`.
 
 ## Run it locally
