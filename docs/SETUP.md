@@ -94,12 +94,26 @@ What each step does:
   compares the answer's `evidence` event and text with SQL. This uses your key.
   `--output <file>` keeps the report.
 
-### Model provider
+### Runtime and model provider
+
+`CHAT_RUNTIME` selects how an answer is produced:
+
+- `copilot` (default): the Copilot SDK's own loop. Works with every provider.
+- `native`: this repository's loop over the Anthropic Messages API
+  (`MODEL_PROVIDER=anthropic`). The model discovers the tools from the MCP
+  service each answer, can call several in one turn and take up to
+  `MAX_TOOL_ROUNDS` turns and `MAX_TOOL_CALLS` calls (6 and 12 by default), and
+  every result is validated before it goes back to the model. When the answer
+  text is done, one extra short round asks the model to declare the record IDs
+  and numbers it stated; each is checked against the tool results. Anything
+  that does not check out is appended to the answer as an "Unverified" note, and
+  the `done` event reports `verified`, `unverified` and `undeclared` counts.
 
 `MODEL_PROVIDER` selects the provider; the stack defaults to `anthropic` with
 `claude-sonnet-5-5`. Override from the shell when starting:
 
 ```sh
+CHAT_RUNTIME=native docker compose up -d           # this repository's loop with verified claims
 MODEL_PROVIDER=copilot docker compose up -d        # GitHub token with Copilot access in .secrets/copilot-token
 MODEL_PROVIDER=openai COPILOT_MODEL=gpt-5.5 docker compose up -d
 ANTHROPIC_WORKSPACE_ID=wrkspc_... docker compose up -d   # user-scoped Anthropic keys (sk-ant-usr-...) need their workspace

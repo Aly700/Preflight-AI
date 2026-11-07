@@ -15,6 +15,7 @@ All data is made up: 12 demo aircraft, 180 issues, 480 tasks and their history, 
 - **Three read-only tools** over MCP: aircraft summary, open issues, issue history. Each result is validated and its record IDs are kept as evidence.
 - **PostgreSQL** with the generated fictional data, loaded in one checked transaction, read-only roles.
 - **Model choice** with one setting: Claude or OpenAI with your own key, or GitHub Copilot.
+- **Two runtimes.** The Copilot SDK's loop, or this repository's own loop over the Anthropic API: multi-step and parallel tool calls, every result validated, and the record IDs and numbers in the answer checked against the tool results before it is marked complete.
 - **Hosted demo** on Cloudflare Workers, calling an earlier build of the same backend on AWS.
 - **Setup notes and the data contract** in `docs/`.
 
