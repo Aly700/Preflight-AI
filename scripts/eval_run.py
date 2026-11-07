@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 from collections.abc import Callable
 from datetime import UTC, datetime
+import functools
 from http.client import HTTPException
 import json
 import math
@@ -354,6 +355,7 @@ def main() -> None:
     parser.add_argument('--gap', type=float, default=13)
     parser.add_argument('--only', help='Comma-separated case IDs')
     parser.add_argument('--output', type=Path)
+    parser.add_argument('--token-file', type=Path, help='Chat access key file, when calling the API directly')
     args = parser.parse_args()
     try:
         version, cases = load_cases(args.questions)
@@ -364,6 +366,7 @@ def main() -> None:
             if unknown := selected - {case['id'] for case in cases}:
                 raise ValueError(f'unknown case ids: {sorted(unknown)}')
             cases = [case for case in cases if case['id'] in selected]
+        token = args.token_file.read_text(encoding='utf-8').strip() if args.token_file else None
     except (OSError, ValueError) as error:
         parser.error(str(error))
     try:
@@ -373,7 +376,7 @@ def main() -> None:
             container=args.container,
             database=args.database,
             gap=args.gap,
-            ask_fn=compose_check.ask,
+            ask_fn=functools.partial(compose_check.ask, token=token) if token else compose_check.ask,
         )
     except (OSError, RuntimeError, ValueError, subprocess.TimeoutExpired) as error:
         parser.exit(1, f'Evaluation aborted: {type(error).__name__}\n')

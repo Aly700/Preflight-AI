@@ -193,13 +193,21 @@ def ask(
     timeout: float = 150,
     history: list[dict[str, str]] | None = None,
     on_event: Callable[[str, dict[str, Any]], None] | None = None,
+    token: str | None = None,
 ) -> list[tuple[str, dict[str, Any]]]:
-    """One question through the web entry point; a socket silent for `timeout` seconds raises TimeoutError."""
+    """One question through the web entry point; a socket silent for `timeout` seconds raises TimeoutError.
+
+    `token` is the chat access key, needed only when calling the API directly (on a host
+    without the web proxy); it is sent as a bearer header and never printed.
+    """
     parts = urlsplit(base)
     connection = http.client.HTTPConnection(parts.hostname or '127.0.0.1', parts.port or 80, timeout=timeout)
     body = json.dumps({'question': question, 'history': history or []})
     try:
-        connection.request('POST', '/api/chat', body=body, headers={'Content-Type': 'application/json'})
+        headers = {'Content-Type': 'application/json'}
+        if token:
+            headers['Authorization'] = 'Bearer ' + token
+        connection.request('POST', '/api/chat', body=body, headers=headers)
         response = connection.getresponse()
         if response.status != 200:
             raise RuntimeError(f'chat answered {response.status}: {response.read(400).decode("utf-8", "replace")}')

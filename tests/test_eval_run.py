@@ -1,6 +1,7 @@
 """Offline evaluation checks: HTTP, SQL and time are replaced at their external boundaries."""
 
 from collections import Counter
+from contextlib import suppress
 from copy import deepcopy
 import importlib.util
 import io
@@ -691,6 +692,39 @@ class EvalRunner(unittest.TestCase):
                 if supplied:
                     self.assertEqual(observer.call_args_list, [call(*event) for event in events])
                 connection.return_value.close.assert_called_once()
+
+    def test_ask_sends_a_bearer_token_only_when_given(self):
+        raw = b'event: done\ndata: {}\n\n'
+        for token in (None, 'host-chat-token'):
+            with self.subTest(token=token):
+                response: Any = io.BytesIO(raw)
+                response.status = 200
+                with patch.object(evaluation.compose_check.http.client, 'HTTPConnection') as connection:
+                    connection.return_value.getresponse.return_value = response
+                    kwargs = {} if token is None else {'token': token}
+                    evaluation.compose_check.ask('http://127.0.0.1:8100', 'Question', **kwargs)
+                headers = connection.return_value.request.call_args.kwargs['headers']
+                if token is None:
+                    self.assertNotIn('Authorization', headers)
+                else:
+                    self.assertEqual(headers['Authorization'], 'Bearer host-chat-token')
+
+    def test_main_reads_the_token_file_and_passes_it_to_ask(self):
+        document = question_document()
+        self.path.write_text(json.dumps(document))
+        token_file = Path(self.temp.name) / 'chat-token'
+        token_file.write_text('host-chat-token\n')
+        report = {'cases': [], 'overall': {'total': 0, 'passed': 0, 'failed': 0, 'skipped': 0}}
+        with (
+            patch.object(evaluation, 'ROOT', Path(self.temp.name)),
+            patch.object(evaluation, 'run', return_value=report) as run,
+            patch('sys.stdout', new_callable=io.StringIO),
+            patch('sys.argv', ['eval_run.py', '--questions', str(self.path), '--token-file', str(token_file)]),
+            suppress(SystemExit),
+        ):
+            evaluation.main()
+        ask_fn = run.call_args.kwargs['ask_fn']
+        self.assertEqual(ask_fn.keywords, {'token': 'host-chat-token'})
 
     def test_main_validates_before_requests_filters_and_writes_default_evidence(self):
         document = question_document()
