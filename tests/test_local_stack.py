@@ -157,6 +157,45 @@ FACTS: dict[str, Any] = {
         'task_status_counts': {'todo': 23, 'in_progress': 3, 'awaiting_review': 2, 'completed': 9, 'blocked': 1},
     },
     'issue_0001_events': 7,
+    'unresolved_by_subsystem': {
+        'avionics': 30,
+        'cabin': 25,
+        'controls': 28,
+        'electrical': 26,
+        'hydraulics': 27,
+        'structures': 26,
+    },
+    'aircraft_0002': {
+        'issue_count': 15,
+        'unresolved_issue_count': 12,
+        'issue_status_counts': {'open': 2, 'in_progress': 7, 'blocked': 0, 'reopened': 3, 'closed': 3},
+        'task_count': 40,
+        'task_status_counts': {'todo': 20, 'in_progress': 5, 'awaiting_review': 3, 'completed': 10, 'blocked': 2},
+    },
+    'closed_total': 18,
+}
+COUNTS: dict[str, Any] = {
+    'group_by': 'subsystem',
+    'unresolved_only': True,
+    'total': 162,
+    'groups': [{'key': k, 'count': c} for k, c in sorted(FACTS['unresolved_by_subsystem'].items())],
+}
+COMPARISON: dict[str, Any] = {
+    'summaries': [
+        {'aircraft': {'aircraft_id': 'DEMO-AIR-0001'}, **FACTS['aircraft_0001']},
+        {'aircraft': {'aircraft_id': 'DEMO-AIR-0002'}, **FACTS['aircraft_0002']},
+    ],
+    'ranked_by_unresolved': [
+        {'aircraft_id': 'DEMO-AIR-0001', 'unresolved_issue_count': 12, 'issue_count': 15},
+        {'aircraft_id': 'DEMO-AIR-0002', 'unresolved_issue_count': 12, 'issue_count': 15},
+    ],
+    'unresolved_spread': 0,
+}
+CLOSED: dict[str, Any] = {
+    'total': 18,
+    'limit': 5,
+    'offset': 0,
+    'items': [{'issue_id': 'ISSUE-0002', 'status': 'closed'}] * 5,
 }
 PAGE = {
     'total': 162,
@@ -189,14 +228,44 @@ class StackCheck(unittest.TestCase):
         self.assertEqual(self.check.compare_evidence(events, FACTS), ['answer ended with error: x'])
 
     def test_compare_tools_checks_all_three_tools(self):
-        results = {'get_aircraft_summary': SUMMARY, 'list_open_issues': PAGE, 'get_issue_history': HISTORY}
+        results = {
+            'get_aircraft_summary': SUMMARY,
+            'list_open_issues': PAGE,
+            'get_issue_history': HISTORY,
+            'count_issues': COUNTS,
+            'compare_aircraft': COMPARISON,
+            'search_issues': CLOSED,
+        }
         self.assertEqual(self.check.compare_tools(results, FACTS), [])
         wrong = {**results, 'get_issue_history': {**HISTORY, 'total_events': 6}}
         mismatches = self.check.compare_tools(wrong, FACTS)
         self.assertEqual(len(mismatches), 1)
         self.assertIn('get_issue_history', mismatches[0])
         missing = self.check.compare_tools({'list_open_issues': PAGE}, FACTS)
-        self.assertEqual(len(missing), 2)
+        self.assertEqual(len(missing), 5)
+
+    def test_compare_tools_checks_the_three_new_tools(self):
+        results = {
+            'get_aircraft_summary': SUMMARY,
+            'list_open_issues': PAGE,
+            'get_issue_history': HISTORY,
+            'count_issues': COUNTS,
+            'compare_aircraft': COMPARISON,
+            'search_issues': CLOSED,
+        }
+        self.assertEqual(self.check.compare_tools(results, FACTS), [])
+        wrong_count = {**COUNTS, 'groups': [{'key': 'avionics', 'count': 1}, *COUNTS['groups'][1:]]}
+        mismatches = self.check.compare_tools({**results, 'count_issues': wrong_count}, FACTS)
+        self.assertEqual(len(mismatches), 1)
+        self.assertIn('count_issues', mismatches[0])
+        wrong_spread = {**COMPARISON, 'unresolved_spread': 3}
+        mismatches = self.check.compare_tools({**results, 'compare_aircraft': wrong_spread}, FACTS)
+        self.assertEqual(len(mismatches), 1)
+        self.assertIn('compare_aircraft', mismatches[0])
+        open_item = {**CLOSED, 'items': [{'issue_id': 'ISSUE-0001', 'status': 'open'}]}
+        mismatches = self.check.compare_tools({**results, 'search_issues': open_item}, FACTS)
+        self.assertEqual(len(mismatches), 1)
+        self.assertIn('search_issues', mismatches[0])
 
     def test_sse_parser_reads_frames_until_done(self):
         raw = (

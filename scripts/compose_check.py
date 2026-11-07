@@ -60,7 +60,14 @@ SELECT json_build_object(
       'blocked', count(*) FILTER (WHERE t.status = 'blocked'))
       FROM preflight.tasks t JOIN preflight.issues i USING (issue_id) WHERE i.aircraft_id = '{AIRCRAFT}'))
     FROM preflight.issues WHERE aircraft_id = '{AIRCRAFT}'),
-  'issue_0001_events', (SELECT count(*) FROM preflight.activity_events WHERE issue_id = '{ISSUE}')
+  'issue_0001_events', (SELECT count(*) FROM preflight.activity_events WHERE issue_id = '{ISSUE}'),
+  'unresolved_by_subsystem', (SELECT coalesce(json_object_agg(subsystem, n ORDER BY subsystem), '{{}}'::json) FROM
+    (SELECT subsystem, count(*) AS n FROM preflight.issues WHERE status <> 'closed' GROUP BY subsystem) by_subsystem),
+  'aircraft_0002', (SELECT json_build_object(
+    'issue_count', count(*),
+    'unresolved_issue_count', count(*) FILTER (WHERE status <> 'closed'))
+    FROM preflight.issues WHERE aircraft_id = 'DEMO-AIR-0002'),
+  'closed_total', (SELECT count(*) FROM preflight.issues WHERE status = 'closed')
 );
 """
 
@@ -97,6 +104,9 @@ print(json.dumps({
     'get_aircraft_summary': call('get_aircraft_summary', {'aircraft_id': 'DEMO-AIR-0001'}, 1),
     'list_open_issues': call('list_open_issues', {'limit': 5}, 2),
     'get_issue_history': call('get_issue_history', {'issue_id': 'ISSUE-0001', 'limit': 1}, 3),
+    'count_issues': call('count_issues', {'group_by': 'subsystem', 'unresolved_only': True}, 4),
+    'compare_aircraft': call('compare_aircraft', {'aircraft_ids': ['DEMO-AIR-0001', 'DEMO-AIR-0002']}, 5),
+    'search_issues': call('search_issues', {'status': 'closed', 'limit': 5}, 6),
 }))
 """
 
@@ -228,7 +238,14 @@ def compare_evidence(events: Iterable[tuple[str, dict[str, Any]]], facts: dict[s
 def compare_tools(results: dict[str, Any], facts: dict[str, Any]) -> list[str]:
     """Mismatches between direct tool calls and the SQL facts; a missing tool is a mismatch."""
     mismatches: list[str] = []
-    for tool in ('get_aircraft_summary', 'list_open_issues', 'get_issue_history'):
+    for tool in (
+        'get_aircraft_summary',
+        'list_open_issues',
+        'get_issue_history',
+        'count_issues',
+        'compare_aircraft',
+        'search_issues',
+    ):
         if tool not in results:
             mismatches.append(f'{tool}: no result')
     if 'get_aircraft_summary' in results:
@@ -242,6 +259,37 @@ def compare_tools(results: dict[str, Any], facts: dict[str, Any]) -> list[str]:
         if history.get('total_events') != facts['issue_0001_events']:
             observed, expected = history.get('total_events'), facts['issue_0001_events']
             mismatches.append(f'get_issue_history: total_events {observed!r} differs from SQL {expected!r}')
+    if 'count_issues' in results:
+        counts = results['count_issues']
+        groups = {g.get('key'): g.get('count') for g in counts.get('groups', [])}
+        if groups != facts['unresolved_by_subsystem'] or counts.get('total') != facts['unresolved_total']:
+            mismatches.append(f'count_issues: {groups!r} (total {counts.get("total")!r}) differs from SQL')
+    if 'compare_aircraft' in results:
+        comparison = results['compare_aircraft']
+        summaries = comparison.get('summaries', [])
+        wanted = [facts['aircraft_0001'], facts['aircraft_0002']]
+        if len(summaries) != 2 or any(
+            s.get(k) != w[k]
+            for s, w in zip(summaries, wanted, strict=False)
+            for k in ('issue_count', 'unresolved_issue_count')
+        ):
+            mismatches.append('compare_aircraft: summaries differ from SQL')
+        spread = abs(
+            facts['aircraft_0001']['unresolved_issue_count'] - facts['aircraft_0002']['unresolved_issue_count']
+        )
+        if comparison.get('unresolved_spread') != spread:
+            spread_seen = comparison.get('unresolved_spread')
+            mismatches.append(f'compare_aircraft: unresolved_spread {spread_seen!r} differs from SQL {spread!r}')
+    if 'search_issues' in results:
+        closed = results['search_issues']
+        if closed.get('total') != facts['closed_total'] or any(
+            i.get('status') != 'closed' for i in closed.get('items', [])
+        ):
+            observed, expected = closed.get('total'), facts['closed_total']
+            observed, expected = closed.get('total'), facts['closed_total']
+            mismatches.append(
+                f'search_issues: total {observed!r} differs from SQL {expected!r} or an item is not closed'
+            )
     return mismatches
 
 

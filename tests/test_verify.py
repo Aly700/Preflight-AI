@@ -21,6 +21,31 @@ class ClaimVerification(unittest.TestCase):
         with self.assertRaises(LookupError):
             resolve_path(RESULTS['t1'], 'totals')
 
+    def test_verifier_reads_new_result_shapes(self):
+        counts = {
+            'group_by': 'subsystem',
+            'unresolved_only': True,
+            'total': 162,
+            'groups': [{'key': 'avionics', 'count': 30}, {'key': 'cabin', 'count': 25}],
+        }
+        comparison = {
+            'ranked_by_unresolved': [{'aircraft_id': 'DEMO-AIR-0001', 'unresolved_issue_count': 12}],
+            'unresolved_spread': 0,
+        }
+        self.assertEqual(resolve_path(counts, 'groups[1].count'), 25)
+        self.assertEqual(resolve_path(comparison, 'ranked_by_unresolved[0].unresolved_issue_count'), 12)
+        claims = {
+            'cited_ids': [],
+            'numbers': [
+                number(25, 'groups[1].count', 'c1', 'cabin unresolved'),
+                number(0, 'unresolved_spread', 'c2', 'spread'),
+            ],
+        }
+        result = verify_claims(
+            prose='cabin 25, spread 0', claims=claims, results={'c1': counts, 'c2': comparison}, seen_ids=set()
+        )
+        self.assertTrue(result.verified)
+
     def test_declared_number_matching_its_path_verifies(self):
         result = verify_claims(
             prose='There are 162 unresolved issues; this page shows 5.',
