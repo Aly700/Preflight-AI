@@ -95,14 +95,26 @@ of answers by itself.
    also caught one stated number that disagreed with its tool result. The held-out set
    has now informed these changes, so the next measurement needs a fresh one.
 
+8. **A tuning round and a fresh held-out set.** Declared numbers can name a list item
+   by a field value, such as `groups[key=cabin].count`, and count distinct values; IDs
+   the user supplied are context, not claims; the prompt asks for the fewest tool
+   calls, for no record IDs a tool did not return, and for declines without tool
+   calls; missing-record cases are scored on content (rubric v4). A fresh held-out set
+   of 22 questions, written without seeing model outputs, the prompt or the verifier,
+   then passed 20, 21 and 21 of 22 strict checks in three runs through the Gateway,
+   with the tuning set at 21, 22 and 20. Every answer contained the expected records
+   and numbers, no run had a tool-choice or call-budget failure, and the median answer
+   took 6.0 to 6.6 s. The remaining misses are claim declarations, mostly a count of
+   entries that have a field at all, which the count filter cannot express yet.
+
 ## Next
 
-8. **Stronger structured-data answers.** A written question set drives further
+9. **Stronger structured-data answers.** A written question set drives further
    tools; the model selects tools, resolves follow-ups, asks for missing criteria and
    explains supported results within pagination and limits. Numeric claims are
    checked against tool output before an answer is complete; missing records and
    tool failures produce explicit limits, not invented facts.
-9. **Evaluation and adaptability.** A versioned benchmark of original cases
+10. **Evaluation and adaptability.** A versioned benchmark of original cases
    (lookups, comparisons, timelines, multi-step questions, follow-ups, ambiguity,
    pagination, missing evidence, tool failures, adversarial text inside records),
    tuning cases separate from held-out cases, several seeds and paraphrases, the
