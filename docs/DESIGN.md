@@ -65,18 +65,24 @@ of answers by itself.
    runtime passes 22/22 strict at a median of 6.2 s; these cases now count as tuning
    cases, and a held-out set is next.
 
+5. **Hosted demo on this code, Claude on Bedrock.** The stack runs on a single AWS host
+   behind Nginx with its own containers, data and certificate; the Cloudflare Worker
+   forwards chat to it. Claude Sonnet 4.6 is called through Bedrock's global profile from
+   Canada Central with the host's IAM role (no model key on the host), with prompt
+   caching and a daily answer cap. On the evaluation it passes 22/22 strict; Haiku 4.5
+   passes 20/22 strict at about half the estimated cost.
+
 ## Next
 
-5. **Gateway and hosted demo on the same code.** Route the six tools through
+6. **Gateway.** Route the six tools through
    AgentCore Gateway; verify TLS, authentication, tool discovery, denied calls and
-   SQL parity; deploy this stack behind the existing hosted entry; record
-   direct-versus-Gateway latency and error behaviour.
-6. **Stronger structured-data answers.** A written question set drives further
+   SQL parity; record direct-versus-Gateway latency and error behaviour.
+7. **Stronger structured-data answers.** A written question set drives further
    tools; the model selects tools, resolves follow-ups, asks for missing criteria and
    explains supported results within pagination and limits. Numeric claims are
    checked against tool output before an answer is complete; missing records and
    tool failures produce explicit limits, not invented facts.
-7. **Evaluation and adaptability.** A versioned benchmark of original cases
+8. **Evaluation and adaptability.** A versioned benchmark of original cases
    (lookups, comparisons, timelines, multi-step questions, follow-ups, ambiguity,
    pagination, missing evidence, tool failures, adversarial text inside records),
    tuning cases separate from held-out cases, several seeds and paraphrases, the

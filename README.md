@@ -4,7 +4,7 @@ Ask questions about aircraft maintenance issues in plain English and get answers
 
 All data is made up: 12 demo aircraft, 180 issues, 480 tasks and their history, generated from a seed. The model can only read the records through six read-only tools, and every answer shows which records it used. Nothing here is a real maintenance system.
 
-**Live demo:** <https://preflight-oss-demo.preflight-ai.workers.dev>
+**Live demo:** <https://preflight-oss-demo.preflight-ai.workers.dev> runs this repository's code with Claude Sonnet 4.6 on Amazon Bedrock.
 
 ![Architecture: a browser reaches a Cloudflare Worker, which proxies chat to an Nginx entry on an EC2 host; the API runs a model runtime that calls read-only MCP tools over PostgreSQL](docs/architecture.svg)
 
@@ -16,8 +16,8 @@ All data is made up: 12 demo aircraft, 180 issues, 480 tasks and their history, 
 - **PostgreSQL** with the generated fictional data, loaded in one checked transaction, read-only roles.
 - **Model choice** with one setting: Claude or OpenAI with your own key, or GitHub Copilot.
 - **Two runtimes.** The Copilot SDK's loop, or this repository's own loop over the Anthropic API: multi-step and parallel tool calls, every result validated, and the record IDs and numbers in the answer checked against the tool results before it is marked complete.
-- **Hosted demo** on Cloudflare Workers, calling an earlier build of the same backend on AWS.
-- **An evaluation set**: 22 original questions scored against SQL (`evals/`). With Claude Sonnet, this repository's runtime passes all 22 with every stated number and record ID verified; the Copilot runtime passes 19. These cases were used to tune the prompt, so a held-out set comes next.
+- **Hosted demo**: Cloudflare Workers serves the UI and forwards chat to this stack on a single AWS host. The model is Claude on Amazon Bedrock, reached through the host's IAM role, so no model key is stored anywhere. A daily answer cap bounds the cost.
+- **An evaluation set**: 22 original questions scored against SQL (`evals/`). On Bedrock, Claude Sonnet 4.6 passes all 22 with every stated number and record ID verified; Claude Haiku 4.5 answers all 22 correctly but verifies 20. These cases were used to tune the prompt, so a held-out set comes next.
 - **Setup notes and the data contract** in `docs/`.
 
 ## Run it locally
@@ -53,7 +53,6 @@ These use fixtures and a fake model client. The stack check above is the real th
 
 ## Where it is going
 
-- Run this stack on the shared AWS host and point the hosted demo at it.
 - Put the tools behind Amazon Bedrock AgentCore Gateway.
 - More tools for comparisons and timelines, then a published evaluation set with two model configurations.
 
