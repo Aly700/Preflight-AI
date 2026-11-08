@@ -111,8 +111,11 @@ class ComposeConfiguration(unittest.TestCase):
             self.assertIn('- run: docker compose logs --no-color\n        if: failure()\n', compose)
             self.assertLess(compose.index('docker compose logs --no-color'), compose.index('docker compose down -v'))
         with self.subTest(check='web image for each platform'):
-            self.assertIn('platform: [linux/amd64, linux/arm64]', containers)
-            self.assertIn('- run: docker build --platform ${{ matrix.platform }} frontend', containers)
+            self.assertIn('arch: [amd64, arm64]', containers)
+            self.assertIn('- run: docker build --platform linux/${{ matrix.arch }} frontend', containers)
+        with self.subTest(check='API image layers cached between runs'):
+            self.assertIn('cache-from: type=gha,scope=backend-${{ matrix.arch }}', containers)
+            self.assertIn('- run: docker compose -f compose.yaml -f .github/compose.ci.yaml build', compose)
 
     def test_roles_script_uses_psql_variables_not_string_interpolation(self):
         script = ROOT / 'compose/postgres-roles.sh'
