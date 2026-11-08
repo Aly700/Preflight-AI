@@ -120,14 +120,32 @@ of answers by itself.
    per subsystem because the count tool has no date filter; and number declarations
    that cite a call that does not exist, which also appear in the tuning set.
 
+10. **LangGraph, tracing and a model comparison.** The native loop is split into
+   steps (start, model turn, tools, wrap-up, claims) and also runs as a compiled
+   LangGraph StateGraph (`CHAT_RUNTIME=langgraph`); model calls stay on the Anthropic
+   SDK. Every native loop test runs against both, and on the host the graph scored
+   22, 21 and 21 (tuning) and 19, 18 and 19 (held-out) with the same tokens and
+   latency as the native loop, so the two are interchangeable. OpenTelemetry spans
+   (GenAI conventions, metadata only) cover each answer, tool call and model call
+   when an OTLP endpoint is set. Turns now replay the model's own content blocks,
+   which models that think require. Through the Anthropic API, three runs of each set:
+   Claude Sonnet 5.5 passed 22, 21 and 22 (tuning) and 19, 21 and 21 (held-out) with
+   no tool-budget or verification failures, at about 1.3 cents an answer; Claude
+   Haiku 5.5 passed 22, 20, 20 and 18, 18, 19 at under 0.1 cent and the lowest latency;
+   one Sonnet 4.6 run passed 21 and 18 at 2.1 cents. All of Sonnet 5.5's held-out
+   misses were content checks, and the ambiguity case it failed each time was a
+   rubric miss: it declined and asked for a criterion in words the pattern does not
+   accept, to be fixed in the next set's rubric. The 5.5 models are not yet enabled on
+   the demo's Bedrock account.
+
 ## Next
 
-10. **Stronger structured-data answers.** A written question set drives further
+11. **Stronger structured-data answers.** A written question set drives further
    tools; the model selects tools, resolves follow-ups, asks for missing criteria and
    explains supported results within pagination and limits. Numeric claims are
    checked against tool output before an answer is complete; missing records and
    tool failures produce explicit limits, not invented facts.
-11. **Evaluation and adaptability.** A versioned benchmark of original cases
+12. **Evaluation and adaptability.** A versioned benchmark of original cases
    (lookups, comparisons, timelines, multi-step questions, follow-ups, ambiguity,
    pagination, missing evidence, tool failures, adversarial text inside records),
    tuning cases separate from held-out cases, several seeds and paraphrases, the

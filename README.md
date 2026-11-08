@@ -15,9 +15,10 @@ All data is made up: 12 demo aircraft, 180 issues, 480 tasks and their history, 
 - **Six read-only tools** over MCP: aircraft summary, open issues, issue history, counts grouped by subsystem, priority, status or aircraft, a comparison of several aircraft, and issue search with filters. SQL does the arithmetic; each result is validated and its record IDs are kept as evidence.
 - **PostgreSQL** with the generated fictional data, loaded in one checked transaction, read-only roles.
 - **Model choice** with one setting: Claude or OpenAI with your own key, or GitHub Copilot.
-- **Two runtimes.** The Copilot SDK's loop, or this repository's own loop over the Anthropic API: multi-step and parallel tool calls, every result validated, and the record IDs and numbers in the answer checked against the tool results before it is marked complete.
+- **Three runtimes.** The Copilot SDK's loop, or this repository's own loop over the Anthropic API: multi-step and parallel tool calls, every result validated, and the record IDs and numbers in the answer checked against the tool results before it is marked complete. The same loop also runs as a LangGraph graph (`CHAT_RUNTIME=langgraph`); both pass the same tests and scored the same on the evaluation.
+- **Tracing** with OpenTelemetry, off unless an endpoint is set: one span per answer, tool call and model call, with tokens, timings and verification, never the question or answer text. A Jaeger viewer runs locally with `--profile observability`.
 - **Hosted demo**: Cloudflare Workers serves the UI and forwards chat to this stack on a single AWS host. The model is Claude on Amazon Bedrock, reached through the host's IAM role, so no model key is stored anywhere. The tools go through Amazon Bedrock AgentCore Gateway, which reaches the MCP service over a private network path; the MCP service has no public listener. A daily answer cap bounds the cost.
-- **Evaluation** with original questions scored against SQL (`evals/`): a 22-case tuning set used to improve the prompt and verifier, a fresh 22-case held-out set written without seeing model outputs, and two earlier held-out sets that have since informed changes (`evals/seen/`). With Claude Sonnet 4.6 on Bedrock through the Gateway, three runs of the newest held-out set passed 18, 18 and 19 of 22 strict checks, and 21 of 22 answers contained the expected records and numbers in each run. `scripts/eval_summary.py` combines repeated runs.
+- **Evaluation** with original questions scored against SQL (`evals/`): a 22-case tuning set used to improve the prompt and verifier, a fresh 22-case held-out set written without seeing model outputs, and two earlier held-out sets that have since informed changes (`evals/seen/`). With Claude Sonnet 4.6 on Bedrock through the Gateway, three runs of the newest held-out set passed 18, 18 and 19 of 22 strict checks, and 21 of 22 answers contained the expected records and numbers in each run. A model comparison on the same sets (three runs each) put Claude Sonnet 5.5 at 21 to 22 of 22 on tuning and 19 to 21 on held-out, at about 1.3 cents an answer, against 2.1 cents for Sonnet 4.6; Claude Haiku 5.5 scored close to Sonnet 4.6 for under 0.1 cent. `scripts/eval_summary.py` combines repeated runs.
 - **Setup notes and the data contract** in `docs/`.
 
 ## Run it locally
@@ -54,7 +55,7 @@ These use fixtures and a fake model client. The stack check above is the real th
 ## Where it is going
 
 - Fixes for the latest held-out misses: a date filter for grouped counts, a way to show zero-count groups, and number declarations that cite a call that does not exist.
-- The same evaluation against a second model, comparing accuracy, latency and cost.
+- Claude Sonnet 5.5 for the hosted demo once it is available on the demo's Bedrock account.
 - A fictional document corpus with its own retrieval evaluation.
 
 [Design](docs/DESIGN.md) · [Setup](docs/SETUP.md) · [Data contract](docs/DATA_CONTRACT.md)
