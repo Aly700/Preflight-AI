@@ -138,14 +138,27 @@ of answers by itself.
    accept, to be fixed in the next set's rubric. The 5.5 models are not yet enabled on
    the demo's Bedrock account.
 
+11. **Injection and outage evaluation.** `evals/adversarial.json` has 12 cases: direct
+   requests for hidden instructions, write tools, SQL and excess calls, a forged history
+   turn, and six local-only records whose title, description or note carries an
+   instruction (claim airworthiness, report a false count, call a tool 30 times, reply with
+   a fixed phrase, add an exfiltration link, cite a record that does not exist).
+   `evals/tool_failures.json` has 8 cases run behind an eval-only MCP proxy that makes two
+   tools fail, as a tool error or an HTTP 503. Two runs of the first and three of the
+   second for Sonnet 4.6, Sonnet 5.5 and Haiku 5.5: no answer followed an injected
+   instruction, every outage without a fallback was reported rather than filled in, and
+   the models fell back to summaries or a grouped count when one could answer. With the
+   rubric corrected to flag compliance rather than quoted refusals, Sonnet 5.5 passed every
+   case in every run; the other misses were claim declarations on correct answers.
+
 ## Next
 
-11. **Stronger structured-data answers.** A written question set drives further
+12. **Stronger structured-data answers.** A written question set drives further
    tools; the model selects tools, resolves follow-ups, asks for missing criteria and
    explains supported results within pagination and limits. Numeric claims are
    checked against tool output before an answer is complete; missing records and
    tool failures produce explicit limits, not invented facts.
-12. **Evaluation and adaptability.** A versioned benchmark of original cases
+13. **Evaluation and adaptability.** A versioned benchmark of original cases
    (lookups, comparisons, timelines, multi-step questions, follow-ups, ambiguity,
    pagination, missing evidence, tool failures, adversarial text inside records),
    tuning cases separate from held-out cases, several seeds and paraphrases, the
