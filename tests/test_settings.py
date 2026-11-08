@@ -3,7 +3,9 @@
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
+from backend.copilot_chat import EventTracker, ToolPolicy, session_options
 from backend.settings import ChatSettings, SettingsError
 from preflight_core.settings import api_hosts_from_environment, mcp_hosts_from_environment
 
@@ -21,6 +23,89 @@ class ChatSettingsContract(unittest.TestCase):
             path = Path(self.temp.name) / name
             path.write_text(token + '\n')
             self.environ[name] = str(path)
+
+    def gateway_environment(self):
+        key = Path(self.temp.name) / 'model-key'
+        key.write_text('k' * 40)
+        return {
+            **self.environ,
+            'MODEL_PROVIDER': 'anthropic',
+            'MODEL_API_KEY_FILE': str(key),
+            'COPILOT_MODEL': 'demo-model',
+            'CHAT_RUNTIME': 'native',
+            'MCP_AUTH': 'sigv4',
+            'PREFLIGHT_MCP_URL': 'https://gateway.example.test/mcp',
+            'AWS_REGION': 'ca-central-1',
+        }
+
+    def test_mcp_auth_defaults_to_bearer_and_rejects_unknown_modes(self):
+        settings = ChatSettings.from_environment(self.environ)
+        with self.subTest(mode='default'):
+            self.assertEqual(getattr(settings, 'mcp_auth', None), 'bearer')
+        self.assertEqual(settings.mcp_token, 'c' * 64)
+        for mode in ('', 'iam', 'SIGV4'):
+            with self.subTest(mode=mode), self.assertRaisesRegex(SettingsError, 'MCP_AUTH'):
+                ChatSettings.from_environment({**self.environ, 'MCP_AUTH': mode})
+
+    def test_sigv4_uses_region_without_reading_mcp_token(self):
+        environ = self.gateway_environment()
+        for token_path in (None, str(Path(self.temp.name) / 'absent')):
+            with self.subTest(token_path=token_path):
+                environ.pop('MCP_TOKEN_FILE', None)
+                if token_path is not None:
+                    environ['MCP_TOKEN_FILE'] = token_path
+                with patch('backend.settings.read_mcp_token', side_effect=AssertionError('must not read token')):
+                    settings = ChatSettings.from_environment(environ)
+                self.assertEqual(settings.mcp_auth, 'sigv4')
+                self.assertEqual(settings.aws_region, 'ca-central-1')
+                self.assertIsNone(settings.mcp_token)
+
+    def test_sigv4_requires_native_runtime(self):
+        environ = self.gateway_environment()
+        for provider in ('anthropic', 'bedrock'):
+            for runtime in ('', 'copilot'):
+                with (
+                    self.subTest(provider=provider, runtime=runtime),
+                    self.assertRaisesRegex(SettingsError, '^MCP_AUTH=sigv4 requires CHAT_RUNTIME=native$'),
+                ):
+                    ChatSettings.from_environment({**environ, 'CHAT_RUNTIME': runtime, 'MODEL_PROVIDER': provider})
+
+    def test_sigv4_requires_https(self):
+        with self.assertRaisesRegex(SettingsError, 'PREFLIGHT_MCP_URL.*https'):
+            ChatSettings.from_environment(
+                {**self.gateway_environment(), 'PREFLIGHT_MCP_URL': 'http://gateway.example.test/mcp'}
+            )
+
+    def test_sigv4_requires_valid_region_for_anthropic(self):
+        environ = self.gateway_environment()
+        for region in (None, '', 'US-east-1', 'us_east_1', 'us-east', 'us-east-12', 'us--east-1'):
+            candidate = {k: v for k, v in environ.items() if k != 'AWS_REGION'}
+            if region is not None:
+                candidate['AWS_REGION'] = region
+            message = 'AWS_REGION is not set' if not region else 'AWS_REGION has an invalid format'
+            with self.subTest(region=region), self.assertRaisesRegex(SettingsError, '^' + message + '$'):
+                ChatSettings.from_environment(candidate)
+
+    def test_mcp_prefix_is_optional_and_allowed_with_either_auth_mode(self):
+        self.assertEqual(getattr(ChatSettings.from_environment(self.environ), 'mcp_tool_prefix', None), '')
+        for environ in (self.environ, self.gateway_environment()):
+            for prefix in ('', 'target___', '0-Mixed-case___', 'a' * 100 + '___'):
+                with self.subTest(mode=environ.get('MCP_AUTH'), prefix=prefix):
+                    settings = ChatSettings.from_environment({**environ, 'MCP_TOOL_PREFIX': prefix})
+                    self.assertEqual(settings.mcp_tool_prefix, prefix)
+
+    def test_mcp_prefix_rejects_invalid_names_without_echoing_them(self):
+        for prefix in ('target', 'target__', 'target____', '-target___', 'a_b___', 'a' * 101 + '___', 'x___\n', ' '):
+            with self.subTest(prefix=prefix):
+                with self.assertRaisesRegex(SettingsError, 'MCP_TOOL_PREFIX') as caught:
+                    ChatSettings.from_environment({**self.environ, 'MCP_TOOL_PREFIX': prefix})
+                if prefix.strip():
+                    self.assertNotIn(prefix, str(caught.exception))
+
+    def test_copilot_session_requires_a_bearer_token(self):
+        settings = ChatSettings('a' * 64, 'b' * 64, None, 'http://example.test/mcp')
+        with self.assertRaisesRegex(SettingsError, 'Copilot runtime requires an MCP bearer token'):
+            session_options(settings, self.temp.name, EventTracker(lambda event: None), ToolPolicy())
 
     def test_complete_configuration_loads_and_hides_secrets(self):
         settings = ChatSettings.from_environment(self.environ)

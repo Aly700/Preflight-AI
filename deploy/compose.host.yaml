@@ -12,5 +12,9 @@ services:
       PREFLIGHT_ALLOWED_HOSTS: preflight-oss-api,127.0.0.1,localhost
     ports: ['127.0.0.1:8100:8000']
 
+  preflight-oss-mcp:
+    # Loopback only: a TLS listener on the host's private address fronts it for AgentCore Gateway.
+    ports: ['127.0.0.1:8101:8001']
+
   preflight-oss-web:
     profiles: ['local-ui']

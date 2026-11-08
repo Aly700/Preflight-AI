@@ -18,7 +18,7 @@ from typing import Any
 from copilot import CopilotClient, RuntimeConnection
 from copilot.rpc import PermissionDecisionApproveOnce, PermissionDecisionReject
 
-from backend.settings import ChatSettings
+from backend.settings import ChatSettings, SettingsError
 from backend.verify import record_ids
 from preflight_core.tools import MCP_SERVER_NAME, QUALIFIED_NAMES, TOOLS
 
@@ -145,6 +145,8 @@ def session_options(
     settings: ChatSettings, directory: str, tracker: EventTracker, policy: ToolPolicy
 ) -> dict[str, Any]:
     """Session options that leave the model nothing but the three MCP tools."""
+    if settings.mcp_token is None:
+        raise SettingsError('Copilot runtime requires an MCP bearer token')
     options: dict[str, Any] = {
         'on_permission_request': permission,
         'streaming': True,

@@ -1,4 +1,4 @@
-"""Tool discovery and calls against the MCP service over streamable HTTP with the bearer token.
+"""Tool discovery and calls over streamable HTTP with bearer or SigV4 authentication.
 
 Only registry tools are discovered or called; arguments are checked against the
 registry before any request; every result is validated against the registry's
@@ -20,6 +20,8 @@ import httpx2
 from mcp import Client
 from mcp.client.streamable_http import streamable_http_client
 
+from backend.aws_auth import SigV4Auth
+from backend.settings import ChatSettings, SettingsError
 from preflight_core.tools import TOOLS
 
 logger = logging.getLogger('preflight.tools')
@@ -55,11 +57,11 @@ class ToolService(Protocol):
     async def call(self, call_id: str, name: str, arguments: dict[str, Any]) -> ToolResult: ...
 
 
-def default_client_factory(timeout: float) -> ClientFactory:
+def default_client_factory(timeout: float, auth: httpx2.Auth | None = None) -> ClientFactory:
     @asynccontextmanager
     async def factory(url: str, headers: dict[str, str]) -> AsyncIterator[Any]:
         # The HTTP client is ours to close: the transport only closes clients it created itself.
-        async with httpx2.AsyncClient(headers=headers, timeout=timeout) as http:  # noqa: SIM117
+        async with httpx2.AsyncClient(headers=headers, timeout=timeout, auth=auth) as http:  # noqa: SIM117
             async with Client(streamable_http_client(url, http_client=http)) as client:
                 yield client
 
@@ -80,12 +82,20 @@ def leaf_exception_types(error: BaseException) -> set[str]:
 
 class McpTools:
     def __init__(
-        self, url: str, token: str, *, timeout: float = DEFAULT_TIMEOUT, client_factory: ClientFactory | None = None
+        self,
+        url: str,
+        token: str | None,
+        *,
+        timeout: float = DEFAULT_TIMEOUT,
+        client_factory: ClientFactory | None = None,
+        auth: httpx2.Auth | None = None,
+        tool_prefix: str = '',
     ) -> None:
         self.url = url
         self.timeout = timeout
-        self._headers = {'Authorization': 'Bearer ' + token}
-        self._factory = client_factory or default_client_factory(timeout)
+        self.tool_prefix = tool_prefix
+        self._headers = {'Authorization': 'Bearer ' + token} if token is not None else {}
+        self._factory = client_factory or default_client_factory(timeout, auth)
 
     def _client(self) -> AbstractAsyncContextManager[Any]:
         return self._factory(self.url, dict(self._headers))
@@ -96,7 +106,10 @@ class McpTools:
             listing = await client.list_tools()
         offered: dict[str, ToolSpec] = {}
         for tool in listing.tools:
-            contract = TOOLS.get(tool.name)
+            if not tool.name.startswith(self.tool_prefix):
+                continue
+            name = tool.name.removeprefix(self.tool_prefix)
+            contract = TOOLS.get(name)
             if contract is None:
                 continue
             schema = dict(tool.input_schema or {})
@@ -104,7 +117,7 @@ class McpTools:
             if not properties <= contract.arguments:
                 logger.warning('MCP tool %s offers arguments outside its contract; dropped', tool.name)
                 continue
-            offered[tool.name] = ToolSpec(tool.name, tool.description or '', schema)
+            offered[name] = ToolSpec(name, tool.description or '', schema)
         return [offered[name] for name in TOOLS if name in offered]
 
     async def call(self, call_id: str, name: str, arguments: dict[str, Any]) -> ToolResult:
@@ -114,7 +127,7 @@ class McpTools:
             return ToolResult(name, call_id, False, error=TOOL_UNAVAILABLE)
         try:
             async with asyncio.timeout(self.timeout), self._client() as client:
-                result = await client.call_tool(name, arguments)
+                result = await client.call_tool(self.tool_prefix + name, arguments)
             if getattr(result, 'is_error', False):
                 text = getattr(result.content[0], 'text', '') if result.content else ''
                 known = next((message for message in SERVICE_ERRORS if text.endswith(message)), TOOL_UNAVAILABLE)
@@ -128,3 +141,15 @@ class McpTools:
             logger.warning('Tool %s failed: %s', name, ','.join(sorted(leaf_exception_types(error))))
             return ToolResult(name, call_id, False, error=TOOL_UNAVAILABLE)
         return ToolResult(name, call_id, True, payload=validated)
+
+
+def build_tool_service(settings: ChatSettings) -> McpTools:
+    """Use the configured authentication and namespace without exposing them to the model loop."""
+    auth = None
+    token = settings.mcp_token
+    if settings.mcp_auth == 'sigv4':
+        if settings.aws_region is None:
+            raise SettingsError('AWS_REGION is not set')
+        auth = SigV4Auth(settings.aws_region)
+        token = None
+    return McpTools(settings.mcp_url, token, auth=auth, tool_prefix=settings.mcp_tool_prefix)

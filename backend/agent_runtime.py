@@ -16,7 +16,7 @@ import json
 import logging
 from typing import Any
 
-from backend.mcp_tools import McpTools, ToolResult, ToolService, anthropic_tools
+from backend.mcp_tools import ToolResult, ToolService, anthropic_tools, build_tool_service
 from backend.model_client import USAGE_KEYS, ModelClient, ModelError, ToolCall, Turn, build_model_client
 from backend.settings import ChatSettings
 from backend.verify import FINAL_ANSWER_TOOL, record_ids, scan_prose, verify_claims
@@ -292,7 +292,7 @@ async def stream_answer(
     """
     queue: asyncio.Queue[Event | None] = asyncio.Queue()
     model = model_client if model_client is not None else build_model_client(settings)
-    service = tools if tools is not None else McpTools(settings.mcp_url, settings.mcp_token)
+    service = tools if tools is not None else build_tool_service(settings)
     loop = Loop(settings, model, service, queue.put_nowait)
 
     async def run() -> None:

@@ -26,6 +26,7 @@ PROVIDERS = ('copilot', 'anthropic', 'openai', 'bedrock')
 RUNTIMES = ('copilot', 'native')
 NATIVE_PROVIDERS = ('anthropic', 'bedrock')
 WORKSPACE_ID = re.compile(r'^[A-Za-z0-9_-]{1,128}$')
+MCP_TOOL_PREFIX = re.compile(r'[A-Za-z0-9][A-Za-z0-9-]{0,99}___')
 
 
 def mcp_url(environ: Mapping[str, str]) -> str:
@@ -99,7 +100,7 @@ def model_provider(environ: Mapping[str, str]) -> str:
 class ChatSettings:
     access_token: str = field(repr=False)
     copilot_token: str | None = field(repr=False)
-    mcp_token: str = field(repr=False)
+    mcp_token: str | None = field(repr=False)
     mcp_url: str
     model: str | None = None
     provider: str = 'copilot'
@@ -109,6 +110,8 @@ class ChatSettings:
     max_tool_rounds: int = 6
     max_tool_calls: int = 12
     aws_region: str | None = None
+    mcp_auth: str = 'bearer'
+    mcp_tool_prefix: str = ''
 
     @classmethod
     def from_environment(cls, environ: Mapping[str, str] | None = None) -> ChatSettings:
@@ -116,6 +119,18 @@ class ChatSettings:
         source = os.environ if environ is None else environ
         provider = model_provider(source)
         model = model_name(source)
+        auth = source.get('MCP_AUTH', 'bearer')
+        if auth not in ('bearer', 'sigv4'):
+            raise SettingsError('MCP_AUTH must be bearer or sigv4')
+        prefix = source.get('MCP_TOOL_PREFIX', '')
+        if prefix and MCP_TOOL_PREFIX.fullmatch(prefix) is None:
+            raise SettingsError('MCP_TOOL_PREFIX has an invalid format')
+        if auth == 'sigv4' and source.get('CHAT_RUNTIME', '').strip() != 'native':
+            raise SettingsError('MCP_AUTH=sigv4 requires CHAT_RUNTIME=native')
+        runtime = chat_runtime(source, provider)
+        url = mcp_url(source)
+        if auth == 'sigv4' and urlsplit(url).scheme != 'https':
+            raise SettingsError('PREFLIGHT_MCP_URL must use https when MCP_AUTH=sigv4')
         aws_region = None
         if provider == 'copilot':
             copilot_token: str | None = read_secret_file(source, 'COPILOT_TOKEN_FILE')
@@ -125,25 +140,28 @@ class ChatSettings:
             model_api_key = None
             if model is None:
                 raise SettingsError('COPILOT_MODEL is required when MODEL_PROVIDER is bedrock')
-            aws_region = required(source, 'AWS_REGION')
-            if AWS_REGION.fullmatch(aws_region) is None:
-                raise SettingsError('AWS_REGION has an invalid format')
         else:
             copilot_token = None
             model_api_key = read_secret_file(source, 'MODEL_API_KEY_FILE', minimum=20)
             if model is None:
                 raise SettingsError('COPILOT_MODEL is required when MODEL_PROVIDER is ' + provider)
+        if provider == 'bedrock' or auth == 'sigv4':
+            aws_region = required(source, 'AWS_REGION')
+            if AWS_REGION.fullmatch(aws_region) is None:
+                raise SettingsError('AWS_REGION has an invalid format')
         return cls(
             access_token=read_secret_file(source, 'CHAT_TOKEN_FILE'),
             copilot_token=copilot_token,
-            mcp_token=read_mcp_token(source),
-            mcp_url=mcp_url(source),
+            mcp_token=read_mcp_token(source) if auth == 'bearer' else None,
+            mcp_url=url,
+            mcp_auth=auth,
+            mcp_tool_prefix=prefix,
             model=model,
             provider=provider,
             model_api_key=model_api_key,
             aws_region=aws_region,
             workspace_id=workspace_id(source),
-            runtime=chat_runtime(source, provider),
+            runtime=runtime,
             max_tool_rounds=bounded_int(source, 'MAX_TOOL_ROUNDS', 6),
             max_tool_calls=bounded_int(source, 'MAX_TOOL_CALLS', 12),
         )

@@ -66,7 +66,9 @@ services:
       CHAT_RUNTIME: ${CHAT_RUNTIME:-copilot}
       MAX_TOOL_ROUNDS: ${MAX_TOOL_ROUNDS:-6}
       MAX_TOOL_CALLS: ${MAX_TOOL_CALLS:-12}
-      PREFLIGHT_MCP_URL: http://preflight-oss-mcp:8001/mcp
+      MCP_AUTH: ${MCP_AUTH:-bearer}
+      MCP_TOOL_PREFIX: ${MCP_TOOL_PREFIX:-}
+      PREFLIGHT_MCP_URL: ${PREFLIGHT_MCP_URL:-http://preflight-oss-mcp:8001/mcp}
       PREFLIGHT_ALLOWED_HOSTS: preflight-oss-api,localhost,127.0.0.1
     depends_on:
       preflight-oss-postgres:

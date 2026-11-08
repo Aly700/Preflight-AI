@@ -85,6 +85,19 @@ class ComposeConfiguration(unittest.TestCase):
     def setUp(self):
         self.ensure_secrets = load_script('init_secrets').ensure_secrets
 
+    def test_api_passes_gateway_configuration_and_keeps_mcp_token_secret(self):
+        text = (ROOT / 'compose.yaml').read_text()
+        api = text.split('\n  preflight-oss-api:\n', 1)[1].split('\n  preflight-oss-web:\n', 1)[0]
+        for setting in (
+            'MCP_AUTH: ${MCP_AUTH:-bearer}',
+            'MCP_TOOL_PREFIX: ${MCP_TOOL_PREFIX:-}',
+            'PREFLIGHT_MCP_URL: ${PREFLIGHT_MCP_URL:-http://preflight-oss-mcp:8001/mcp}',
+        ):
+            with self.subTest(setting=setting):
+                self.assertIn(setting, api)
+        self.assertIn('MCP_TOKEN_FILE: /run/secrets/mcp-token', api)
+        self.assertIn('      - mcp-token\n', api.split('    secrets:\n', 1)[1])
+
     def test_postgres_healthcheck_uses_tcp(self):
         text = (ROOT / 'compose.yaml').read_text()
         self.assertIn('pg_isready -h 127.0.0.1 -U postgres -d preflight_oss', text)
@@ -118,7 +131,7 @@ class ComposeConfiguration(unittest.TestCase):
         self.assertIn('preflight_reader', text)
         self.assertTrue(script.stat().st_mode & stat.S_IXUSR, 'roles script must be executable')
 
-    def test_host_compose_config_publishes_only_the_api_on_loopback(self):
+    def test_host_compose_config_publishes_the_api_and_mcp_on_loopback_only(self):
         # These prerequisites can be checked without Docker or any secret files.
         self.assertIn('AWS_REGION: ${AWS_REGION:-}', (ROOT / 'compose.yaml').read_text())
         override = ROOT / 'deploy/compose.host.yaml'
@@ -149,10 +162,15 @@ class ComposeConfiguration(unittest.TestCase):
         services = json.loads(rendered)['services']
         self.assertEqual(set(services), {'preflight-oss-postgres', 'preflight-oss-mcp', 'preflight-oss-api'})
         published = {name: service['ports'] for name, service in services.items() if service.get('ports')}
-        self.assertEqual(list(published), ['preflight-oss-api'])
-        self.assertEqual(len(published['preflight-oss-api']), 1)
-        port = published['preflight-oss-api'][0]
-        self.assertEqual((port['host_ip'], str(port['published']), port['target']), ('127.0.0.1', '8100', 8000))
+        # The database is never published; the MCP port is fronted by a private TLS listener for AgentCore Gateway.
+        bindings = {
+            name: [(port['host_ip'], str(port['published']), port['target']) for port in ports]
+            for name, ports in published.items()
+        }
+        self.assertEqual(
+            bindings,
+            {'preflight-oss-api': [('127.0.0.1', '8100', 8000)], 'preflight-oss-mcp': [('127.0.0.1', '8101', 8001)]},
+        )
         for name, service in services.items():
             self.assertEqual(service['container_name'], name)
         environment = services['preflight-oss-api']['environment']
