@@ -7,7 +7,14 @@ RUN pip install --no-cache-dir --require-hashes -r requirements-chat.txt
 ENV COPILOT_CLI_EXTRACT_DIR=/opt/copilot-runtime COPILOT_SKIP_CLI_DOWNLOAD=1
 # The SDK downloads the runtime for the build container's own architecture; link the matching
 # prebuild instead of assuming x86-64. Unsupported machines fail the build with a clear message.
-RUN COPILOT_SKIP_CLI_DOWNLOAD=0 python -m copilot download-runtime \
+# GitHub release downloads sometimes time out (HTTP 504), so the download is retried with a backoff.
+RUN for attempt in 1 2 3 4; do \
+      COPILOT_SKIP_CLI_DOWNLOAD=0 python -m copilot download-runtime && break; \
+      rm -rf /opt/copilot-runtime; \
+      if [ "$attempt" = 4 ]; then echo "Copilot runtime download failed after 4 attempts" >&2; exit 1; fi; \
+      echo "Copilot runtime download failed; retrying in $((attempt * 20))s" >&2; \
+      sleep $((attempt * 20)); \
+    done \
     && case "$(uname -m)" in \
          x86_64) platform=linux-x64 ;; \
          aarch64|arm64) platform=linux-arm64 ;; \
