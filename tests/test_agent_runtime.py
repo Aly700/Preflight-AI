@@ -164,6 +164,19 @@ class NativePrompts(unittest.TestCase):
         self.assertIn('total', prompt)
         self.assertIn('aircraft', prompt)
 
+    def test_system_prompt_rules_from_the_tuning_round(self):
+        system = ' '.join(SYSTEM.split())
+        for rule in (
+            'Apart from IDs named in the question, mention only record IDs that a tool returned for this answer; '
+            'do not infer that an ID exists or is missing from gaps in the numbering.',
+            'Decline such requests briefly and without calling tools; you may say which record summaries you can '
+            'provide.',
+            'Use the fewest tool calls that answer the question: one grouped count rather than one count per value, '
+            'and one comparison rather than separate summaries.',
+        ):
+            with self.subTest(rule=rule[:40]):
+                self.assertIn(rule, system)
+
     def test_system_prompt_asks_for_missing_criteria(self):
         self.assertIn(
             'When a question depends on a criterion the user has not given (for example better or worse), '
