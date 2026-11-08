@@ -24,8 +24,8 @@ What is kept:
 - A streaming React / assistant-ui chat with record-source display.
 
 Known limits: one active answer and five requests per minute per process; chat
-history is temporary browser state with a bounded recent context; the tools are
-fixed to three names; the adapter validates tool result shapes and collects record
+history is temporary browser state with a bounded recent context; the tool set is
+fixed; the adapter validates tool result shapes and collects record
 IDs but does not verify every sentence of a narrative answer.
 
 ## Architecture
@@ -34,11 +34,11 @@ IDs but does not verify every sentence of a narrative answer.
 React / assistant-ui on Cloudflare
   → same-origin streaming Worker with a server-side upstream key
   → HTTPS entry on the host
-  → FastAPI, Copilot or native runtime ↔ configured model provider (Claude, OpenAI or Copilot)
-  → AgentCore Gateway (planned) → private HTTPS MCP → PostgreSQL
+  → FastAPI, Copilot or native runtime ↔ model provider (Claude on Bedrock for the demo)
+  → AgentCore Gateway → private HTTPS MCP → PostgreSQL
 ```
 
-Local development uses authenticated direct MCP; the hosted demo will use Gateway.
+Local development uses authenticated direct MCP; the hosted demo uses Gateway.
 Gateway does not replace the public chat route, host a model, or validate the truth
 of answers by itself.
 
@@ -63,7 +63,10 @@ of answers by itself.
    native runtime also verifies claims (18/22 strict) and is slower
    (median 6.7 s against 3.7 s). After fixes the evaluation pointed to, the native
    runtime passes 22/22 strict at a median of 6.2 s; these cases now count as tuning
-   cases, and a held-out set is next.
+   cases. A held-out set of 22 new questions, not used for tuning, gives the honest
+   score: in two runs on Sonnet 4.6 all 22 answers had the correct records and numbers,
+   and 18 and 16 of 22 passed every strict check. The misses were tool choice, extra
+   calls and claims attached to the wrong field, and they moved between runs.
 
 5. **Hosted demo on this code, Claude on Bedrock.** The stack runs on a single AWS host
    behind Nginx with its own containers, data and certificate; the Cloudflare Worker
@@ -72,11 +75,16 @@ of answers by itself.
    caching and a daily answer cap. On the evaluation it passes 22/22 strict; Haiku 4.5
    passes 20/22 strict at about half the estimated cost.
 
+6. **Tools through AgentCore Gateway.** The API signs MCP calls with the host's IAM
+   role; the Gateway reaches the MCP service through a managed VPC Lattice endpoint to
+   a TLS listener on the host's private address, trusts a private certificate
+   authority and adds the MCP token from AgentCore Identity. All six tools, a missing
+   record and an unsigned call behave the same through the Gateway as directly, five
+   repeats each. A tool call takes a median of 328 ms through the Gateway against 55
+   ms directly, and the held-out median answer time rose from 7.6 s to 8.8 s.
+
 ## Next
 
-6. **Gateway.** Route the six tools through
-   AgentCore Gateway; verify TLS, authentication, tool discovery, denied calls and
-   SQL parity; record direct-versus-Gateway latency and error behaviour.
 7. **Stronger structured-data answers.** A written question set drives further
    tools; the model selects tools, resolves follow-ups, asks for missing criteria and
    explains supported results within pagination and limits. Numeric claims are

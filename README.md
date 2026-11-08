@@ -6,7 +6,7 @@ All data is made up: 12 demo aircraft, 180 issues, 480 tasks and their history, 
 
 **Live demo:** <https://preflight-oss-demo.preflight-ai.workers.dev> runs this repository's code with Claude Sonnet 4.6 on Amazon Bedrock.
 
-![Architecture: a browser reaches a Cloudflare Worker, which proxies chat to an Nginx entry on an EC2 host; the API runs a model runtime that calls read-only MCP tools over PostgreSQL](docs/architecture.svg)
+![Architecture: a browser reaches a Cloudflare Worker, which proxies chat to Nginx on an EC2 host; the API calls Claude on Amazon Bedrock and reaches the read-only MCP tools through AgentCore Gateway over a private link](docs/architecture.svg)
 
 ## What is in the repo
 
@@ -16,8 +16,8 @@ All data is made up: 12 demo aircraft, 180 issues, 480 tasks and their history, 
 - **PostgreSQL** with the generated fictional data, loaded in one checked transaction, read-only roles.
 - **Model choice** with one setting: Claude or OpenAI with your own key, or GitHub Copilot.
 - **Two runtimes.** The Copilot SDK's loop, or this repository's own loop over the Anthropic API: multi-step and parallel tool calls, every result validated, and the record IDs and numbers in the answer checked against the tool results before it is marked complete.
-- **Hosted demo**: Cloudflare Workers serves the UI and forwards chat to this stack on a single AWS host. The model is Claude on Amazon Bedrock, reached through the host's IAM role, so no model key is stored anywhere. A daily answer cap bounds the cost.
-- **An evaluation set**: 22 original questions scored against SQL (`evals/`). On Bedrock, Claude Sonnet 4.6 passes all 22 with every stated number and record ID verified; Claude Haiku 4.5 answers all 22 correctly but verifies 20. These cases were used to tune the prompt, so a held-out set comes next.
+- **Hosted demo**: Cloudflare Workers serves the UI and forwards chat to this stack on a single AWS host. The model is Claude on Amazon Bedrock, reached through the host's IAM role, so no model key is stored anywhere. The tools go through Amazon Bedrock AgentCore Gateway, which reaches the MCP service over a private network path; the MCP service has no public listener. A daily answer cap bounds the cost.
+- **Two evaluation sets** of 22 original questions each, scored against SQL (`evals/`): a tuning set used to improve the prompt and tools, and a held-out set that was not. On Bedrock with Claude Sonnet 4.6, every held-out answer had the right records and numbers in two runs, and 18 and 16 of 22 also passed the stricter checks on tool choice, call budget and claim verification.
 - **Setup notes and the data contract** in `docs/`.
 
 ## Run it locally
@@ -53,8 +53,8 @@ These use fixtures and a fake model client. The stack check above is the real th
 
 ## Where it is going
 
-- Put the tools behind Amazon Bedrock AgentCore Gateway.
-- More tools for comparisons and timelines, then a published evaluation set with two model configurations.
+- Repeated evaluation runs to measure run-to-run variance, and checks for numbers the model derives, such as a total minus a subtotal.
+- A fictional document corpus with its own retrieval evaluation.
 
 [Design](docs/DESIGN.md) · [Setup](docs/SETUP.md) · [Data contract](docs/DATA_CONTRACT.md)
 

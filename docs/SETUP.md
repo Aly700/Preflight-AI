@@ -137,6 +137,43 @@ For a single host behind an existing Nginx, [deploy/compose.host.yaml](../deploy
 selects Bedrock, publishes only the API on loopback and makes the web service opt-in:
 `docker compose -f compose.yaml -f deploy/compose.host.yaml up -d`.
 
+### Tools through AgentCore Gateway
+
+With `CHAT_RUNTIME=native`, the API can reach the tools through Amazon Bedrock
+AgentCore Gateway instead of calling the MCP service directly:
+
+```sh
+MCP_AUTH=sigv4
+PREFLIGHT_MCP_URL=https://<gateway-id>.gateway.bedrock-agentcore.<region>.amazonaws.com/mcp
+MCP_TOOL_PREFIX=<target-name>___
+AWS_REGION=<region>
+```
+
+`MCP_AUTH=sigv4` signs every MCP request with the standard AWS credential chain and
+sends no MCP token; the caller needs `bedrock-agentcore:InvokeGateway` on the gateway.
+The Gateway names tools `<target>___<tool>`, and `MCP_TOOL_PREFIX` maps them back.
+
+The Gateway side has four parts. An MCP gateway with AWS IAM inbound authorization.
+An MCP server target whose endpoint is the MCP service behind TLS, reached through a
+managed private endpoint in the host's VPC; when the endpoint name only resolves
+privately, set the private endpoint's routing domain to a name that resolves in the
+VPC. An API key credential provider that sends `Authorization: Bearer <MCP token>`.
+For a certificate from a private certificate authority, the CA certificate in Secrets
+Manager, referenced by the target. The Gateway's role needs
+`bedrock-agentcore:GetWorkloadAccessToken` and `bedrock-agentcore:GetResourceApiKey`
+on the default workload identity directory, the gateway's workload identity and the
+credential provider, plus `secretsmanager:GetSecretValue` on the token and CA secrets.
+The host override publishes the MCP service on loopback port 8101 for a TLS listener
+on the host's private address.
+
+Compare the Gateway with the direct service from the API container (all six tools and
+a missing record, results and latency; it prints no URL or secret):
+
+```sh
+docker compose exec preflight-oss-api python -m backend.gateway_check \
+  --direct-url http://preflight-oss-mcp:8001/mcp
+```
+
 ### Service configuration
 
 `.env.example` names every variable. The services read the process environment;
