@@ -78,7 +78,10 @@ def claims_prompt(calls: list[tuple[str, str, dict[str, Any]]]) -> str:
     lines = [
         'Now call the final_answer tool, the only tool available, to declare the claims in your answer above: '
         'declare only counts and quantities that come from tool results, not ranks, ordinals, dates or IDs. '
-        'Each path must point at a numeric field; use total or limit for page sizes or <list>.length for '
+        'For a computed number (a total minus a subtotal, a sum, a gap, or a count of listed items, optionally '
+        'only those with a given field value), declare derived instead of path. '
+        'For count, the operand path points at the list. '
+        'Each direct path must point at a numeric field; use total or limit for page sizes or <list>.length for '
         'the size of a list. Cite every record ID that appears in the answer, including aircraft IDs '
         '(DEMO-AIR-...), issue IDs, task IDs, event IDs and person IDs. Program and station names are not '
         'record IDs. Do not write any more answer text.'

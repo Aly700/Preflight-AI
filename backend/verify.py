@@ -10,8 +10,9 @@ FINAL_ANSWER_TOOL: dict[str, Any] = {
     'name': 'final_answer',
     'description': (
         'Declare the claims in the answer you have already written as text: every record ID you cited '
-        'and every number you stated, each number with the id of the tool call and the JSON path (dotted '
-        'keys, [n] for list items) it came from. This tool carries no answer text. Call it exactly once, '
+        'and every number you stated, each number with either call_id and path for the id of the tool call '
+        'and the JSON path (dotted keys, [n] for list items) it came from, or derived for a computed number. '
+        'This tool carries no answer text. Call it exactly once, '
         'after the answer text, as the last thing you do. Claims that cannot be verified are shown to the '
         'reader as unverified.'
     ),
@@ -28,6 +29,9 @@ FINAL_ANSWER_TOOL: dict[str, Any] = {
                 'description': 'Every count or quantity stated in the answer text',
                 'items': {
                     'type': 'object',
+                    'description': (
+                        'Give either call_id and path for a number read from a result, or derived to compute it.'
+                    ),
                     'properties': {
                         'label': {'type': 'string', 'description': 'What the number is, in a few words'},
                         'value': {'type': 'number'},
@@ -36,8 +40,38 @@ FINAL_ANSWER_TOOL: dict[str, Any] = {
                             'type': 'string',
                             'description': "JSON path inside that result, e.g. 'total' or 'items[0].issue_id'",
                         },
+                        'derived': {
+                            'type': 'object',
+                            'description': 'Compute a sum, difference or count from tool results.',
+                            'properties': {
+                                'op': {'type': 'string', 'enum': ['sum', 'difference', 'count']},
+                                'operands': {
+                                    'type': 'array',
+                                    'description': (
+                                        'Sum uses 2 to 12 numbers; difference uses 2 numbers; count uses 1 list.'
+                                    ),
+                                    'items': {
+                                        'type': 'object',
+                                        'properties': {'call_id': {'type': 'string'}, 'path': {'type': 'string'}},
+                                        'required': ['call_id', 'path'],
+                                    },
+                                },
+                                'where': {
+                                    'type': 'object',
+                                    'description': (
+                                        'For count only: include objects with this field value; ignore case.'
+                                    ),
+                                    'properties': {
+                                        'field': {'type': 'string'},
+                                        'equals': {'type': ['string', 'number', 'boolean']},
+                                    },
+                                    'required': ['field', 'equals'],
+                                },
+                            },
+                            'required': ['op', 'operands'],
+                        },
                     },
-                    'required': ['label', 'value', 'call_id', 'path'],
+                    'required': ['label', 'value'],
                 },
             },
         },
@@ -138,6 +172,73 @@ def short(path: str) -> str:
     return path if len(path) <= PATH_CHARS else path[:PATH_CHARS] + '…'
 
 
+def field_matches(value: Any, expected: Any) -> bool:
+    """Compare a count filter without treating booleans as numbers."""
+    if isinstance(value, str) and isinstance(expected, str):
+        return value.casefold() == expected.casefold()
+    if isinstance(value, bool) or isinstance(expected, bool):
+        return value is expected
+    return bool(value == expected)
+
+
+def derived_value(derived: Any, results: dict[str, dict[str, Any]], names: dict[str, str]) -> float | str:
+    """Compute a declaration, or return a short reason that never includes record text."""
+    if not isinstance(derived, dict):
+        return 'the derivation is malformed'
+    op = derived.get('op')
+    if op not in ('sum', 'difference', 'count'):
+        return 'the derivation has an unknown operation'
+    operands = derived.get('operands')
+    if not isinstance(operands, list):
+        return 'the derivation operands must be a list'
+    if len(operands) > 12:
+        return 'the derivation has more than 12 operands'
+    if op == 'sum' and len(operands) < 2:
+        return 'sum requires 2 to 12 operands'
+    if op == 'difference' and len(operands) != 2:
+        return 'difference requires exactly 2 operands'
+    if op == 'count' and len(operands) != 1:
+        return 'count requires exactly 1 operand'
+    where = derived.get('where')
+    if 'where' in derived:
+        if op != 'count':
+            return 'where is only allowed for count'
+        if (
+            not isinstance(where, dict)
+            or not isinstance(where.get('field'), str)
+            or not isinstance(where.get('equals'), (str, int, float, bool))
+        ):
+            return 'the count filter is malformed'
+    numeric: list[float] = []
+    for operand in operands:
+        if not isinstance(operand, dict):
+            return 'a derivation operand is malformed'
+        call_id, path = operand.get('call_id'), operand.get('path')
+        if not isinstance(call_id, str) or not isinstance(path, str):
+            return 'a derivation operand needs call_id and path'
+        options = candidates(call_id, results, names)
+        if isinstance(options, str):
+            return options
+        if not options:
+            return 'refers to a tool call that returned nothing'
+        try:
+            actual = resolve_path(options[0], path)
+        except LookupError:
+            return f'has no value at {short(path)!r} in that result'
+        if op == 'count':
+            if not isinstance(actual, list):
+                return f'the value at {short(path)!r} is not a list'
+            if where is None:
+                return len(actual)
+            return sum(
+                isinstance(item, dict) and field_matches(item.get(where['field']), where['equals']) for item in actual
+            )
+        if isinstance(actual, bool) or not isinstance(actual, (int, float)):
+            return f'the value at {short(path)!r} is not a number'
+        numeric.append(actual)
+    return sum(numeric) if op == 'sum' else numeric[0] - numeric[1]
+
+
 def verify_claims(
     *,
     prose: str,
@@ -150,7 +251,8 @@ def verify_claims(
 
     Declared mismatches are reported to the reader. Undeclared bare integers are
     only counted (dates, times and years excluded), for evaluation. A number may
-    name its tool call by id or, failing that, by tool name.
+    name its tool call by id or, failing that, by tool name, or declare a
+    derivation whose operands reference tool results in the same way.
     """
     names = names or {}
     unverified: list[str] = []
@@ -174,6 +276,27 @@ def verify_claims(
             unverified.append(f'{label}: the declared value is not a number')
             continue
         declared_tokens.add(number_token(value))
+        # An unused optional field filled with null or a blank string is absent, not a second form.
+        has_path = isinstance(item.get('path'), str) and bool(item['path'].strip())
+        has_derived = item.get('derived') is not None
+        if not has_path and not has_derived:
+            unverified.append(f'{label} ({number_token(value)}) declares neither a path nor a derivation')
+            continue
+        if has_path and has_derived:
+            unverified.append(f'{label} ({number_token(value)}) declares both a path and a derivation')
+            continue
+        if has_derived:
+            computed = derived_value(item['derived'], results, names)
+            if isinstance(computed, str):
+                unverified.append(f'{label} ({number_token(value)}): {computed}')
+            elif not (
+                same_number(value, computed)
+                or (item['derived']['op'] == 'difference' and same_number(value, abs(computed)))
+            ):
+                unverified.append(
+                    f'{label} ({number_token(value)}) does not match the derived value ({number_token(computed)})'
+                )
+            continue
         options = candidates(str(item.get('call_id', '')), results, names)
         if isinstance(options, str):
             unverified.append(f'{label} ({number_token(value)}) {options}')

@@ -132,6 +132,18 @@ async def collect(model, tools, question='Summary', settings=SETTINGS):
 
 
 class NativePrompts(unittest.TestCase):
+    def test_claims_prompt_distinguishes_direct_paths_from_count_operands(self):
+        prompt = claims_prompt([])
+        self.assertIn('Each direct path must point at a numeric field', prompt)
+        self.assertIn('For count, the operand path points at the list.', prompt)
+
+    def test_claims_prompt_explains_derived_numbers_and_excludes_ranks(self):
+        prompt = claims_prompt([])
+        self.assertIn('derived', prompt)
+        for example in ('total minus a subtotal', 'sum', 'gap', 'count of listed items', 'field value'):
+            self.assertIn(example, prompt)
+        self.assertIn('not ranks, ordinals', prompt)
+
     def test_claims_prompt_explains_paths_and_citations(self):
         prompt = claims_prompt([('t1', 'list_open_issues', {'limit': 5})])
         self.assertIn('.length', prompt)

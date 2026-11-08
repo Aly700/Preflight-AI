@@ -1,8 +1,9 @@
 """Claim verification: declared numbers and IDs against tool results, plus the prose scan."""
 
+from typing import Any
 import unittest
 
-from backend.verify import Verification, record_ids, resolve_path, scan_prose, verify_claims
+from backend.verify import FINAL_ANSWER_TOOL, Verification, record_ids, resolve_path, scan_prose, verify_claims
 
 RESULTS = {'t1': {'total': 162, 'limit': 5, 'items': [{'issue_id': 'ISSUE-0001', 'priority': 'high'}]}}
 SEEN = {'ISSUE-0001', 'ISSUE-0003'}
@@ -10,6 +11,284 @@ SEEN = {'ISSUE-0001', 'ISSUE-0003'}
 
 def number(value, path='total', call_id='t1', label='unresolved total'):
     return {'label': label, 'value': value, 'call_id': call_id, 'path': path}
+
+
+def operand(call_id='t1', path='total'):
+    return {'call_id': call_id, 'path': path}
+
+
+def computed(value, op, operands, **options):
+    return {
+        'label': 'Unresolved structures issues',
+        'value': value,
+        'derived': {'op': op, 'operands': operands, **options},
+    }
+
+
+class DerivedClaimVerification(unittest.TestCase):
+    def check(self, declaration, *, prose='', results=None, names=None):
+        return verify_claims(
+            prose=prose,
+            claims={'cited_ids': [], 'numbers': [declaration]},
+            results=results if results is not None else {'t1': {'total': 30, 'groups': [{'count': 2}]}},
+            seen_ids=set(),
+            names=names,
+        )
+
+    def test_schema_offers_direct_paths_or_three_derivations(self):
+        item = FINAL_ANSWER_TOOL['input_schema']['properties']['numbers']['items']
+        self.assertEqual(item['required'], ['label', 'value'])
+        self.assertIn('call_id', item['properties'])
+        self.assertIn('path', item['properties'])
+        derived = item['properties']['derived']
+        self.assertEqual(derived['type'], 'object')
+        self.assertEqual(derived['required'], ['op', 'operands'])
+        self.assertEqual(derived['properties']['op']['enum'], ['sum', 'difference', 'count'])
+        operands = derived['properties']['operands']
+        self.assertEqual(operands['type'], 'array')
+        self.assertEqual(operands['items']['type'], 'object')
+        self.assertEqual(operands['items']['required'], ['call_id', 'path'])
+        for key in ('call_id', 'path'):
+            self.assertEqual(operands['items']['properties'][key]['type'], 'string')
+        where = derived['properties']['where']
+        self.assertEqual(where['required'], ['field', 'equals'])
+        self.assertEqual(where['properties']['field']['type'], 'string')
+        self.assertEqual(where['properties']['equals']['type'], ['string', 'number', 'boolean'])
+        for description in (item['description'], FINAL_ANSWER_TOOL['description']):
+            self.assertIn('call_id and path', description)
+            self.assertIn('derived', description)
+
+    def test_difference_within_one_result_verifies(self):
+        result = self.check(computed(28, 'difference', [operand(), operand(path='groups[0].count')]))
+        self.assertTrue(result.verified, result.note)
+        self.assertEqual(result.note, '')
+
+    def test_difference_accepts_signed_value_or_gap_in_either_order(self):
+        results = {'a': {'total': 13}, 'b': {'total': 14}}
+        for first, second, value in (('a', 'b', 1), ('b', 'a', 1), ('a', 'b', -1)):
+            with self.subTest(first=first, second=second, value=value):
+                result = self.check(computed(value, 'difference', [operand(first), operand(second)]), results=results)
+                self.assertTrue(result.verified, result.note)
+
+    def test_difference_mismatch_reports_computed_value(self):
+        result = self.check(
+            computed(28, 'difference', [operand(), operand(path='closed')]),
+            results={'t1': {'total': 30, 'closed': 3}},
+        )
+        self.assertEqual(
+            result.note, 'Unverified: Unresolved structures issues (28) does not match the derived value (27)'
+        )
+
+    def test_sum_across_calls_verifies_with_existing_numeric_tolerance(self):
+        for a, b, value in ((13, 14, 27), (0.1, 0.2, 0.3)):
+            with self.subTest(a=a, b=b):
+                result = self.check(
+                    computed(value, 'sum', [operand('a'), operand('b')]),
+                    results={'a': {'total': a}, 'b': {'total': b}},
+                )
+                self.assertTrue(result.verified, result.note)
+
+    def test_sum_accepts_twelve_operands(self):
+        result = self.check(computed(360, 'sum', [operand()] * 12))
+        self.assertTrue(result.verified, result.note)
+
+    def test_sum_mismatch_reports_computed_value(self):
+        result = self.check(
+            computed(28, 'sum', [operand('a'), operand('b')]), results={'a': {'total': 13}, 'b': {'total': 14}}
+        )
+        self.assertFalse(result.verified)
+        self.assertIn('does not match the derived value (27)', result.note)
+
+    def test_count_without_where_is_list_length(self):
+        for items in ([], [{'status': 'open'}, 'text', None, 7]):
+            with self.subTest(items=items):
+                result = self.check(
+                    computed(len(items), 'count', [operand(path='items')]), results={'t1': {'items': items}}
+                )
+                self.assertTrue(result.verified, result.note)
+
+    def test_count_where_matches_strings_case_insensitively(self):
+        result = self.check(
+            computed(2, 'count', [operand(path='items')], where={'field': 'status', 'equals': 'OpEn'}),
+            results={'t1': {'items': [{'status': 'OPEN'}, {'status': 'open'}, {'status': 'closed'}, {}, 'open', None]}},
+        )
+        self.assertTrue(result.verified, result.note)
+
+    def test_count_where_never_equates_booleans_and_numbers(self):
+        items = [{'flag': value} for value in (True, 1, 1.0, False, 0, 0.0, '1', None)] + [{}]
+        for equals, expected in ((True, 1), (1, 2), (False, 1), (0, 2), ('1', 1)):
+            with self.subTest(equals=equals):
+                result = self.check(
+                    computed(expected, 'count', [operand(path='items')], where={'field': 'flag', 'equals': equals}),
+                    results={'t1': {'items': items}},
+                )
+                self.assertTrue(result.verified, result.note)
+
+    def test_count_mismatch_reports_computed_value(self):
+        result = self.check(
+            computed(2, 'count', [operand(path='items')]), results={'t1': {'items': [{'status': 'closed'}]}}
+        )
+        self.assertFalse(result.verified)
+        self.assertIn('does not match the derived value (1)', result.note)
+
+    def test_malformed_derivations_never_include_record_text(self):
+        distinctive = 'RECORD_TEXT_MUST_STAY_PRIVATE'
+        results = {'t1': {'total': 30, 'title': distinctive, 'items': [{'title': distinctive}], 'flag': True}}
+        cases: list[tuple[str, Any, str]] = [
+            ('non-object', 'sum', 'the derivation is malformed'),
+            ('non-object-list', [], 'the derivation is malformed'),
+            ('missing-op', {'operands': [operand()]}, 'the derivation has an unknown operation'),
+            ('unknown-op', {'op': distinctive, 'operands': [operand()]}, 'the derivation has an unknown operation'),
+            ('missing-operands', {'op': 'sum'}, 'the derivation operands must be a list'),
+            ('non-list-operands', {'op': 'sum', 'operands': {}}, 'the derivation operands must be a list'),
+            ('too-many', {'op': 'sum', 'operands': [operand()] * 13}, 'the derivation has more than 12 operands'),
+            ('sum-empty', {'op': 'sum', 'operands': []}, 'sum requires 2 to 12 operands'),
+            ('sum-one', {'op': 'sum', 'operands': [operand()]}, 'sum requires 2 to 12 operands'),
+            ('difference-one', {'op': 'difference', 'operands': [operand()]}, 'difference requires exactly 2 operands'),
+            (
+                'difference-three',
+                {'op': 'difference', 'operands': [operand()] * 3},
+                'difference requires exactly 2 operands',
+            ),
+            ('count-empty', {'op': 'count', 'operands': []}, 'count requires exactly 1 operand'),
+            ('count-two', {'op': 'count', 'operands': [operand()] * 2}, 'count requires exactly 1 operand'),
+            ('operand-not-object', {'op': 'count', 'operands': [distinctive]}, 'a derivation operand is malformed'),
+            (
+                'missing-path',
+                {'op': 'count', 'operands': [{'call_id': 't1'}]},
+                'a derivation operand needs call_id and path',
+            ),
+            (
+                'missing-call',
+                {'op': 'count', 'operands': [{'path': 'items'}]},
+                'a derivation operand needs call_id and path',
+            ),
+            (
+                'invalid-path',
+                {'op': 'count', 'operands': [operand(path=None)]},
+                'a derivation operand needs call_id and path',
+            ),
+            (
+                'count-non-list',
+                {'op': 'count', 'operands': [operand(path='title')]},
+                "the value at 'title' is not a list",
+            ),
+            (
+                'sum-text',
+                {'op': 'sum', 'operands': [operand(), operand(path='title')]},
+                "the value at 'title' is not a number",
+            ),
+            (
+                'sum-bool',
+                {'op': 'sum', 'operands': [operand(), operand(path='flag')]},
+                "the value at 'flag' is not a number",
+            ),
+        ]
+        for op in ('sum', 'difference'):
+            cases.append(
+                (
+                    f'where-on-{op}',
+                    {'op': op, 'operands': [operand()] * 2, 'where': {}},
+                    'where is only allowed for count',
+                )
+            )
+        invalid_filters: list[Any] = [
+            None,
+            [],
+            {},
+            {'field': 'title'},
+            {'equals': distinctive},
+            {'field': 1, 'equals': True},
+            {'field': 'title', 'equals': None},
+            {'field': 'title', 'equals': [distinctive]},
+        ]
+        for where in invalid_filters:
+            cases.append(
+                (
+                    'invalid-where',
+                    {'op': 'count', 'operands': [operand(path='items')], 'where': where},
+                    'the count filter is malformed',
+                )
+            )
+        for case, derived, reason in cases:
+            with self.subTest(case=case, derived=derived):
+                result = self.check({'label': 'Count', 'value': 1, 'derived': derived}, results=results)
+                self.assertFalse(result.verified)
+                self.assertNotIn(distinctive, result.note)
+                self.assertEqual(result.note, f'Unverified: Count (1): {reason}')
+
+    def test_derived_operands_resolve_unique_tool_names(self):
+        result = self.check(
+            computed(28, 'difference', [operand('count_issues'), operand('count_issues', 'groups[0].count')]),
+            names={'t1': 'count_issues'},
+        )
+        self.assertTrue(result.verified, result.note)
+
+    def test_derived_operands_reject_ambiguous_tool_names(self):
+        result = self.check(
+            computed(27, 'sum', [operand('count_issues'), operand('b')]),
+            results={'a': {'total': 13}, 'b': {'total': 14}},
+            names={'a': 'count_issues', 'b': 'count_issues'},
+        )
+        self.assertFalse(result.verified)
+        self.assertIn('names a tool that was called more than once; use the call id', result.note)
+
+    def test_derived_operands_prefer_exact_call_ids(self):
+        result = self.check(
+            computed(27, 'sum', [operand('a'), operand('b')]),
+            results={'a': {'total': 13}, 'b': {'total': 14}},
+            names={'a': 'a', 'b': 'a'},
+        )
+        self.assertTrue(result.verified, result.note)
+
+    def test_derived_operands_report_absent_calls_and_paths_safely(self):
+        for reference, path, reason in (
+            ('missing', 'total', 'refers to a tool call that returned nothing'),
+            ('t1', 'missing', "has no value at 'missing' in that result"),
+            ('t1', 'x' * 200, "has no value at '" + 'x' * 80 + "…' in that result"),
+        ):
+            with self.subTest(reference=reference, path=path):
+                result = self.check(computed(1, 'sum', [operand(), operand(reference, path)]))
+                self.assertFalse(result.verified)
+                self.assertIn(reason, result.note)
+                self.assertLess(len(result.note), 200)
+
+    def test_neither_path_nor_derivation_is_unverified(self):
+        result = self.check({'label': 'Count', 'value': 30, 'call_id': 't1'})
+        self.assertFalse(result.verified)
+        self.assertIn('declares neither a path nor a derivation', result.note)
+
+    def test_both_path_and_derivation_are_unverified(self):
+        declaration = number(30)
+        declaration['derived'] = {'op': 'sum', 'operands': [operand()] * 2}
+        result = self.check(declaration)
+        self.assertFalse(result.verified)
+        self.assertIn('declares both a path and a derivation', result.note)
+
+    def test_null_or_blank_unused_fields_do_not_count_as_both_forms(self):
+        # Models often fill an unused optional field with null or an empty string.
+        direct = number(30) | {'derived': None}
+        derivation = computed(28, 'difference', [operand(), operand(path='groups[0].count')]) | {
+            'call_id': '',
+            'path': ' ',
+        }
+        for name, declaration in (('direct with null derived', direct), ('derived with blank path', derivation)):
+            with self.subTest(name):
+                result = self.check(declaration)
+                self.assertTrue(result.verified, result.note)
+
+    def test_derived_values_count_as_declared_integers(self):
+        for value in (28, 29):
+            with self.subTest(value=value):
+                result = self.check(
+                    computed(value, 'difference', [operand(), operand(path='groups[0].count')]),
+                    prose=f'There are {value} unresolved issues; {value} remain, including 3 high priority issues.',
+                )
+                self.assertEqual(result.undeclared, 1)
+                if value == 28:
+                    self.assertTrue(result.verified, result.note)
+                else:
+                    self.assertIn('does not match the derived value (28)', result.note)
 
 
 class ClaimVerification(unittest.TestCase):
