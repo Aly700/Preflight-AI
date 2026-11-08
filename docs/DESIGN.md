@@ -107,14 +107,27 @@ of answers by itself.
    took 6.0 to 6.6 s. The remaining misses are claim declarations, mostly a count of
    entries that have a field at all, which the count filter cannot express yet.
 
+9. **A present/missing count filter and a third held-out set.** A derived count can
+   keep only items whose field has a value, or only those where it is null or
+   missing; the held-out question that needed it now passes in 3 of 3 runs, up from 0.
+   A third held-out set, written without seeing model outputs, the prompt or the
+   verifier, passed 18, 18 and 19 of 22 strict checks in three runs, with the tuning
+   set at 21, 19 and 22; in every held-out run 21 of 22 answers contained the expected
+   records and numbers. The held-out misses: a question whose "open" can mean the
+   open status or every unresolved issue (the tool for unresolved issues is called
+   `list_open_issues`), answered as unresolved each time; two correct answers that
+   took more calls than allowed, one count per status to show zeros and one search
+   per subsystem because the count tool has no date filter; and number declarations
+   that cite a call that does not exist, which also appear in the tuning set.
+
 ## Next
 
-9. **Stronger structured-data answers.** A written question set drives further
+10. **Stronger structured-data answers.** A written question set drives further
    tools; the model selects tools, resolves follow-ups, asks for missing criteria and
    explains supported results within pagination and limits. Numeric claims are
    checked against tool output before an answer is complete; missing records and
    tool failures produce explicit limits, not invented facts.
-10. **Evaluation and adaptability.** A versioned benchmark of original cases
+11. **Evaluation and adaptability.** A versioned benchmark of original cases
    (lookups, comparisons, timelines, multi-step questions, follow-ups, ambiguity,
    pagination, missing evidence, tool failures, adversarial text inside records),
    tuning cases separate from held-out cases, several seeds and paraphrases, the

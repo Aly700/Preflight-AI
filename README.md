@@ -17,7 +17,7 @@ All data is made up: 12 demo aircraft, 180 issues, 480 tasks and their history, 
 - **Model choice** with one setting: Claude or OpenAI with your own key, or GitHub Copilot.
 - **Two runtimes.** The Copilot SDK's loop, or this repository's own loop over the Anthropic API: multi-step and parallel tool calls, every result validated, and the record IDs and numbers in the answer checked against the tool results before it is marked complete.
 - **Hosted demo**: Cloudflare Workers serves the UI and forwards chat to this stack on a single AWS host. The model is Claude on Amazon Bedrock, reached through the host's IAM role, so no model key is stored anywhere. The tools go through Amazon Bedrock AgentCore Gateway, which reaches the MCP service over a private network path; the MCP service has no public listener. A daily answer cap bounds the cost.
-- **Evaluation** with original questions scored against SQL (`evals/`): a 22-case tuning set used to improve the prompt and verifier, a fresh 22-case held-out set written without seeing model outputs, and an earlier held-out set that has since informed changes (`evals/seen/`). With Claude Sonnet 4.6 on Bedrock through the Gateway, three runs of the fresh held-out set passed 20, 21 and 21 of 22 strict checks, and every answer contained the expected records and numbers. `scripts/eval_summary.py` combines repeated runs.
+- **Evaluation** with original questions scored against SQL (`evals/`): a 22-case tuning set used to improve the prompt and verifier, a fresh 22-case held-out set written without seeing model outputs, and two earlier held-out sets that have since informed changes (`evals/seen/`). With Claude Sonnet 4.6 on Bedrock through the Gateway, three runs of the newest held-out set passed 18, 18 and 19 of 22 strict checks, and 21 of 22 answers contained the expected records and numbers in each run. `scripts/eval_summary.py` combines repeated runs.
 - **Setup notes and the data contract** in `docs/`.
 
 ## Run it locally
@@ -53,7 +53,8 @@ These use fixtures and a fake model client. The stack check above is the real th
 
 ## Where it is going
 
-- A count filter for fields that are present or missing, so a number like "entries that reference a task" can be verified.
+- Fixes for the latest held-out misses: a date filter for grouped counts, a way to show zero-count groups, and number declarations that cite a call that does not exist.
+- The same evaluation against a second model, comparing accuracy, latency and cost.
 - A fictional document corpus with its own retrieval evaluation.
 
 [Design](docs/DESIGN.md) · [Setup](docs/SETUP.md) · [Data contract](docs/DATA_CONTRACT.md)
