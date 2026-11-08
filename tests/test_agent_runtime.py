@@ -143,6 +143,11 @@ class NativePrompts(unittest.TestCase):
         self.assertIn('distinct task IDs in a history', prompt)
         self.assertIn('derived count with distinct', prompt)
 
+    def test_claims_prompt_explains_present_filters(self):
+        prompt = claims_prompt([])
+        self.assertIn('where with present true', prompt)
+        self.assertIn('present false', prompt)
+
     def test_claims_prompt_excludes_ratios_and_percentages(self):
         self.assertIn('Do not declare ratios or percentages.', claims_prompt([]))
 

@@ -1,6 +1,6 @@
 """The claims contract: the `final_answer` tool the model calls last, and the check of what it declares."""
 
-from collections.abc import Collection
+from collections.abc import Callable, Collection
 from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation
 import re
@@ -61,13 +61,16 @@ FINAL_ANSWER_TOOL: dict[str, Any] = {
                                 'where': {
                                     'type': 'object',
                                     'description': (
-                                        'For count only: include objects with this field value; ignore case.'
+                                        'For count only: include objects whose field equals a value (ignore case), '
+                                        'or give present instead of equals: true for objects whose field has a '
+                                        'value, false for null, blank or missing.'
                                     ),
                                     'properties': {
                                         'field': {'type': 'string'},
                                         'equals': {'type': ['string', 'number', 'boolean']},
+                                        'present': {'type': 'boolean'},
                                     },
-                                    'required': ['field', 'equals'],
+                                    'required': ['field'],
                                 },
                                 'distinct': {
                                     'type': 'string',
@@ -240,6 +243,28 @@ def field_matches(value: Any, expected: Any) -> bool:
     return bool(value == expected)
 
 
+def has_value(value: Any) -> bool:
+    """Whether a field holds something: null, missing and blank strings do not."""
+    return value is not None and not (isinstance(value, str) and not value.strip())
+
+
+def count_filter(where: Any) -> Callable[[dict[str, Any]], bool] | None:
+    """A count filter as a test on list objects, or None when it is malformed.
+
+    The filter gives either equals or present; a null for the unused one counts as absent.
+    """
+    if not isinstance(where, dict) or not isinstance(where.get('field'), str):
+        return None
+    name, equals, present = where['field'], where.get('equals'), where.get('present')
+    if (equals is None) == (present is None):
+        return None
+    if present is not None:
+        return (lambda item: has_value(item.get(name)) is present) if isinstance(present, bool) else None
+    if not isinstance(equals, (str, int, float, bool)):
+        return None
+    return lambda item: field_matches(item.get(name), equals)
+
+
 def derived_value(derived: Any, results: dict[str, dict[str, Any]], names: dict[str, str]) -> float | str:
     """Compute a declaration, or return a short reason that never includes record text."""
     if not isinstance(derived, dict):
@@ -258,15 +283,12 @@ def derived_value(derived: Any, results: dict[str, dict[str, Any]], names: dict[
         return 'difference requires exactly 2 operands'
     if op == 'count' and len(operands) != 1:
         return 'count requires exactly 1 operand'
-    where = derived.get('where')
+    keep = None
     if 'where' in derived:
         if op != 'count':
             return 'where is only allowed for count'
-        if (
-            not isinstance(where, dict)
-            or not isinstance(where.get('field'), str)
-            or not isinstance(where.get('equals'), (str, int, float, bool))
-        ):
+        keep = count_filter(derived['where'])
+        if keep is None:
             return 'the count filter is malformed'
     distinct = derived.get('distinct')
     if 'distinct' in derived:
@@ -293,15 +315,7 @@ def derived_value(derived: Any, results: dict[str, dict[str, Any]], names: dict[
         if op == 'count':
             if not isinstance(actual, list):
                 return f'the value at {short(path)!r} is not a list'
-            items = (
-                actual
-                if where is None
-                else [
-                    item
-                    for item in actual
-                    if isinstance(item, dict) and field_matches(item.get(where['field']), where['equals'])
-                ]
-            )
+            items = actual if keep is None else [item for item in actual if isinstance(item, dict) and keep(item)]
             if distinct is None:
                 return len(items)
             unique: list[Any] = []

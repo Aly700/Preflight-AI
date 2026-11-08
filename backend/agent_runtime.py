@@ -90,6 +90,8 @@ def claims_prompt(calls: list[tuple[str, str, dict[str, Any]]]) -> str:
         'Name list items by a field value instead of a position, for example groups[key=cabin].count or '
         'ranked_by_unresolved[aircraft_id=DEMO-AIR-0001].unresolved_issue_count. '
         'A count of distinct values (for example distinct task IDs in a history) is a derived count with distinct. '
+        'To count items whose field has a value, use where with present true instead of equals; '
+        'present false counts items where it is null or missing. '
         'Do not declare ratios or percentages. '
         'Each direct path must point at a numeric field; use total or limit for page sizes or <list>.length for '
         'the size of a list. Cite every record ID that appears in the answer, including aircraft IDs '

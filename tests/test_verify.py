@@ -51,9 +51,10 @@ class DerivedClaimVerification(unittest.TestCase):
         for key in ('call_id', 'path'):
             self.assertEqual(operands['items']['properties'][key]['type'], 'string')
         where = derived['properties']['where']
-        self.assertEqual(where['required'], ['field', 'equals'])
+        self.assertEqual(where['required'], ['field'])
         self.assertEqual(where['properties']['field']['type'], 'string')
         self.assertEqual(where['properties']['equals']['type'], ['string', 'number', 'boolean'])
+        self.assertEqual(where['properties']['present']['type'], 'boolean')
         self.assertIn('distinct', derived['properties'])
         distinct = derived['properties']['distinct']
         self.assertEqual(distinct['type'], 'string')
@@ -138,6 +139,68 @@ class DerivedClaimVerification(unittest.TestCase):
                     results={'t1': {'items': items}},
                 )
                 self.assertTrue(result.verified, result.note)
+
+    def test_count_where_present_separates_values_from_null_blank_or_missing(self):
+        items = [
+            {'task_id': 'TASK-0001'},
+            {'task_id': 'TASK-0001'},
+            {'task_id': 'TASK-0002'},
+            {'task_id': 0},
+            {'task_id': False},
+            {'task_id': None},
+            {'task_id': ''},
+            {'task_id': '   '},
+            {},
+            'TASK-0003',
+            None,
+        ]
+        for present, expected in ((True, 5), (False, 4)):
+            with self.subTest(present=present):
+                result = self.check(
+                    computed(
+                        expected, 'count', [operand(path='items')], where={'field': 'task_id', 'present': present}
+                    ),
+                    results={'t1': {'items': items}},
+                )
+                self.assertTrue(result.verified, result.note)
+
+    def test_count_where_ignores_a_null_unused_filter_form(self):
+        items = [{'task_id': 'TASK-0001', 'status': 'open'}, {'task_id': None, 'status': 'open'}, {'status': 'closed'}]
+        for where, expected in (
+            ({'field': 'task_id', 'present': True, 'equals': None}, 1),
+            ({'field': 'status', 'equals': 'open', 'present': None}, 2),
+        ):
+            with self.subTest(where=where):
+                result = self.check(
+                    computed(expected, 'count', [operand(path='items')], where=where), results={'t1': {'items': items}}
+                )
+                self.assertTrue(result.verified, result.note)
+
+    def test_count_where_present_mismatch_reports_computed_value(self):
+        result = self.check(
+            computed(3, 'count', [operand(path='items')], where={'field': 'task_id', 'present': True}),
+            results={'t1': {'items': [{'task_id': 'TASK-0001'}, {'task_id': None}, {}]}},
+        )
+        self.assertFalse(result.verified)
+        self.assertIn('does not match the derived value (1)', result.note)
+
+    def test_count_distinct_with_present_filter_on_another_field(self):
+        result = self.check(
+            computed(
+                2, 'count', [operand(path='items')], distinct='actor_id', where={'field': 'task_id', 'present': True}
+            ),
+            results={
+                't1': {
+                    'items': [
+                        {'actor_id': 'PERSON-0001', 'task_id': 'TASK-0001'},
+                        {'actor_id': 'PERSON-0001', 'task_id': 'TASK-0002'},
+                        {'actor_id': 'PERSON-0002', 'task_id': 'TASK-0001'},
+                        {'actor_id': 'PERSON-0003', 'task_id': None},
+                    ]
+                }
+            },
+        )
+        self.assertTrue(result.verified, result.note)
 
     def test_count_distinct_ignores_case_nulls_and_missing_fields(self):
         items = [
@@ -300,6 +363,12 @@ class DerivedClaimVerification(unittest.TestCase):
             {'field': 1, 'equals': True},
             {'field': 'title', 'equals': None},
             {'field': 'title', 'equals': [distinctive]},
+            {'field': 'title', 'present': None},
+            {'field': 'title', 'present': 'yes'},
+            {'field': 'title', 'present': 1},
+            {'field': 'title', 'present': [True]},
+            {'field': 'title', 'equals': distinctive, 'present': True},
+            {'field': 'title', 'equals': False, 'present': False},
         ]
         for where in invalid_filters:
             cases.append(
