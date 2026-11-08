@@ -126,9 +126,12 @@ class EvalRunner(unittest.TestCase):
     def test_shipped_heldout_file_is_valid(self):
         version, cases = evaluation.load_cases(ROOT / 'evals/heldout.json')
         _, tuning_cases = evaluation.load_cases(ROOT / 'evals/questions.json')
-        _, seen_cases = evaluation.load_cases(ROOT / 'evals/seen/heldout-2026-11-08.1.json')
+        seen_cases = []
+        for seen_version in ('heldout-2026-11-08.1', 'heldout-2026-11-08.2'):
+            _, earlier_cases = evaluation.load_cases(ROOT / f'evals/seen/{seen_version}.json')
+            seen_cases.extend(earlier_cases)
         earlier_questions = {' '.join(case['question'].casefold().split()) for case in [*tuning_cases, *seen_cases]}
-        self.assertEqual(version, 'heldout-2026-11-08.2')
+        self.assertEqual(version, 'heldout-2026-11-08.3')
         self.assertEqual(len(cases), 22)
         self.assertEqual(Counter(case['category'] for case in cases), CATEGORIES)
         self.assertEqual(len({case['question'] for case in cases}), 22)
@@ -154,10 +157,12 @@ class EvalRunner(unittest.TestCase):
                         self.assertIsNone(expect['verified'])
 
     def test_seen_heldout_file_is_valid(self):
-        version, cases = evaluation.load_cases(ROOT / 'evals/seen/heldout-2026-11-08.1.json')
-        self.assertEqual(version, 'heldout-2026-11-08.1')
-        self.assertEqual(len(cases), 22)
-        self.assertEqual(Counter(case['category'] for case in cases), CATEGORIES)
+        for seen_version in ('heldout-2026-11-08.1', 'heldout-2026-11-08.2'):
+            with self.subTest(version=seen_version):
+                version, cases = evaluation.load_cases(ROOT / f'evals/seen/{seen_version}.json')
+                self.assertEqual(version, seen_version)
+                self.assertEqual(len(cases), 22)
+                self.assertEqual(Counter(case['category'] for case in cases), CATEGORIES)
 
     def test_shipped_question_file_is_valid(self):
         version, cases = evaluation.load_cases(ROOT / 'evals/questions.json')

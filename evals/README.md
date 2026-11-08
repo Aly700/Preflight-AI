@@ -8,4 +8,4 @@ In v3 (`2026-11-07.3`), v1 lookahead patterns that contradicted the v2 decline c
 
 In v4 (`2026-11-08.4`), missing-record cases are scored on content with verification unchecked: an ID taken from the question is context, not a claim, so a supported "not found" answer may be verified. The held-out set uses the same rule.
 
-`heldout.json` is now `heldout-2026-11-08.2`, with 22 new questions written without seeing model outputs, the prompt, or the verifier. The earlier held-out set informed changes and is retained as a seen set in `evals/seen/heldout-2026-11-08.1.json`. Run the new set with `--questions evals/heldout.json`; it has no team questions because no tool exposes team assignments.
+`heldout.json` is now `heldout-2026-11-08.3`, with 22 new questions written without seeing model outputs, the prompt, or the verifier. The two earlier held-out sets informed changes and are kept in `evals/seen/` as seen sets: `heldout-2026-11-08.1.json` and `heldout-2026-11-08.2.json`. Run the new set with `--questions evals/heldout.json`; it has no team questions because no tool exposes team assignments.
