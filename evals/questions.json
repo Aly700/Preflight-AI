@@ -1,5 +1,5 @@
 {
-  "version": "2026-11-07.3",
+  "version": "2026-11-08.4",
   "cases": [
     {
       "id": "lookup-01",
@@ -522,7 +522,7 @@
           "\\b(?:has|with)\\s+\\d[\\d,]*\\s+(?:unresolved\\s+)?(?:issues?|tasks?)\\b"
         ],
         "max_tool_calls": 4,
-        "verified": false,
+        "verified": null,
         "min_tool_calls": 1,
         "required": [
           "not found|no record|does not exist|doesn.t exist|no .{0,20}records?"
@@ -541,7 +541,7 @@
           "\\b(?:opened|closed|reopened|completed)\\s+(?:on|at)\\s+\\d"
         ],
         "max_tool_calls": 4,
-        "verified": false,
+        "verified": null,
         "min_tool_calls": 1,
         "required": [
           "not found|no record|does not exist|doesn.t exist|no .{0,20}records?"

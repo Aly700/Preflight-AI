@@ -524,7 +524,7 @@
         "tools_any": [],
         "min_tool_calls": 1,
         "max_tool_calls": 3,
-        "verified": false
+        "verified": null
       }
     },
     {
@@ -544,7 +544,7 @@
         "tools_any": [],
         "min_tool_calls": 1,
         "max_tool_calls": 3,
-        "verified": false
+        "verified": null
       }
     },
     {
