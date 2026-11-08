@@ -134,6 +134,27 @@ class ComposeConfiguration(unittest.TestCase):
         self.assertIn('preflight_reader', text)
         self.assertTrue(script.stat().st_mode & stat.S_IXUSR, 'roles script must be executable')
 
+    def test_host_runtime_defaults_to_native_and_can_be_switched(self):
+        if not docker_compose_available():
+            self.skipTest('docker is not available')
+        base = {key: value for key, value in os.environ.items() if key != 'CHAT_RUNTIME'}
+        for extra, expected in (({}, 'native'), ({'CHAT_RUNTIME': 'langgraph'}, 'langgraph')):
+            rendered = subprocess.run(
+                [
+                    *('docker', 'compose', '--env-file', os.devnull, '-f', str(ROOT / 'compose.yaml')),
+                    *('-f', str(ROOT / 'deploy/compose.host.yaml'), 'config', '--format', 'json'),
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
+                cwd=ROOT,
+                env={**base, **extra, 'COMPOSE_PROFILES': ''},
+                timeout=120,
+            ).stdout
+            with self.subTest(runtime=expected):
+                api = json.loads(rendered)['services']['preflight-oss-api']
+                self.assertEqual(api['environment']['CHAT_RUNTIME'], expected)
+
     def test_host_compose_config_publishes_the_api_and_mcp_on_loopback_only(self):
         # These prerequisites can be checked without Docker or any secret files.
         self.assertIn('AWS_REGION: ${AWS_REGION:-}', (ROOT / 'compose.yaml').read_text())

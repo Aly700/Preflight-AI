@@ -3,7 +3,7 @@
 services:
   preflight-oss-api:
     environment:
-      CHAT_RUNTIME: native
+      CHAT_RUNTIME: ${CHAT_RUNTIME:-native}
       MODEL_PROVIDER: bedrock
       MAX_ANSWERS_PER_DAY: ${MAX_ANSWERS_PER_DAY:-200}
       # Global profile: about 10% cheaper than a geographic one; the data is fictional.
