@@ -1,6 +1,8 @@
 """Three internal read-only HTTP endpoints backed by PostgreSQL."""
 
-from collections.abc import Awaitable, Callable, Iterator
+import asyncio
+from collections.abc import AsyncIterator, Awaitable, Callable, Iterator
+from contextlib import asynccontextmanager
 import os
 from pathlib import Path
 from typing import Annotated, Any
@@ -13,6 +15,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from backend.models import AircraftList, Health, IssueList
 from backend.repository import Repository
+from backend.telemetry import configure
 from preflight_core.database import open_database
 from preflight_core.settings import api_hosts_from_environment
 
@@ -47,7 +50,19 @@ def create_app(*, allowed_hosts: list[str] | None = None, static_directory: Path
     """
     if allowed_hosts is None:
         allowed_hosts = api_hosts_from_environment(os.environ, 'PREFLIGHT_ALLOWED_HOSTS', DEFAULT_ALLOWED_HOSTS)
-    app = FastAPI(title='Preflight AI structured-data API', version='0.1.0', docs_url=None, redoc_url=None)
+
+    @asynccontextmanager
+    async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+        provider = configure()
+        try:
+            yield
+        finally:
+            if provider is not None:
+                await asyncio.to_thread(provider.shutdown)
+
+    app = FastAPI(
+        title='Preflight AI structured-data API', version='0.1.0', docs_url=None, redoc_url=None, lifespan=lifespan
+    )
     from backend.chat import create_router
 
     app.include_router(create_router())

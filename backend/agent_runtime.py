@@ -17,9 +17,12 @@ import json
 import logging
 from typing import Any
 
+from opentelemetry import trace
+
 from backend.mcp_tools import ToolResult, ToolService, anthropic_tools, build_tool_service
 from backend.model_client import USAGE_KEYS, ModelClient, ModelError, ToolCall, Turn, build_model_client
 from backend.settings import ChatSettings
+from backend.telemetry import get_tracer
 from backend.verify import FINAL_ANSWER_TOOL, ID_PATTERN, record_ids, scan_prose, verify_claims
 from preflight_core.tools import TOOLS
 
@@ -128,6 +131,7 @@ class Loop:
         self.emit = emit
         self.rounds = 0
         self.calls_made = 0
+        self.calls_refused = 0
         self.model_calls = 0
         self.usage = dict.fromkeys(USAGE_KEYS, 0)
         self.text_parts: list[str] = []
@@ -213,6 +217,7 @@ class Loop:
         self.truncated |= turn.stop_reason == 'max_tokens'
         messages.append({'role': 'assistant', 'content': assistant_blocks(turn)})
         if turn.tool_calls:
+            self.calls_refused += len(turn.tool_calls)
             refused = [result_block(c.id, LIMIT_REACHED, error=True) for c in turn.tool_calls]
             messages.append({'role': 'user', 'content': refused})
 
@@ -255,11 +260,13 @@ class Loop:
         runnable: list[ToolCall] = []
         for call in calls:
             if call.name not in TOOLS:
+                self.calls_refused += 1
                 self.calls_made += 1
                 if call.name != FINAL:
                     self.emit({'event': 'tool', 'data': {'name': call.name, 'status': 'failed', 'call_id': call.id}})
                 blocks[call.id] = result_block(call.id, TOOL_UNAVAILABLE, error=True)
             elif self.calls_made >= self.settings.max_tool_calls:
+                self.calls_refused += 1
                 self.emit({'event': 'tool', 'data': {'name': call.name, 'status': 'failed', 'call_id': call.id}})
                 blocks[call.id] = result_block(call.id, LIMIT_REACHED, error=True)
             else:
@@ -270,9 +277,42 @@ class Loop:
 
         async def bounded(call: ToolCall) -> ToolResult:
             async with semaphore:
-                return await self.tools.call(call.id, call.name, dict(call.input))
+                with get_tracer().start_as_current_span(
+                    f'execute_tool {call.name}',
+                    kind=trace.SpanKind.INTERNAL,
+                    attributes={
+                        'gen_ai.operation.name': 'execute_tool',
+                        'gen_ai.tool.name': call.name,
+                        'gen_ai.tool.call.id': call.id,
+                    },
+                    record_exception=False,
+                    set_status_on_exception=False,
+                ) as span:
+                    try:
+                        result = await self.tools.call(call.id, call.name, dict(call.input))
+                    except BaseException as error:
+                        span.set_attribute('preflight.tool.outcome', 'failed')
+                        span.set_attribute('error.type', type(error).__name__)
+                        span.set_status(trace.StatusCode.ERROR)
+                        raise
+                    complete = result.ok and result.payload is not None
+                    span.set_attribute('preflight.tool.outcome', 'complete' if complete else 'failed')
+                    if not complete:
+                        span.set_attribute('error.type', 'ToolError')
+                        span.set_status(trace.StatusCode.ERROR)
+                    return result
 
-        for call, result in zip(runnable, await asyncio.gather(*(bounded(c) for c in runnable)), strict=True):
+        tasks = [asyncio.create_task(bounded(call)) for call in runnable]
+        try:
+            results = await asyncio.gather(*tasks)
+        finally:
+            # gather propagates the first failure without cancelling siblings. Join
+            # them here so no tool execution (or span) can outlive its answer.
+            for task in tasks:
+                if not task.done():
+                    task.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
+        for call, result in zip(runnable, results, strict=True):
             if result.ok and result.payload is not None:
                 self.results[call.id] = result.payload
                 self.names[call.id] = call.name
@@ -352,26 +392,61 @@ async def stream_loop(
     """Stream either driver with identical error propagation, cancellation and client ownership."""
     queue: asyncio.Queue[Event | None] = asyncio.Queue()
     loop.emit = queue.put_nowait
+    span = get_tracer().start_span(
+        'invoke_agent preflight',
+        kind=trace.SpanKind.INTERNAL,
+        attributes={
+            'gen_ai.operation.name': 'invoke_agent',
+            'gen_ai.agent.name': 'preflight',
+            'gen_ai.provider.name': 'aws.bedrock' if loop.settings.provider == 'bedrock' else 'anthropic',
+            'gen_ai.request.model': loop.model.model,
+            'preflight.runtime': loop.settings.runtime,
+        },
+    )
 
     async def run() -> None:
         try:
-            await drive
+            # Context lives in the driver task, never across a yield to the consumer.
+            # asyncio children and LangGraph nodes inherit it, including SDK model spans.
+            with trace.use_span(span, end_on_exit=False, record_exception=False, set_status_on_exception=False):
+                await drive
         finally:
             queue.put_nowait(None)
 
     task = asyncio.create_task(run())
     try:
-        while True:
-            item = await queue.get()
-            if item is None:
-                break
-            yield item
-        await task  # propagate model, transport and limit failures; never turn them into done
-        for event in loop.final_events():
-            yield event
+        try:
+            while True:
+                item = await queue.get()
+                if item is None:
+                    break
+                yield item
+            await task  # propagate model, transport and limit failures; never turn them into done
+            events = loop.final_events()
+            done = events[-1]['data']
+            for key, attribute in (
+                ('input_tokens', 'gen_ai.usage.input_tokens'),
+                ('output_tokens', 'gen_ai.usage.output_tokens'),
+                ('cache_read_input_tokens', 'gen_ai.usage.cache_read.input_tokens'),
+                ('cache_creation_input_tokens', 'gen_ai.usage.cache_creation.input_tokens'),
+            ):
+                span.set_attribute(attribute, done['usage'][key])
+            for key in ('tool_calls', 'rounds', 'model_calls', 'unverified', 'truncated'):
+                span.set_attribute(f'preflight.{key}', done[key])
+            if isinstance(done['verified'], bool):
+                span.set_attribute('preflight.verified', done['verified'])
+            for event in events:
+                yield event
+        finally:
+            if not task.done():
+                task.cancel()
+                await asyncio.gather(task, return_exceptions=True)
+            if owned_model is not None:
+                await owned_model.aclose()  # an injected client belongs to its caller
+    except BaseException as error:
+        span.set_attribute('error.type', type(error).__name__)
+        span.set_status(trace.StatusCode.ERROR)
+        raise
     finally:
-        if not task.done():
-            task.cancel()
-            await asyncio.gather(task, return_exceptions=True)
-        if owned_model is not None:
-            await owned_model.aclose()  # an injected client belongs to its caller
+        span.set_attribute('preflight.tool_calls_refused', loop.calls_refused)
+        span.end()

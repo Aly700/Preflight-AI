@@ -1,12 +1,18 @@
 """Both agent runtimes against a scripted model and fixture-backed tools. This is not live-model evidence."""
 
 import asyncio
+from contextlib import contextmanager
 from dataclasses import replace
 import importlib
 from typing import Any
 import unittest
 from unittest.mock import patch
 
+from opentelemetry import trace
+from opentelemetry.sdk.trace import Span as SDKSpan
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import SimpleSpanProcessor
+from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 from test_mcp import FixtureRepository
 
 from backend.agent_runtime import ANSWER_CHARS, SYSTEM, assistant_blocks, claims_prompt
@@ -221,6 +227,244 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
                 question, replace(settings, runtime=self.runtime_name), model_client=model, tools=tools
             )
         ]
+
+    @contextmanager
+    def tracing(self):
+        exporter = InMemorySpanExporter()
+        provider = TracerProvider(shutdown_on_exit=False)
+        provider.add_span_processor(SimpleSpanProcessor(exporter))
+        try:
+            with (
+                patch('backend.agent_runtime.get_tracer', return_value=provider.get_tracer('test')),
+                patch.object(SDKSpan, 'end', autospec=True, side_effect=SDKSpan.end) as end,
+            ):
+                yield exporter
+                # Exporters alone cannot detect repeated end(): the SDK ignores the duplicate.
+                self.assertEqual(end.call_count, len(exporter.get_finished_spans()))
+                self.assertEqual(len({id(call.args[0]) for call in end.call_args_list}), end.call_count)
+        finally:
+            provider.shutdown()
+
+    async def test_traces_parent_tools_and_model_context_and_match_done_metadata(self):
+        contexts = []
+
+        class ContextModel(FakeModel):
+            async def stream_turn(self, **kwargs):
+                contexts.append(trace.get_current_span().get_span_context())
+                return await super().stream_turn(**kwargs)
+
+        for provider in ('anthropic', 'bedrock'):
+            with self.subTest(provider=provider), self.tracing() as exporter:
+                model = ContextModel(
+                    [
+                        Turn(
+                            '',
+                            [
+                                ToolCall('a', 'list_open_issues', {'limit': 1}),
+                                ToolCall('b', 'get_issue_history', {'issue_id': 'ISSUE-0001'}),
+                            ],
+                            usage={
+                                'input_tokens': 7,
+                                'output_tokens': 3,
+                                'cache_read_input_tokens': 11,
+                                'cache_creation_input_tokens': 5,
+                            },
+                        ),
+                        Turn(
+                            'The results include ISSUE-0001.',
+                            stop_reason='max_tokens',
+                            usage={'input_tokens': 2, 'output_tokens': 1},
+                        ),
+                        claims(['ISSUE-0001']),
+                    ]
+                )
+                contexts.clear()
+                events = await self.collect(model, FakeTools(), settings=replace(SETTINGS, provider=provider))
+                spans = exporter.get_finished_spans()
+                self.assertEqual(len(spans), 3)
+                answer = next(s for s in spans if s.name == 'invoke_agent preflight')
+                self.assertIsNone(answer.parent)
+                self.assertEqual(answer.kind, trace.SpanKind.INTERNAL)
+                self.assertEqual(answer.status.status_code, trace.StatusCode.UNSET)
+                self.assertTrue(contexts)
+                self.assertTrue(all(c == answer.context for c in contexts))
+                done = events[-1]['data']
+                expected = {
+                    'gen_ai.operation.name': 'invoke_agent',
+                    'gen_ai.agent.name': 'preflight',
+                    'gen_ai.provider.name': 'aws.bedrock' if provider == 'bedrock' else 'anthropic',
+                    'gen_ai.request.model': model.model,
+                    'preflight.runtime': self.runtime_name,
+                    'gen_ai.usage.input_tokens': done['usage']['input_tokens'],
+                    'gen_ai.usage.output_tokens': done['usage']['output_tokens'],
+                    'gen_ai.usage.cache_read.input_tokens': done['usage']['cache_read_input_tokens'],
+                    'gen_ai.usage.cache_creation.input_tokens': done['usage']['cache_creation_input_tokens'],
+                    **{
+                        f'preflight.{key}': done[key]
+                        for key in ('tool_calls', 'rounds', 'model_calls', 'verified', 'unverified', 'truncated')
+                    },
+                    'preflight.tool_calls_refused': 0,
+                }
+                self.assertEqual(dict(answer.attributes), expected)
+                for span, name, call_id in zip(
+                    spans[:2], ('list_open_issues', 'get_issue_history'), ('a', 'b'), strict=True
+                ):
+                    self.assertEqual(span.name, f'execute_tool {name}')
+                    self.assertEqual(span.kind, trace.SpanKind.INTERNAL)
+                    self.assertEqual(span.parent, answer.context)
+                    self.assertEqual(
+                        dict(span.attributes),
+                        {
+                            'gen_ai.operation.name': 'execute_tool',
+                            'gen_ai.tool.name': name,
+                            'gen_ai.tool.call.id': call_id,
+                            'preflight.tool.outcome': 'complete',
+                        },
+                    )
+                    self.assertLessEqual(span.end_time, answer.end_time)
+                self.assertFalse(trace.get_current_span().get_span_context().is_valid)
+
+    async def test_traces_refused_calls_have_no_tool_span_including_wrap_up(self):
+        with self.tracing() as exporter:
+            model = FakeModel(
+                [
+                    Turn(
+                        '',
+                        [
+                            ToolCall('unknown', 'unknown_tool', {}),
+                            ToolCall('run', 'list_open_issues', {'limit': 1}),
+                            ToolCall('limited', 'list_open_issues', {}),
+                        ],
+                    ),
+                    Turn('Done.', [ToolCall('wrap', 'list_open_issues', {})]),
+                ]
+            )
+            await self.collect(model, FakeTools(), settings=replace(SETTINGS, max_tool_calls=2, max_tool_rounds=1))
+            spans = exporter.get_finished_spans()
+            self.assertEqual([s.name for s in spans], ['execute_tool list_open_issues', 'invoke_agent preflight'])
+            self.assertEqual(spans[-1].attributes['preflight.tool_calls_refused'], 3)
+
+    async def test_traces_tool_failure_has_only_fixed_error_type(self):
+        with self.tracing() as exporter:
+            await self.collect(
+                FakeModel(
+                    [Turn('', [ToolCall('t', 'get_issue_history', {'issue_id': 'ISSUE-0001'})]), Turn('Unknown.')]
+                ),
+                FakeTools(fail={'get_issue_history'}),
+            )
+            spans = exporter.get_finished_spans()
+            self.assertEqual(len(spans), 2)
+            self.assertEqual(spans[0].attributes['preflight.tool.outcome'], 'failed')
+            self.assertEqual(spans[0].attributes['error.type'], 'ToolError')
+            self.assertEqual(spans[0].status.status_code, trace.StatusCode.ERROR)
+            self.assertIsNone(spans[0].status.description)
+            self.assertEqual(spans[0].events, ())
+
+    async def test_traces_model_failure_ends_answer_once_without_error_message(self):
+        with self.tracing() as exporter:
+            with self.assertRaises(ModelError):
+                await self.collect(FakeModel([ModelError('private model failure')]), FakeTools())
+            spans = exporter.get_finished_spans()
+            self.assertEqual(len(spans), 1)
+            self.assertEqual(spans[0].status.status_code, trace.StatusCode.ERROR)
+            self.assertEqual(spans[0].attributes['error.type'], 'ModelError')
+            self.assertIsNone(spans[0].status.description)
+            self.assertEqual(spans[0].events, ())
+
+    async def test_traces_consumer_close_ends_each_span_once_without_context_leak(self):
+        started = asyncio.Event()
+
+        class HangingTools(FakeTools):
+            async def call(self, call_id, name, arguments):
+                started.set()
+                await asyncio.Event().wait()
+
+        with self.tracing() as exporter:
+            model = FakeModel([Turn('', [ToolCall('t', 'list_open_issues', {'limit': 1})])])
+            stream = self.runtime.stream_answer('Summary', self.settings, model_client=model, tools=HangingTools())
+            await stream.__anext__()
+            await asyncio.wait_for(started.wait(), 1)
+            self.assertFalse(trace.get_current_span().get_span_context().is_valid)
+            # Closing from another task must not detach a context token from the consumer's task.
+            await asyncio.create_task(stream.aclose())
+            await stream.aclose()
+            spans = exporter.get_finished_spans()
+            self.assertEqual(len(spans), 2)
+            self.assertEqual(len({s.context.span_id for s in spans}), 2)
+            self.assertEqual(spans[-1].attributes['error.type'], 'GeneratorExit')
+            self.assertEqual(spans[0].attributes['error.type'], 'CancelledError')
+            for span in spans:
+                self.assertEqual(span.status.status_code, trace.StatusCode.ERROR)
+                self.assertEqual(span.events, ())
+                self.assertIsNone(span.status.description)
+
+    async def test_traces_never_include_question_arguments_results_or_answer(self):
+        question = 'Private question sentinel'
+        argument = 'ISSUE-0001'
+        record = 'Distinctive private record sentinel'
+        answer = 'Private answer sentinel'
+        tools = FakeTools()
+        next(row for row in tools.repo.rows['issues'] if row['issue_id'] == argument)['title'] = record
+        with self.tracing() as exporter:
+            model = FakeModel([Turn('', [ToolCall('t', 'get_issue_history', {'issue_id': argument})]), Turn(answer)])
+            await self.collect(model, tools, question=question)
+            self.assertIn(record, model.calls[-1]['messages'][-1]['content'][0]['content'])
+            spans = exporter.get_finished_spans()
+            self.assertEqual(len(spans), 2)
+            for span in spans:
+                for private in (question, argument, record, answer):
+                    self.assertNotIn(private, str(dict(span.attributes)))
+                self.assertEqual(span.events, ())
+
+    async def test_traces_tool_exception_finishes_siblings_before_ending_answer(self):
+        started = asyncio.Event()
+        stopped = asyncio.Event()
+
+        class FailingTools(FakeTools):
+            async def call(self, call_id, name, arguments):
+                if call_id == 'fail':
+                    await started.wait()
+                    raise ValueError('private tool exception')
+                started.set()
+                try:
+                    await asyncio.Event().wait()
+                finally:
+                    stopped.set()
+
+        with self.tracing() as exporter:
+            model = FakeModel(
+                [Turn('', [ToolCall('fail', 'list_open_issues', {}), ToolCall('hang', 'list_open_issues', {})])]
+            )
+            with self.assertRaises(ValueError):
+                await self.collect(model, FailingTools())
+            self.assertTrue(stopped.is_set())
+            spans = exporter.get_finished_spans()
+            self.assertEqual(len(spans), 3)
+            self.assertEqual(spans[-1].name, 'invoke_agent preflight')
+            self.assertEqual(spans[-1].attributes['error.type'], 'ValueError')
+            for span in spans:
+                self.assertEqual(span.status.status_code, trace.StatusCode.ERROR)
+                self.assertEqual(span.events, ())
+                self.assertIsNone(span.status.description)
+
+    async def test_traces_cancelled_consumer_task_ends_answer_once(self):
+        started = asyncio.Event()
+
+        class HangingModel(FakeModel):
+            async def stream_turn(self, **kwargs):
+                started.set()
+                await asyncio.Event().wait()
+
+        with self.tracing() as exporter:
+            task = asyncio.create_task(self.collect(HangingModel([]), FakeTools()))
+            await asyncio.wait_for(started.wait(), 1)
+            task.cancel()
+            with self.assertRaises(asyncio.CancelledError):
+                await task
+            spans = exporter.get_finished_spans()
+            self.assertEqual(len(spans), 1)
+            self.assertEqual(spans[0].status.status_code, trace.StatusCode.ERROR)
+            self.assertEqual(spans[0].attributes['error.type'], 'CancelledError')
 
     async def test_unknown_tool_calls_count_against_the_budget(self):
         model = FakeModel(

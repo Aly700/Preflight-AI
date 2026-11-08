@@ -85,6 +85,23 @@ class ComposeConfiguration(unittest.TestCase):
     def setUp(self):
         self.ensure_secrets = load_script('init_secrets').ensure_secrets
 
+    def test_tracing_is_opt_in_with_only_jaeger_ui_published_on_loopback(self):
+        text = (ROOT / 'compose.yaml').read_text()
+        api = text.split('\n  preflight-oss-api:\n', 1)[1].split('\n  preflight-oss-web:\n', 1)[0]
+        self.assertIn('OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}', api)
+        self.assertIn('OTEL_SERVICE_NAME: preflight-oss-api', api)
+        self.assertIn('\n  preflight-oss-jaeger:\n', text)
+        jaeger = text.split('\n  preflight-oss-jaeger:\n', 1)[1].split('\nsecrets:', 1)[0]
+        self.assertIn('container_name: preflight-oss-jaeger', jaeger)
+        self.assertIn("profiles: ['observability']", jaeger)
+        self.assertIn(
+            'jaegertracing/jaeger:2.22.0@sha256:836b967b5abcf1f7758066aa6b348619267a2f1459f72d472840570f9bd88a17',
+            jaeger,
+        )
+        self.assertIn('"127.0.0.1:16686:16686"', jaeger)
+        self.assertNotIn('4318:', jaeger)
+        self.assertNotIn('OTEL_', (ROOT / 'deploy/compose.host.yaml').read_text())
+
     def test_api_passes_gateway_configuration_and_keeps_mcp_token_secret(self):
         text = (ROOT / 'compose.yaml').read_text()
         api = text.split('\n  preflight-oss-api:\n', 1)[1].split('\n  preflight-oss-web:\n', 1)[0]

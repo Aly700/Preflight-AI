@@ -1,4 +1,4 @@
-# Local full stack with explicit names. Only the web entry point is published, on loopback.
+# Local full stack with explicit names. Web and optional tracing UI ports bind only to loopback.
 # Secrets are files under the git-ignored .secrets/ directory (scripts/init_secrets.py creates them).
 # Model provider and model can be overridden from the shell: MODEL_PROVIDER=copilot COPILOT_MODEL=... docker compose up -d
 name: preflight-oss
@@ -64,6 +64,8 @@ services:
       ANTHROPIC_WORKSPACE_ID: ${ANTHROPIC_WORKSPACE_ID:-}
       AWS_REGION: ${AWS_REGION:-}
       CHAT_RUNTIME: ${CHAT_RUNTIME:-copilot}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      OTEL_SERVICE_NAME: preflight-oss-api
       MAX_TOOL_ROUNDS: ${MAX_TOOL_ROUNDS:-6}
       MAX_TOOL_CALLS: ${MAX_TOOL_CALLS:-12}
       MCP_AUTH: ${MCP_AUTH:-bearer}
@@ -98,6 +100,15 @@ services:
       - chat-token
     ports:
       - "127.0.0.1:8080:8080"
+
+  preflight-oss-jaeger:
+    container_name: preflight-oss-jaeger
+    image: jaegertracing/jaeger:2.22.0@sha256:836b967b5abcf1f7758066aa6b348619267a2f1459f72d472840570f9bd88a17
+    profiles: ['observability']
+    expose:
+      - "4318"
+    ports:
+      - "127.0.0.1:16686:16686"
 
 secrets:
   postgres-password:

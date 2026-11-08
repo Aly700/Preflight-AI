@@ -137,6 +137,29 @@ For a single host behind an existing Nginx, [deploy/compose.host.yaml](../deploy
 selects Bedrock, publishes only the API on loopback and makes the web service opt-in:
 `docker compose -f compose.yaml -f deploy/compose.host.yaml up -d`.
 
+### Tracing
+
+Tracing for the `native` and `langgraph` runtimes is off by default. Set a non-empty
+`OTEL_EXPORTER_OTLP_ENDPOINT` or `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` to enable it;
+`OTEL_SDK_DISABLED=true` disables it. Traces record metadata only: model and runtime,
+token counts, tool names and call IDs, timings, outcomes and verification counts.
+They contain no questions, answers, prompts, tool arguments, results or record text.
+Anthropic SDK model spans keep their default metadata-only mode. MCP SDK spans are
+excluded from export because their errors can contain upstream text; the API's
+tool spans record safe metadata instead. Pending traces flush when the API stops.
+
+With `CHAT_RUNTIME=native` or `CHAT_RUNTIME=langgraph` selected, start local tracing:
+
+```sh
+OTEL_EXPORTER_OTLP_ENDPOINT=http://preflight-oss-jaeger:4318 docker compose --profile observability up -d
+```
+
+Open <http://127.0.0.1:16686> and select `preflight-oss-api`. Only the Jaeger UI is
+published, on loopback; OTLP/HTTP port 4318 stays on the stack's private network.
+Any OTLP/HTTP backend works through the standard `OTEL_*` variables (pass additional
+variables to the API process/container as needed). A hosted backend receives this
+metadata under its own retention policy. The host override does not enable tracing.
+
 ### Tools through AgentCore Gateway
 
 With `CHAT_RUNTIME=native` or `CHAT_RUNTIME=langgraph`, the API can reach the tools through Amazon Bedrock
