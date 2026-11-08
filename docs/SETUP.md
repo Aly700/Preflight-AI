@@ -142,6 +142,8 @@ selects Bedrock, publishes only the API on loopback and makes the web service op
 `.env.example` names every variable. The services read the process environment;
 copying the file does not configure anything by itself.
 
+`MAX_ANSWERS_PER_DAY` bounds the cost of a public demo with a daily cap per process (default 200 answers, configurable from 1 to 100000) that resets at midnight UTC.
+
 Chat needs a browser-facing credential (`CHAT_TOKEN_FILE`), an MCP credential
 (`MCP_TOKEN_FILE`, 64 lowercase hexadecimal characters, the rule the MCP service
 enforces on its own token), an MCP target (`PREFLIGHT_MCP_URL`, a plain `http` or

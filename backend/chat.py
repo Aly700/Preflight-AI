@@ -1,17 +1,18 @@
 """Authenticated, bounded SSE transport; database HTTP routes stay independent.
 
 This module owns transport concerns only: the credential and origin checks,
-body and history bounds, admission (one answer at a time plus a small
-per-minute budget) and SSE framing. The model runtime is reached through
+body and history bounds, admission (one answer at a time plus per-minute
+and daily budgets) and SSE framing. The model runtime is reached through
 `stream_answer`, which imports the Copilot adapter lazily.
 """
 
 import asyncio
 from collections.abc import AsyncGenerator, AsyncIterator, Callable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import hmac
 import json
 import logging
+import os
 import time
 from typing import Any
 
@@ -39,24 +40,33 @@ class Limits:
     answer_seconds: float = 120
     answers_per_window: int = 5
     window_seconds: float = 60
+    answers_per_day: int = 200
 
 
 LIMITS = Limits()
 
 
 class Admission:
-    """One answer at a time per process, and a small budget of answers per window.
+    """One answer at a time per process, with per-window and UTC daily budgets.
 
     `admit` grants synchronously, so no await separates the check from the
     grant. `release` is idempotent, so the response can call it from a
     `finally` without knowing whether the body ever started streaming.
     """
 
-    def __init__(self, limits: Limits = LIMITS, clock: Callable[[], float] = time.monotonic) -> None:
+    def __init__(
+        self,
+        limits: Limits = LIMITS,
+        clock: Callable[[], float] = time.monotonic,
+        wall_clock: Callable[[], float] = time.time,
+    ) -> None:
         self.limits = limits
         self.clock = clock
+        self.wall_clock = wall_clock
         self.busy = False
         self.granted: list[float] = []
+        self.day = int(self.wall_clock() // 86400)
+        self.granted_today = 0
 
     def admit(self) -> str | None:
         """Take the slot and return None, or return the reason for refusing."""
@@ -66,8 +76,15 @@ class Admission:
         self.granted = [stamp for stamp in self.granted if now - stamp < self.limits.window_seconds]
         if len(self.granted) >= self.limits.answers_per_window:
             return 'Limit reached; try again in a minute'
+        day = int(self.wall_clock() // 86400)
+        if day != self.day:
+            self.day = day
+            self.granted_today = 0
+        if self.granted_today >= self.limits.answers_per_day:
+            return 'Daily limit reached; try again tomorrow'
         self.busy = True
         self.granted.append(now)
+        self.granted_today += 1
         return None
 
     def release(self) -> None:
@@ -161,6 +178,15 @@ async def stream_answer(question: str, settings: ChatSettings) -> AsyncGenerator
 
 
 def create_router(limits: Limits = LIMITS, admission: Admission | None = None) -> APIRouter:
+    daily_limit = os.environ.get('MAX_ANSWERS_PER_DAY')
+    if daily_limit is not None:
+        try:
+            answers_per_day = int(daily_limit)
+            if not 1 <= answers_per_day <= 100000:
+                raise ValueError
+        except ValueError:
+            raise SettingsError('MAX_ANSWERS_PER_DAY must be an integer in the allowed range') from None
+        limits = replace(limits, answers_per_day=answers_per_day)
     router = APIRouter()
     gate = Admission(limits) if admission is None else admission
 

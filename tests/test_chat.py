@@ -68,6 +68,40 @@ class ChatContract(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {'configured': False})
 
+    def test_max_answers_per_day_is_read_from_the_environment(self):
+        from backend.chat import create_router
+        from backend.settings import SettingsError
+
+        headers = self.configured()
+
+        async def inference(question, settings):
+            yield {'event': 'done', 'data': {'tool_calls': 0}}
+
+        for limit in (1, 3):
+            with (
+                self.subTest(limit=limit),
+                patch.dict('os.environ', {'MAX_ANSWERS_PER_DAY': str(limit)}),
+                patch('backend.chat.stream_answer', inference),
+                TestClient(create_app(allowed_hosts=['testserver'])) as client,
+            ):
+                for _ in range(limit):
+                    self.assertEqual(
+                        client.post('/api/chat', headers=headers, json={'question': 'Summary'}).status_code, 200
+                    )
+                response = client.post('/api/chat', headers=headers, json={'question': 'Summary'})
+                self.assertEqual(response.status_code, 429)
+                self.assertEqual(response.json(), {'detail': 'Daily limit reached; try again tomorrow'})
+
+        with patch.dict('os.environ', {'MAX_ANSWERS_PER_DAY': '100000'}, clear=True):
+            create_router()  # The upper bound is valid and startup needs no credentials.
+        for value in ('not-an-integer', '0', '-1', '100001', '1.5', ''):
+            with self.subTest(value=value), patch.dict('os.environ', {'MAX_ANSWERS_PER_DAY': value}, clear=True):
+                with self.assertRaises(SettingsError) as raised:
+                    create_router()
+                self.assertIn('MAX_ANSWERS_PER_DAY', str(raised.exception))
+                if value:
+                    self.assertNotIn(value, str(raised.exception))
+
     def configured(self):
         temp = tempfile.TemporaryDirectory()
         self.addCleanup(temp.cleanup)
@@ -321,6 +355,32 @@ class ChatContract(unittest.TestCase):
 
 
 class AdmissionBudget(unittest.TestCase):
+    def test_daily_budget_refuses_after_the_limit_and_resets_at_utc_midnight(self):
+        from backend.chat import Admission, Limits
+
+        self.assertEqual(getattr(Limits(), 'answers_per_day', None), 200)
+        clock = [1000.0]
+        wall_clock = [86400.0 - 300]
+        admission = Admission(
+            Limits(answers_per_window=1, answers_per_day=3),
+            clock=lambda: clock[0],
+            wall_clock=lambda: wall_clock[0],
+        )
+        for _ in range(3):
+            self.assertIsNone(admission.admit())
+            self.assertEqual(admission.admit(), 'Another answer is running; try again shortly')
+            admission.release()
+            self.assertEqual(admission.admit(), 'Limit reached; try again in a minute')
+            clock[0] += 61
+            wall_clock[0] += 61
+        self.assertEqual(admission.admit(), 'Daily limit reached; try again tomorrow')
+        self.assertFalse(admission.busy)
+        wall_clock[0] = 86400.0 - 0.001
+        self.assertEqual(admission.admit(), 'Daily limit reached; try again tomorrow')
+        wall_clock[0] = 86400.0
+        self.assertIsNone(admission.admit())
+        admission.release()
+
     def test_one_answer_at_a_time_and_a_per_window_budget(self):
         from backend.chat import Admission, Limits
 
