@@ -32,8 +32,15 @@ BEDROCK_SETTINGS = replace(
 )
 
 
+class FakeBlock(SimpleNamespace):
+    """An SDK content block: attributes plus pydantic's model_dump."""
+
+    def model_dump(self, *, exclude_none: bool = False):
+        return {key: value for key, value in vars(self).items() if not (exclude_none and value is None)}
+
+
 def block(**fields):
-    return SimpleNamespace(**fields)
+    return FakeBlock(**fields)
 
 
 class FakeStream:
@@ -163,6 +170,33 @@ class ModelClientContract(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(seen['stream']['tool_choice'], {'type': 'auto'})
         self.assertEqual(seen['stream']['tools'][0]['name'], 'list_open_issues')
         self.assertEqual(seen['client']['api_key'], 'sk-ant-' + 'k' * 40)
+
+    async def test_stream_turn_keeps_the_content_blocks_for_replay(self):
+        final = block(
+            stop_reason='tool_use',
+            content=[
+                block(type='thinking', thinking='', signature='sig-1'),
+                block(type='text', text='Checking.', citations=None),
+                block(type='tool_use', id='toolu_1', name='count_issues', input={'group_by': 'status'}, caller=None),
+            ],
+        )
+        factory, _ = fake_sdk(FakeStream([], final))
+        client = AnthropicClient(api_key='sk-ant-' + 'k' * 40, model='claude-sonnet-5-5', client_factory=factory)
+        turn = await client.stream_turn(
+            system='sys',
+            messages=[{'role': 'user', 'content': 'q'}],
+            tools=[],
+            tool_choice=None,
+            on_text=lambda _: None,
+        )
+        self.assertEqual(
+            turn.content,
+            [
+                {'type': 'thinking', 'thinking': '', 'signature': 'sig-1'},
+                {'type': 'text', 'text': 'Checking.'},
+                {'type': 'tool_use', 'id': 'toolu_1', 'name': 'count_issues', 'input': {'group_by': 'status'}},
+            ],
+        )
 
     async def test_system_and_tools_are_marked_for_caching(self):
         definitions = [

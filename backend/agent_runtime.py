@@ -62,6 +62,9 @@ class AnswerLimitExceeded(RuntimeError):
 
 
 def assistant_blocks(turn: Turn) -> list[dict[str, Any]]:
+    """The assistant turn to send back: the model's own blocks when kept, else text and tool calls."""
+    if turn.content:
+        return list(turn.content)
     blocks: list[dict[str, Any]] = []
     if turn.text:
         blocks.append({'type': 'text', 'text': turn.text})

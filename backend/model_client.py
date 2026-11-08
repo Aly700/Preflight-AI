@@ -37,6 +37,9 @@ class Turn:
     tool_calls: list[ToolCall] = field(default_factory=list)
     stop_reason: str = 'end_turn'
     usage: dict[str, int] = field(default_factory=dict)
+    # The assistant content as the model returned it, replayed unchanged on the next request:
+    # models that think return thinking blocks that must come back with their signatures.
+    content: list[dict[str, Any]] = field(default_factory=list)
 
 
 class ModelClient(Protocol):
@@ -134,6 +137,7 @@ class AnthropicClient:
             tool_calls=calls,
             stop_reason=str(final.stop_reason or 'end_turn'),
             usage={key: int(getattr(usage, key, None) or 0) for key in USAGE_KEYS},
+            content=[item.model_dump(exclude_none=True) for item in final.content],
         )
 
 

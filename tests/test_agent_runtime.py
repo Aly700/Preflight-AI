@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 from test_mcp import FixtureRepository
 
-from backend.agent_runtime import ANSWER_CHARS, SYSTEM, claims_prompt, stream_answer
+from backend.agent_runtime import ANSWER_CHARS, SYSTEM, assistant_blocks, claims_prompt, stream_answer
 from backend.mcp_tools import ToolResult, ToolSpec
 from backend.model_client import ModelError, ToolCall, Turn
 from backend.settings import ChatSettings
@@ -142,6 +142,24 @@ class NativePrompts(unittest.TestCase):
         prompt = claims_prompt([])
         self.assertIn('distinct task IDs in a history', prompt)
         self.assertIn('derived count with distinct', prompt)
+
+    def test_assistant_turn_replays_the_model_content_unchanged(self):
+        content: list[dict[str, Any]] = [
+            {'type': 'thinking', 'thinking': '', 'signature': 'sig-1'},
+            {'type': 'tool_use', 'id': 'toolu_1', 'name': 'count_issues', 'input': {}},
+        ]
+        turn = Turn(text='', tool_calls=[ToolCall('toolu_1', 'count_issues', {})], content=content)
+        self.assertEqual(assistant_blocks(turn), content)
+
+    def test_assistant_turn_is_rebuilt_when_no_content_was_kept(self):
+        turn = Turn(text='Hi', tool_calls=[ToolCall('toolu_1', 'count_issues', {'a': 1})])
+        self.assertEqual(
+            assistant_blocks(turn),
+            [
+                {'type': 'text', 'text': 'Hi'},
+                {'type': 'tool_use', 'id': 'toolu_1', 'name': 'count_issues', 'input': {'a': 1}},
+            ],
+        )
 
     def test_claims_prompt_explains_present_filters(self):
         prompt = claims_prompt([])
