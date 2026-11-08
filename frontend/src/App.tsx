@@ -6,6 +6,7 @@ import {MarkdownTextPrimitive} from '@assistant-ui/react-markdown';
 import {ArrowUp,ArrowDown,Check,ChevronDown,Copy,Database,History,
   Plane,RotateCcw,ShieldCheck,Square} from 'lucide-react';
 import {createAdapter,type AnswerMetadata} from './adapter';
+import {remarkPlugins} from './markdown.mjs';
 
 const suggestions = [
   {icon:Plane,title:'Get the aircraft picture',detail:'Issues, progress, and work remaining',question:'Summarize DEMO-AIR-0001, including issue and task counts.'},
@@ -65,4 +66,4 @@ function AssistantMessage(){
   </div></MessagePrimitive.Root>;
 }
 
-function MarkdownText(){return <MarkdownTextPrimitive/>;}
+function MarkdownText(){return <MarkdownTextPrimitive remarkPlugins={remarkPlugins}/>;}
