@@ -1,0 +1,9 @@
+# CI only: reuse the API image layers between runs through the GitHub Actions cache, so the
+# Copilot runtime is downloaded from GitHub releases only when its layer changes.
+services:
+  preflight-oss-api:
+    build:
+      cache_from:
+        - type=gha,scope=compose-api
+      cache_to:
+        - type=gha,mode=max,scope=compose-api

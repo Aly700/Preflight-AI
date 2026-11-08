@@ -1,8 +1,5 @@
-# Continuous-integration plan for the open-source workspace.
-#
-# This file is part of the code-quality increment but has not run anywhere yet:
-# the repository has no remote. It mirrors docs/SETUP.md exactly so that the
-# first remote run checks the same things a contributor checks locally.
+# Continuous integration for the open-source workspace. It mirrors docs/SETUP.md so that
+# CI checks the same things a contributor checks locally.
 name: ci
 
 on:
@@ -66,8 +63,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      # Exposes the cache token to the shell so Compose can use the GitHub Actions cache.
+      - uses: crazy-max/ghaction-github-runtime@v3
       - run: python3 -B scripts/init_secrets.py
-      - run: docker compose build
+      - run: docker compose -f compose.yaml -f .github/compose.ci.yaml build
       - run: docker compose up -d --wait --wait-timeout 180
       - run: python3 -B scripts/load_postgres.py --container preflight-oss-postgres --database preflight_oss
       - run: python3 -B scripts/compose_check.py --output compose-check.json
@@ -88,11 +88,20 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        platform: [linux/amd64, linux/arm64]
+        arch: [amd64, arm64]
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
-      - run: docker build --platform ${{ matrix.platform }} -f backend/Dockerfile .
-      - run: docker build --platform ${{ matrix.platform }} -f mcp_service/Dockerfile .
-      - run: docker build --platform ${{ matrix.platform }} frontend
+      # The API image layers are cached between runs, so the Copilot runtime download from
+      # GitHub releases only runs when its layer changes.
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: backend/Dockerfile
+          platforms: linux/${{ matrix.arch }}
+          push: false
+          cache-from: type=gha,scope=backend-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=backend-${{ matrix.arch }}
+      - run: docker build --platform linux/${{ matrix.arch }} -f mcp_service/Dockerfile .
+      - run: docker build --platform linux/${{ matrix.arch }} frontend
