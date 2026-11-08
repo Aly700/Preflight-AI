@@ -126,14 +126,15 @@ class EvalRunner(unittest.TestCase):
     def test_shipped_heldout_file_is_valid(self):
         version, cases = evaluation.load_cases(ROOT / 'evals/heldout.json')
         _, tuning_cases = evaluation.load_cases(ROOT / 'evals/questions.json')
-        tuning_questions = {case['question'] for case in tuning_cases}
-        self.assertEqual(version, 'heldout-2026-11-08.1')
+        _, seen_cases = evaluation.load_cases(ROOT / 'evals/seen/heldout-2026-11-08.1.json')
+        earlier_questions = {' '.join(case['question'].casefold().split()) for case in [*tuning_cases, *seen_cases]}
+        self.assertEqual(version, 'heldout-2026-11-08.2')
         self.assertEqual(len(cases), 22)
         self.assertEqual(Counter(case['category'] for case in cases), CATEGORIES)
         self.assertEqual(len({case['question'] for case in cases}), 22)
         for case in cases:
             with self.subTest(case=case['id']):
-                self.assertNotIn(case['question'], tuning_questions)
+                self.assertNotIn(' '.join(case['question'].casefold().split()), earlier_questions)
                 expect = case['expect']
                 self.assertIn('tools_any', expect)
                 self.assertEqual(expect['max_tool_calls'], expect['min_tool_calls'] + 2)
@@ -146,8 +147,16 @@ class EvalRunner(unittest.TestCase):
                     self.assertTrue(expect.get('required'))
                     if case['category'] == 'missing records':
                         self.assertIs(expect['verified'], False)
+                        self.assertEqual(expect['tools_any'], [])
+                        self.assertGreaterEqual(expect['min_tool_calls'], 1)
                     else:
                         self.assertIsNone(expect['verified'])
+
+    def test_seen_heldout_file_is_valid(self):
+        version, cases = evaluation.load_cases(ROOT / 'evals/seen/heldout-2026-11-08.1.json')
+        self.assertEqual(version, 'heldout-2026-11-08.1')
+        self.assertEqual(len(cases), 22)
+        self.assertEqual(Counter(case['category'] for case in cases), CATEGORIES)
 
     def test_shipped_question_file_is_valid(self):
         version, cases = evaluation.load_cases(ROOT / 'evals/questions.json')

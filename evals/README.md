@@ -6,4 +6,4 @@ In v2 (`2026-11-07.2`), the call budget (`max_tool_calls`) is a runaway guard; e
 
 In v3 (`2026-11-07.3`), v1 lookahead patterns that contradicted the v2 decline checks are removed.
 
-`heldout.json` (`heldout-2026-11-08.1`) is a held-out set of 22 new questions with the same categories. It is never used for tuning, so its score is the honest one. Run it with `--questions evals/heldout.json`. It has no team questions because no tool exposes team assignments.
+`heldout.json` is now `heldout-2026-11-08.2`, with 22 new questions written without seeing model outputs, the prompt, or the verifier. The earlier held-out set informed changes and is retained as a seen set in `evals/seen/heldout-2026-11-08.1.json`. Run the new set with `--questions evals/heldout.json`; it has no team questions because no tool exposes team assignments.
