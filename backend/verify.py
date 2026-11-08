@@ -1,6 +1,7 @@
 """The claims contract: the `final_answer` tool the model calls last, and the check of what it declares."""
 
 from dataclasses import dataclass, field
+from decimal import Decimal, InvalidOperation
 import re
 from typing import Any
 
@@ -67,6 +68,13 @@ FINAL_ANSWER_TOOL: dict[str, Any] = {
                                     },
                                     'required': ['field', 'equals'],
                                 },
+                                'distinct': {
+                                    'type': 'string',
+                                    'description': (
+                                        'For count only: count distinct non-null values of this field after where; '
+                                        'dotted fields are allowed and strings ignore case.'
+                                    ),
+                                },
                             },
                             'required': ['op', 'operands'],
                         },
@@ -112,7 +120,8 @@ DATE = re.compile(r'\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2})?(?:\.\d+)?(?:Z
 TIME = re.compile(r'\b\d{1,2}:\d{2}(?::\d{2})?\b')
 THOUSANDS = re.compile(r'\b\d{1,3}(?:,\d{3})+\b')
 INTEGER = re.compile(r'(?<![\w.-])\d{1,9}(?![\w.-])')
-PATH_PART = re.compile(r'\[(\d+)\]|([^.\[\]]+)')
+PATH_PART = re.compile(r'\[([^\[\]]+)\]|([^.\[\]]+)')
+SELECTOR = re.compile(r"""\s*\??\s*([^\s=.\[\]]+(?:\.[^\s=.\[\]]+)*)\s*==?\s*(?:'([^']*)'|"([^"]*)"|([^'"]+?))\s*""")
 
 
 def scan_prose(prose: str) -> tuple[set[str], list[str]]:
@@ -124,13 +133,54 @@ def scan_prose(prose: str) -> tuple[set[str], list[str]]:
     return prose_ids, [token for token in integers if not (len(token) == 4 and 1900 <= int(token) <= 2100)]
 
 
+def field_value(value: Any, path: str) -> Any:
+    """Read a dotted object field, returning None when it is absent."""
+    for key in path.split('.'):
+        if not isinstance(value, dict):
+            return None
+        value = value.get(key)
+    return value
+
+
+def selector_matches(value: Any, expected: str) -> bool:
+    """Match a selector literal without confusing booleans with numbers."""
+    folded = expected.casefold()
+    if folded in ('true', 'false'):
+        return isinstance(value, bool) and value == (folded == 'true')
+    if isinstance(value, str):
+        return value.casefold() == folded
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return False
+    try:
+        return Decimal(str(value)) == Decimal(expected)
+    except InvalidOperation:
+        return False
+
+
 def resolve_path(payload: Any, path: str) -> Any:
-    """Follow dotted keys and [n] indexes, with a final .length for lists; LookupError when absent."""
+    """Follow keys, indexes and unique [field=value] selectors, with a final list .length."""
     value = payload
     length_suffix = path.endswith('.length')
     try:
-        for index, key in PATH_PART.findall(path.removesuffix('.length') if length_suffix else path):
-            value = value[int(index)] if index else value[key]
+        for segment, key in PATH_PART.findall(path.removesuffix('.length') if length_suffix else path):
+            if not segment:
+                value = value[key]
+            elif segment.isdecimal():
+                value = value[int(segment)]
+            else:
+                selector = SELECTOR.fullmatch(segment)
+                if not isinstance(value, list) or selector is None:
+                    raise LookupError(path)
+                field_path = selector.group(1)
+                expected = next(part for part in selector.groups()[1:] if part is not None)
+                matches = [
+                    item
+                    for item in value
+                    if isinstance(item, dict) and selector_matches(field_value(item, field_path), expected)
+                ]
+                if len(matches) != 1:
+                    raise LookupError(path)
+                value = matches[0]
     except KeyError, IndexError, TypeError:
         raise LookupError(path) from None
     if length_suffix:
@@ -209,6 +259,12 @@ def derived_value(derived: Any, results: dict[str, dict[str, Any]], names: dict[
             or not isinstance(where.get('equals'), (str, int, float, bool))
         ):
             return 'the count filter is malformed'
+    distinct = derived.get('distinct')
+    if 'distinct' in derived:
+        if op != 'count':
+            return 'distinct is only allowed for count'
+        if not isinstance(distinct, str) or not distinct.strip():
+            return 'distinct must be a non-empty string'
     numeric: list[float] = []
     for operand in operands:
         if not isinstance(operand, dict):
@@ -228,11 +284,23 @@ def derived_value(derived: Any, results: dict[str, dict[str, Any]], names: dict[
         if op == 'count':
             if not isinstance(actual, list):
                 return f'the value at {short(path)!r} is not a list'
-            if where is None:
-                return len(actual)
-            return sum(
-                isinstance(item, dict) and field_matches(item.get(where['field']), where['equals']) for item in actual
+            items = (
+                actual
+                if where is None
+                else [
+                    item
+                    for item in actual
+                    if isinstance(item, dict) and field_matches(item.get(where['field']), where['equals'])
+                ]
             )
+            if distinct is None:
+                return len(items)
+            unique: list[Any] = []
+            for item in items:
+                value = field_value(item, distinct)
+                if value is not None and not any(field_matches(value, seen) for seen in unique):
+                    unique.append(value)
+            return len(unique)
         if isinstance(actual, bool) or not isinstance(actual, (int, float)):
             return f'the value at {short(path)!r} is not a number'
         numeric.append(actual)

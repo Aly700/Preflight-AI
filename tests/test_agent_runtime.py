@@ -132,6 +132,20 @@ async def collect(model, tools, question='Summary', settings=SETTINGS):
 
 
 class NativePrompts(unittest.TestCase):
+    def test_claims_prompt_names_items_by_field_value(self):
+        prompt = claims_prompt([])
+        self.assertIn('Name list items by a field value instead of a position', prompt)
+        self.assertIn('groups[key=cabin].count', prompt)
+        self.assertIn('ranked_by_unresolved[aircraft_id=DEMO-AIR-0001].unresolved_issue_count', prompt)
+
+    def test_claims_prompt_explains_distinct_counts(self):
+        prompt = claims_prompt([])
+        self.assertIn('distinct task IDs in a history', prompt)
+        self.assertIn('derived count with distinct', prompt)
+
+    def test_claims_prompt_excludes_ratios_and_percentages(self):
+        self.assertIn('Do not declare ratios or percentages.', claims_prompt([]))
+
     def test_claims_prompt_distinguishes_direct_paths_from_count_operands(self):
         prompt = claims_prompt([])
         self.assertIn('Each direct path must point at a numeric field', prompt)

@@ -54,6 +54,12 @@ class DerivedClaimVerification(unittest.TestCase):
         self.assertEqual(where['required'], ['field', 'equals'])
         self.assertEqual(where['properties']['field']['type'], 'string')
         self.assertEqual(where['properties']['equals']['type'], ['string', 'number', 'boolean'])
+        self.assertIn('distinct', derived['properties'])
+        distinct = derived['properties']['distinct']
+        self.assertEqual(distinct['type'], 'string')
+        self.assertIn('non-null', distinct['description'])
+        self.assertIn('dotted', distinct['description'])
+        self.assertNotIn('distinct', derived['required'])
         for description in (item['description'], FINAL_ANSWER_TOOL['description']):
             self.assertIn('call_id and path', description)
             self.assertIn('derived', description)
@@ -62,6 +68,15 @@ class DerivedClaimVerification(unittest.TestCase):
         result = self.check(computed(28, 'difference', [operand(), operand(path='groups[0].count')]))
         self.assertTrue(result.verified, result.note)
         self.assertEqual(result.note, '')
+
+    def test_difference_operands_select_groups_by_field_value(self):
+        result = self.check(
+            computed(
+                23, 'difference', [operand(path='groups[key=cabin].count'), operand(path='groups[key=other].count')]
+            ),
+            results={'t1': {'groups': [{'key': 'other', 'count': 2}, {'key': 'Cabin', 'count': 25}]}},
+        )
+        self.assertTrue(result.verified, result.note)
 
     def test_difference_accepts_signed_value_or_gap_in_either_order(self):
         results = {'a': {'total': 13}, 'b': {'total': 14}}
@@ -123,6 +138,90 @@ class DerivedClaimVerification(unittest.TestCase):
                     results={'t1': {'items': items}},
                 )
                 self.assertTrue(result.verified, result.note)
+
+    def test_count_distinct_ignores_case_nulls_and_missing_fields(self):
+        items = [
+            {'task_id': 'TASK-0001'},
+            {'task_id': 'task-0001'},
+            {'task_id': 'TASK-0002'},
+            {'task_id': 'Straße'},
+            {'task_id': 'STRASSE'},
+            {'task_id': None},
+            {},
+            'TASK-0003',
+            None,
+        ]
+        for values, expected in ((items, 3), ([], 0), ([{'task_id': None}, {}], 0)):
+            with self.subTest(items=values):
+                result = self.check(
+                    computed(expected, 'count', [operand(path='items')], distinct='task_id'),
+                    results={'t1': {'items': values}},
+                )
+                self.assertTrue(result.verified, result.note)
+
+    def test_count_distinct_applies_where_before_counting(self):
+        result = self.check(
+            computed(
+                2, 'count', [operand(path='items')], distinct='task_id', where={'field': 'status', 'equals': 'OPEN'}
+            ),
+            results={
+                't1': {
+                    'items': [
+                        {'task_id': 'TASK-0001', 'status': 'closed'},
+                        {'task_id': 'task-0001', 'status': 'open'},
+                        {'task_id': 'TASK-0001', 'status': 'Open'},
+                        {'task_id': 'TASK-0002', 'status': 'open'},
+                        {'task_id': 'TASK-0003', 'status': 'closed'},
+                        {'task_id': None, 'status': 'open'},
+                        {'status': 'open'},
+                    ]
+                }
+            },
+        )
+        self.assertTrue(result.verified, result.note)
+
+    def test_count_distinct_reads_dotted_fields(self):
+        result = self.check(
+            computed(1, 'count', [operand(path='items')], distinct='task.task_id'),
+            results={
+                't1': {
+                    'items': [
+                        {'task': {'task_id': 'TASK-0001'}},
+                        {'task': {'task_id': 'task-0001'}},
+                        {'task': {'task_id': None}},
+                        {'task': None},
+                        {'task': {}},
+                        {},
+                    ]
+                }
+            },
+        )
+        self.assertTrue(result.verified, result.note)
+
+    def test_distinct_is_only_allowed_for_count(self):
+        for op, value in (('sum', 60), ('difference', 0)):
+            with self.subTest(op=op):
+                result = self.check(computed(value, op, [operand()] * 2, distinct='task_id'))
+                self.assertFalse(result.verified)
+                self.assertEqual(
+                    result.note,
+                    f'Unverified: Unresolved structures issues ({value}): distinct is only allowed for count',
+                )
+
+    def test_count_distinct_requires_non_empty_string(self):
+        title = 'PRIVATE_DISTINCT_RECORD_TITLE'
+        invalid_distinct: list[Any] = [None, 1, False, [], [title], {}, '', ' \t ']
+        for distinct in invalid_distinct:
+            with self.subTest(distinct=distinct):
+                result = self.check(
+                    computed(1, 'count', [operand(path='items')], distinct=distinct),
+                    results={'t1': {'items': [{'title': title}]}},
+                )
+                self.assertFalse(result.verified)
+                self.assertNotIn(title, result.note)
+                self.assertEqual(
+                    result.note, 'Unverified: Unresolved structures issues (1): distinct must be a non-empty string'
+                )
 
     def test_count_mismatch_reports_computed_value(self):
         result = self.check(
@@ -331,6 +430,153 @@ class ClaimVerification(unittest.TestCase):
             resolve_path(RESULTS['t1'], 'items[3].issue_id')
         with self.assertRaises(LookupError):
             resolve_path(RESULTS['t1'], 'totals')
+
+    def test_selector_example_paths_resolve_and_verify_numeric_claims(self):
+        payload = {
+            'groups': [{'key': 'avionics', 'count': 30}, {'key': 'Cabin', 'count': 25}],
+            'ranked_by_unresolved': [
+                {'aircraft_id': 'DEMO-AIR-0001', 'unresolved_issue_count': 7},
+                {'aircraft_id': 'DEMO-AIR-0012', 'unresolved_issue_count': 12},
+            ],
+        }
+        for path, expected in (
+            ('groups[key=cabin].count', 25),
+            ("groups[?key=='Cabin'].count", 25),
+            ('ranked_by_unresolved[aircraft_id=DEMO-AIR-0012].unresolved_issue_count', 12),
+        ):
+            with self.subTest(path=path):
+                self.assertEqual(resolve_path(payload, path), expected)
+                result = verify_claims(
+                    prose='',
+                    claims={'cited_ids': [], 'numbers': [number(expected, path)]},
+                    results={'t1': payload},
+                    seen_ids=set(),
+                )
+                self.assertTrue(result.verified, result.note)
+
+    def test_selector_accepts_quotes_question_mark_equality_and_spaces(self):
+        payload = {'groups': [{'key': 'Cabin', 'count': 25}]}
+        for selector in (
+            'key=cabin',
+            "key='cabin'",
+            'key="cabin"',
+            '?key==cabin',
+            "?key=='Cabin'",
+            '?key=="Cabin"',
+            ' key = cabin ',
+            ' key = "Cabin" ',
+            " ? key == 'Cabin' ",
+            ' ? key == cabin ',
+        ):
+            with self.subTest(selector=selector):
+                self.assertEqual(resolve_path(payload, f'groups[{selector}].count'), 25)
+
+    def test_selector_requires_exactly_one_object_match_without_leaking_text(self):
+        title = 'PRIVATE_SELECTOR_RECORD_TITLE'
+        path = 'items[key=cabin].count'
+        for matches in range(3):
+            with self.subTest(matches=matches):
+                payload = {
+                    'items': [{'key': 'other', 'count': 9, 'title': title}, 'cabin', None]
+                    + [{'key': 'Cabin', 'count': 25, 'title': title} for _ in range(matches)]
+                }
+                result = verify_claims(
+                    prose='',
+                    claims={'cited_ids': [], 'numbers': [number(25, path)]},
+                    results={'t1': payload},
+                    seen_ids=set(),
+                )
+                self.assertNotIn(title, result.note)
+                if matches == 1:
+                    self.assertEqual(resolve_path(payload, path), 25)
+                    self.assertTrue(result.verified, result.note)
+                else:
+                    with self.assertRaises(LookupError):
+                        resolve_path(payload, path)
+                    self.assertFalse(result.verified)
+                    self.assertIn(f'has no value at {path!r}', result.note)
+        with self.assertRaises(LookupError):
+            resolve_path({'items': {'key=cabin': {'count': 25}}}, path)
+
+    def test_selector_numeric_values_parse_as_numbers_without_boolean_coercion(self):
+        for actual, matching, missing in (
+            (2, ('2', '2.0', '2e0'), ('two', 'true', 'false', '2.5')),
+            (-1.5, ('-1.5', '-1.50'), ('-1', 'true')),
+            (1, ('1', '1.0'), ('true', 'false')),
+            (0, ('0', '0.0'), ('false', 'true')),
+            (9007199254740993, ('9007199254740993',), ('9007199254740992',)),
+        ):
+            payload = {'items': [{'value': actual, 'count': 7}]}
+            for selector in (*matching, *missing):
+                with self.subTest(actual=actual, selector=selector):
+                    path = f'items[value={selector}].count'
+                    if selector in matching:
+                        self.assertEqual(resolve_path(payload, path), 7)
+                    else:
+                        with self.assertRaises(LookupError):
+                            resolve_path(payload, path)
+
+    def test_selector_booleans_only_match_true_or_false(self):
+        payload = {
+            'items': [
+                {'flag': True, 'count': 7},
+                {'flag': False, 'count': 3},
+                {'flag': 1},
+                {'flag': 0},
+                {'flag': 'true'},
+                {'flag': 'false'},
+            ]
+        }
+        for selector, expected in (('true', 7), ('TRUE', 7), ('false', 3), ('False', 3)):
+            with self.subTest(selector=selector):
+                self.assertEqual(resolve_path(payload, f'items[flag={selector}].count'), expected)
+        for flag in (True, False):
+            for selector in ('1', '0', 'yes', 'no'):
+                with self.subTest(flag=flag, selector=selector), self.assertRaises(LookupError):
+                    resolve_path({'items': [{'flag': flag}]}, f'items[flag={selector}]')
+
+    def test_selector_nested_fields_and_list_length(self):
+        payload = {
+            'summaries': [
+                {'aircraft': {'aircraft_id': 'DEMO-AIR-0002'}, 'unresolved_issue_count': 9},
+                {
+                    'aircraft': {'aircraft_id': 'DEMO-AIR-0001'},
+                    'unresolved_issue_count': 4,
+                    'task_status_counts': {'completed': 3},
+                    'tasks': [{'task_id': 'TASK-0001'}, {'task_id': 'TASK-0002'}],
+                },
+                {'aircraft': None},
+                {},
+                'DEMO-AIR-0001',
+            ]
+        }
+        prefix = 'summaries[aircraft.aircraft_id=DEMO-AIR-0001]'
+        for suffix, expected in (
+            ('.unresolved_issue_count', 4),
+            ('.task_status_counts.completed', 3),
+            ('.tasks.length', 2),
+            ('.tasks[1].task_id', 'TASK-0002'),
+        ):
+            with self.subTest(suffix=suffix):
+                self.assertEqual(resolve_path(payload, prefix + suffix), expected)
+
+    def test_selector_non_numeric_field_is_unverified_without_record_text(self):
+        title = 'PRIVATE_SELECTOR_NON_NUMERIC_TITLE'
+        payload = {'items': [{'issue_id': 'ISSUE-0005', 'priority': 'high', 'title': title}]}
+        path = 'items[issue_id=ISSUE-0005].priority'
+        self.assertEqual(resolve_path(payload, path), 'high')
+        for field in ('priority', 'title'):
+            with self.subTest(field=field):
+                result = verify_claims(
+                    prose='',
+                    claims={'cited_ids': [], 'numbers': [number(5, f'items[issue_id=ISSUE-0005].{field}')]},
+                    results={'t1': payload},
+                    seen_ids=set(),
+                )
+                self.assertFalse(result.verified)
+                self.assertIn('is not a number', result.note)
+                self.assertNotIn(title, result.note)
+                self.assertNotIn('high', result.note)
 
     def test_length_suffix_resolves_list_size(self):
         self.assertEqual(resolve_path(RESULTS['t1'], 'items.length'), 1)
