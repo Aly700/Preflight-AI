@@ -60,13 +60,13 @@ of answers by itself.
    aggregates, timelines, follow-ups, pagination, missing records, ambiguity and
    out-of-scope requests, scored against SQL at run time. First comparison on the same
    model: the native runtime 21/22 and the Copilot runtime 19/22 on shared checks; the
-   native runtime also verifies claims (18/22 strict) and is slower
-   (median 6.7 s against 3.7 s). After fixes the evaluation pointed to, the native
-   runtime passes 22/22 strict at a median of 6.2 s; these cases now count as tuning
-   cases. A held-out set of 22 new questions, not used for tuning, gives the honest
-   score: in two runs on Sonnet 4.6 all 22 answers had the correct records and numbers,
-   and 18 and 16 of 22 passed every strict check. The misses were tool choice, extra
-   calls and claims attached to the wrong field, and they moved between runs.
+   native runtime also verifies claims (18/22 strict) and is slower (median 6.7 s
+   against 3.7 s). After fixes the evaluation pointed to, the native runtime passes
+   22/22 strict at a median of 6.2 s; these cases now count as tuning cases. A
+   held-out set of 22 new questions gave the first blind score: in two runs on Sonnet
+   4.6 all 22 answers contained the expected records and numbers, and 18 and 16 of 22
+   passed every strict check. The misses were tool choice, extra calls and claims
+   attached to the wrong field.
 
 5. **Hosted demo on this code, Claude on Bedrock.** The stack runs on a single AWS host
    behind Nginx with its own containers, data and certificate; the Cloudflare Worker
@@ -83,14 +83,26 @@ of answers by itself.
    repeats each. A tool call takes a median of 328 ms through the Gateway against 55
    ms directly, and the held-out median answer time rose from 7.6 s to 8.8 s.
 
+7. **Derived numbers and repeated runs.** A declared number can now be a sum, a
+   difference or gap, or a count of listed items, optionally only those with a given
+   field value, and `scripts/eval_summary.py` combines repeated runs. Three runs of
+   each set through the Gateway: every answer contained the expected records and
+   numbers in all six runs; strict passes were 20, 21 and 21 of 22 on the tuning set
+   and 14, 16 and 16 on the held-out set, at a median of 6.8 to 7.9 s. The strict
+   misses repeat by case: tool choices the rubric did not expect, extra lookups before
+   a decline, grouped counts declared at the wrong list position, and computed numbers
+   that need operations the verifier lacks, a distinct count and a ratio. The verifier
+   also caught one stated number that disagreed with its tool result. The held-out set
+   has now informed these changes, so the next measurement needs a fresh one.
+
 ## Next
 
-7. **Stronger structured-data answers.** A written question set drives further
+8. **Stronger structured-data answers.** A written question set drives further
    tools; the model selects tools, resolves follow-ups, asks for missing criteria and
    explains supported results within pagination and limits. Numeric claims are
    checked against tool output before an answer is complete; missing records and
    tool failures produce explicit limits, not invented facts.
-8. **Evaluation and adaptability.** A versioned benchmark of original cases
+9. **Evaluation and adaptability.** A versioned benchmark of original cases
    (lookups, comparisons, timelines, multi-step questions, follow-ups, ambiguity,
    pagination, missing evidence, tool failures, adversarial text inside records),
    tuning cases separate from held-out cases, several seeds and paraphrases, the

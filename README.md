@@ -17,7 +17,7 @@ All data is made up: 12 demo aircraft, 180 issues, 480 tasks and their history, 
 - **Model choice** with one setting: Claude or OpenAI with your own key, or GitHub Copilot.
 - **Two runtimes.** The Copilot SDK's loop, or this repository's own loop over the Anthropic API: multi-step and parallel tool calls, every result validated, and the record IDs and numbers in the answer checked against the tool results before it is marked complete.
 - **Hosted demo**: Cloudflare Workers serves the UI and forwards chat to this stack on a single AWS host. The model is Claude on Amazon Bedrock, reached through the host's IAM role, so no model key is stored anywhere. The tools go through Amazon Bedrock AgentCore Gateway, which reaches the MCP service over a private network path; the MCP service has no public listener. A daily answer cap bounds the cost.
-- **Two evaluation sets** of 22 original questions each, scored against SQL (`evals/`): a tuning set used to improve the prompt and tools, and a held-out set that was not. On Bedrock with Claude Sonnet 4.6, every held-out answer had the right records and numbers in two runs, and 18 and 16 of 22 also passed the stricter checks on tool choice, call budget and claim verification.
+- **Two evaluation sets** of 22 original questions each, scored against SQL (`evals/`): a tuning set for improving the prompt and tools, and a held-out set kept out of tuning until its first runs. On Bedrock with Claude Sonnet 4.6, every answer contained the expected records and numbers in five held-out runs and three tuning runs; between 14 and 18 of 22 held-out answers also passed the stricter checks on tool choice, call budget and claim verification. `scripts/eval_summary.py` combines repeated runs.
 - **Setup notes and the data contract** in `docs/`.
 
 ## Run it locally
@@ -53,8 +53,8 @@ These use fixtures and a fake model client. The stack check above is the real th
 
 ## Where it is going
 
-- Repeated evaluation runs to measure run-to-run variance, and checks for numbers the model derives, such as a total minus a subtotal.
-- A fictional document corpus with its own retrieval evaluation.
+- Let declared numbers name a group by its key instead of its position, and add a distinct count.
+- A fresh held-out set, since the current one has informed changes, then a fictional document corpus with its own retrieval evaluation.
 
 [Design](docs/DESIGN.md) · [Setup](docs/SETUP.md) · [Data contract](docs/DATA_CONTRACT.md)
 
