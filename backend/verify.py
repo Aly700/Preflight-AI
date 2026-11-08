@@ -76,6 +76,7 @@ class Verification:
 ID_PATTERN = re.compile(r'\b(?:DEMO-AIR|ISSUE|TASK|EVT|TEAM|PERSON|SHIFT)-[0-9]+\b')
 DATE = re.compile(r'\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2})?(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?)?')
 TIME = re.compile(r'\b\d{1,2}:\d{2}(?::\d{2})?\b')
+THOUSANDS = re.compile(r'\b\d{1,3}(?:,\d{3})+\b')
 INTEGER = re.compile(r'(?<![\w.-])\d{1,9}(?![\w.-])')
 PATH_PART = re.compile(r'\[(\d+)\]|([^.\[\]]+)')
 
@@ -84,6 +85,7 @@ def scan_prose(prose: str) -> tuple[set[str], list[str]]:
     """Return record IDs and bare integer tokens, excluding dates, times and years."""
     prose_ids = set(ID_PATTERN.findall(prose))
     stripped = TIME.sub(' ', DATE.sub(' ', ID_PATTERN.sub(' ', prose)))
+    stripped = THOUSANDS.sub(lambda match: match.group().replace(',', ''), stripped)
     integers = [match.group() for match in INTEGER.finditer(stripped)]
     return prose_ids, [token for token in integers if not (len(token) == 4 and 1900 <= int(token) <= 2100)]
 

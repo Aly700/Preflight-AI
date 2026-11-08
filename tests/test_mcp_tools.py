@@ -1,7 +1,9 @@
 """Tool discovery and calls over the real MCP HTTP app, bearer middleware included; no network."""
 
 from contextlib import asynccontextmanager, contextmanager
+from types import SimpleNamespace
 import unittest
+from unittest.mock import AsyncMock
 
 import httpx2
 from mcp import Client
@@ -89,6 +91,39 @@ class McpToolsContract(unittest.IsolatedAsyncioTestCase):
             self.assertFalse(result.ok)
             self.assertEqual(result.error, 'Tool unavailable')
 
+    async def test_transport_failure_logs_leaf_exception_types(self):
+        secret = 'upstream-secret https://private.invalid'
+        errors = (
+            (RuntimeError(secret), 'RuntimeError'),
+            (
+                ExceptionGroup(
+                    secret,
+                    [
+                        ValueError(secret),
+                        ExceptionGroup(secret, [TimeoutError(secret), ValueError(secret)]),
+                        ConnectionError(secret),
+                    ],
+                ),
+                'ConnectionError,TimeoutError,ValueError',
+            ),
+        )
+        for error, expected in errors:
+            with self.subTest(error=type(error).__name__):
+
+                @asynccontextmanager
+                async def factory(url, headers, error=error):
+                    yield SimpleNamespace(call_tool=AsyncMock(side_effect=error))
+
+                tools = McpTools(URL, TOKEN, client_factory=factory)
+                with self.assertLogs('preflight.tools', level='WARNING') as captured:
+                    result = await tools.call('c', 'get_aircraft_summary', {'aircraft_id': 'DEMO-AIR-0001'})
+                self.assertFalse(result.ok)
+                self.assertEqual(result.error, 'Tool unavailable')
+                self.assertEqual(
+                    captured.output, [f'WARNING:preflight.tools:Tool get_aircraft_summary failed: {expected}']
+                )
+                self.assertNotIn(secret, '\n'.join(captured.output))
+
     async def test_missing_record_is_reported_as_not_found(self):
         async with self.running():
             missing = await self.tools().call('c', 'get_issue_history', {'issue_id': 'ISSUE-9999'})
@@ -114,14 +149,14 @@ class McpToolsContract(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(clients), 2)
         self.assertTrue(all(http.is_closed for http in clients))
 
-    async def test_anthropic_tools_include_final_answer_last(self):
+    async def test_anthropic_tools_exclude_final_answer(self):
         async with self.running():
             specs = await self.tools().discover()
-            tools = anthropic_tools(specs)
-            self.assertEqual([t['name'] for t in tools][-1], 'final_answer')
-            self.assertEqual(len(tools), 7)
-            self.assertEqual(set(tools[0]), {'name', 'description', 'input_schema'})
-            self.assertIn('cited_ids', tools[-1]['input_schema']['properties'])
+        tools = anthropic_tools(specs)
+        self.assertNotIn('final_answer', [t['name'] for t in tools])
+        self.assertEqual([t['name'] for t in tools], [s.name for s in specs])
+        self.assertEqual(len(tools), 6)
+        self.assertEqual(set(tools[0]), {'name', 'description', 'input_schema'})
 
 
 if __name__ == '__main__':

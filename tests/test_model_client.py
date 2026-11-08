@@ -4,11 +4,12 @@ from copy import deepcopy
 from dataclasses import replace
 from types import SimpleNamespace
 import unittest
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 from anthropic import APIConnectionError, CredentialsError
 import httpx2
 
+from backend.agent_runtime import AnswerLimitExceeded
 from backend.model_client import AnthropicClient, ModelError, Turn, build_model_client
 from backend.settings import ChatSettings, SettingsError
 
@@ -77,6 +78,31 @@ def fake_sdk(stream):
 
 
 class ModelClientContract(unittest.IsolatedAsyncioTestCase):
+    async def test_callback_errors_are_not_relabelled_as_model_errors(self):
+        for error in (AnswerLimitExceeded('Answer limit exceeded'), ValueError('callback failure')):
+            with self.subTest(error=type(error).__name__):
+                stream = FakeStream([block(type='text', text='Hello')], None)
+                factory, _ = fake_sdk(stream)
+                client = AnthropicClient(api_key='k' * 40, model='m', client_factory=factory)
+
+                def on_text(_, error=error):
+                    raise error
+
+                with self.assertRaises(Exception) as caught:
+                    await client.stream_turn(system='s', messages=[], tools=[], tool_choice=None, on_text=on_text)
+                self.assertIs(caught.exception, error)
+
+    async def test_aclose_closes_sdk_client_if_present(self):
+        for has_close in (True, False):
+            with self.subTest(has_close=has_close):
+                close = AsyncMock()
+                sdk = SimpleNamespace(close=close) if has_close else SimpleNamespace()
+                client = AnthropicClient(model='m', client=sdk)
+                self.assertTrue(callable(getattr(client, 'aclose', None)))
+                await client.aclose()
+                if has_close:
+                    close.assert_awaited_once_with()
+
     async def test_stream_turn_reports_usage(self):
         usage = {
             'input_tokens': 120,

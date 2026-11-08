@@ -3,7 +3,7 @@
 This module owns transport concerns only: the credential and origin checks,
 body and history bounds, admission (one answer at a time plus per-minute
 and daily budgets) and SSE framing. The model runtime is reached through
-`stream_answer`, which imports the Copilot adapter lazily.
+`stream_answer`, which delegates to `backend.runtime`; that module loads the selected runtime lazily.
 """
 
 import asyncio

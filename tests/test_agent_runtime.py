@@ -4,6 +4,7 @@ import asyncio
 from dataclasses import replace
 from typing import Any
 import unittest
+from unittest.mock import patch
 
 from test_mcp import FixtureRepository
 
@@ -64,6 +65,10 @@ class FakeModel:
     def __init__(self, turns):
         self.turns = list(turns)
         self.calls = []
+        self.close_calls = 0
+
+    async def aclose(self):
+        self.close_calls += 1
 
     async def stream_turn(self, *, system, messages, tools, tool_choice, on_text):
         self.calls.append({'messages': [dict(m) for m in messages], 'tools': tools, 'tool_choice': tool_choice})
@@ -142,6 +147,99 @@ class NativePrompts(unittest.TestCase):
 
 
 class NativeLoop(unittest.IsolatedAsyncioTestCase):
+    async def test_unknown_tool_calls_count_against_the_budget(self):
+        model = FakeModel(
+            [
+                Turn('', [ToolCall('x', 'unknown_tool', {}), ToolCall('y', 'another_unknown', {})], 'tool_use'),
+                Turn('', [ToolCall('z', 'list_open_issues', {'limit': 1})], 'tool_use'),
+                Turn('No records available.'),
+            ]
+        )
+        tools = FakeTools()
+        events = await collect(model, tools, settings=replace(SETTINGS, max_tool_calls=2))
+        self.assertEqual(tools.calls, [])
+        reply = model.calls[2]['messages'][-1]['content'][0]
+        self.assertTrue(reply['is_error'])
+        self.assertEqual(reply['content'], 'Tool call limit reached')
+        self.assertEqual(events[-1]['data']['tool_calls'], 0)
+
+    async def test_max_tokens_stop_is_reported(self):
+        note = '\n\n(The answer was cut short at the length limit.)'
+        for stop_reason, wrap_up in (('max_tokens', False), ('max_tokens', True), ('end_turn', False)):
+            with self.subTest(stop_reason=stop_reason, wrap_up=wrap_up):
+                turns = [Turn('The answer.', stop_reason=stop_reason)]
+                if wrap_up:
+                    turns.insert(0, Turn('', [ToolCall('t1', 'list_open_issues', {'limit': 1})], 'tool_use'))
+                events = await collect(FakeModel(turns), FakeTools(), settings=replace(SETTINGS, max_tool_rounds=1))
+                deltas = [e['data']['text'] for e in events if e['event'] == 'delta']
+                truncated = stop_reason == 'max_tokens'
+                self.assertEqual(deltas.count(note), int(truncated))
+                self.assertIs(events[-1]['data'].get('truncated'), truncated)
+
+    async def test_model_client_is_closed_after_the_answer(self):
+        for outcome in ('success', 'failure', 'consumer_closed'):
+            with self.subTest(outcome=outcome):
+                error = ModelError('Model request failed: RuntimeError')
+                model = FakeModel([error if outcome == 'failure' else Turn('An answer.')])
+                with patch('backend.agent_runtime.build_model_client', return_value=model):
+                    stream = stream_answer('Summary', SETTINGS, tools=FakeTools())
+                    if outcome == 'failure':
+                        with self.assertRaises(ModelError) as caught:
+                            async for _ in stream:
+                                pass
+                        self.assertIs(caught.exception, error)
+                    elif outcome == 'consumer_closed':
+                        await stream.__anext__()
+                        await stream.aclose()
+                    else:
+                        async for _ in stream:
+                            pass
+                self.assertEqual(model.close_calls, 1)
+
+    async def test_an_injected_model_client_is_left_open_for_its_owner(self):
+        model = FakeModel([Turn('An answer.')])
+        await collect(model, FakeTools())
+        self.assertEqual(model.close_calls, 0)
+
+    async def test_parallel_calls_are_bounded_to_four(self):
+        calls = [ToolCall(f't{i}', 'list_open_issues', {'limit': 1}) for i in range(5)]
+        model = FakeModel([Turn('', calls, 'tool_use'), Turn('Done.')])
+        tools = FakeTools(barrier=5)
+        events = await collect(model, tools)
+        self.assertLessEqual(tools.max_active, 4)
+        self.assertEqual(len(tools.calls), 5)
+        self.assertEqual(events[-1]['data']['tool_calls'], 5)
+        self.assertEqual([r['tool_use_id'] for r in model.calls[1]['messages'][-1]['content']], [c.id for c in calls])
+
+    async def test_text_only_claims_round_is_unverified_when_numbers_were_stated(self):
+        model = FakeModel([Turn('There are 162 issues.'), Turn('I cannot declare the claims.')])
+        events = await collect(model, FakeTools())
+        self.assertEqual(len(model.calls), 2)
+        self.assertEqual([t['name'] for t in model.calls[-1]['tools']], ['final_answer'])
+        self.assertEqual(events[-1]['event'], 'done')
+        self.assertIs(events[-1]['data']['verified'], False)
+        self.assertEqual(events[-1]['data']['undeclared'], 1)
+        self.assertNotIn('error', [e['event'] for e in events])
+        self.assertNotIn('I cannot declare', ''.join(e['data']['text'] for e in events if e['event'] == 'delta'))
+
+    async def test_premature_final_answer_is_not_shown_as_a_tool(self):
+        model = FakeModel(
+            [
+                Turn('', [final()], 'tool_use'),
+                Turn('', [ToolCall('t1', 'list_open_issues', {'limit': 1})], 'tool_use'),
+                Turn('No records available.'),
+            ]
+        )
+        tools = FakeTools()
+        events = await collect(model, tools, settings=replace(SETTINGS, max_tool_calls=1))
+        self.assertNotIn('final_answer', [e['data']['name'] for e in events if e['event'] == 'tool'])
+        reply = model.calls[1]['messages'][-1]['content'][0]
+        self.assertEqual(
+            reply, {'type': 'tool_result', 'tool_use_id': 'final-1', 'content': 'Tool unavailable', 'is_error': True}
+        )
+        self.assertEqual(tools.calls, [])
+        self.assertEqual(model.calls[2]['messages'][-1]['content'][0]['content'], 'Tool call limit reached')
+
     async def test_done_reports_summed_usage_and_model_calls(self):
         expected = {
             'input_tokens': 90,

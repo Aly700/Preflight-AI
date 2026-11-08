@@ -42,6 +42,8 @@ class Turn:
 class ModelClient(Protocol):
     model: str
 
+    async def aclose(self) -> None: ...
+
     async def stream_turn(
         self,
         *,
@@ -76,6 +78,11 @@ class AnthropicClient:
             options['default_headers'] = {'anthropic-workspace-id': workspace_id}
         self._client = client_factory(**options)
 
+    async def aclose(self) -> None:
+        close = getattr(self._client, 'close', None)
+        if close is not None:
+            await close()
+
     async def stream_turn(
         self,
         *,
@@ -97,13 +104,20 @@ class AnthropicClient:
         }
         if tool_choice is not None:
             options['tool_choice'] = tool_choice
+        callback_error: Exception | None = None
         try:
             async with self._client.messages.stream(**options) as stream:
                 async for event in stream:
                     if getattr(event, 'type', None) == 'text':
-                        on_text(event.text)
+                        try:
+                            on_text(event.text)
+                        except Exception as error:
+                            callback_error = error
+                            raise
                 final = await stream.get_final_message()
         except Exception as error:
+            if error is callback_error:
+                raise
             # The SDK's message may carry the URL or the request; keep only the type.
             raise ModelError(f'Model request failed: {type(error).__name__}') from None
         text_parts: list[str] = []

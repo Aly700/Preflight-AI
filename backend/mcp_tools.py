@@ -20,7 +20,6 @@ import httpx2
 from mcp import Client
 from mcp.client.streamable_http import streamable_http_client
 
-from backend.verify import FINAL_ANSWER_TOOL
 from preflight_core.tools import TOOLS
 
 logger = logging.getLogger('preflight.tools')
@@ -68,12 +67,15 @@ def default_client_factory(timeout: float) -> ClientFactory:
 
 
 def anthropic_tools(specs: list[ToolSpec]) -> list[dict[str, Any]]:
-    """Tool definitions for the Messages API: the discovered tools, then `final_answer` last."""
-    tools: list[dict[str, Any]] = [
-        {'name': spec.name, 'description': spec.description, 'input_schema': spec.input_schema} for spec in specs
-    ]
-    tools.append(FINAL_ANSWER_TOOL)
-    return tools
+    """The discovered tool definitions for answer turns through the Messages API."""
+    return [{'name': spec.name, 'description': spec.description, 'input_schema': spec.input_schema} for spec in specs]
+
+
+def leaf_exception_types(error: BaseException) -> set[str]:
+    """Only exception type names are safe to log; transport messages may contain credentials."""
+    if isinstance(error, BaseExceptionGroup):
+        return {name for child in error.exceptions for name in leaf_exception_types(child)}
+    return {type(error).__name__}
 
 
 class McpTools:
@@ -123,6 +125,6 @@ class McpTools:
             validated = contract.result.model_validate(payload).model_dump(mode='json')
         except Exception as error:
             # Transport, authentication, timeout, tool and validation failures all look the same to the model.
-            logger.warning('Tool %s failed: %s', name, type(error).__name__)
+            logger.warning('Tool %s failed: %s', name, ','.join(sorted(leaf_exception_types(error))))
             return ToolResult(name, call_id, False, error=TOOL_UNAVAILABLE)
         return ToolResult(name, call_id, True, payload=validated)

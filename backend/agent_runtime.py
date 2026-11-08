@@ -116,6 +116,7 @@ class Loop:
         self.seen: set[str] = set()
         self.claims: dict[str, Any] | None = None
         self.turn_has_text = False
+        self.truncated = False
 
     def on_text(self, text: str) -> None:
         if text and not self.turn_has_text and self.text_parts and not self.text_parts[-1].endswith('\n'):
@@ -146,13 +147,14 @@ class Loop:
         return turn
 
     async def run(self, question: str) -> None:
-        tool_defs = [tool for tool in anthropic_tools(await self.tools.discover()) if tool['name'] != FINAL]
+        tool_defs = anthropic_tools(await self.tools.discover())
         messages: list[dict[str, Any]] = [{'role': 'user', 'content': question}]
         while True:
             self.turn_has_text = False
             turn = await self.model_turn(
                 messages=messages, tools=tool_defs, tool_choice={'type': 'auto'}, on_text=self.on_text
             )
+            self.truncated |= turn.stop_reason == 'max_tokens'
             self.rounds += 1
             messages.append({'role': 'assistant', 'content': assistant_blocks(turn)})
             if not turn.tool_calls:
@@ -178,11 +180,14 @@ class Loop:
                         tool_choice={'type': 'auto'},
                         on_text=self.on_text,
                     )
+                self.truncated |= turn.stop_reason == 'max_tokens'
                 messages.append({'role': 'assistant', 'content': assistant_blocks(turn)})
                 if turn.tool_calls:
                     refused = [result_block(c.id, LIMIT_REACHED, error=True) for c in turn.tool_calls]
                     messages.append({'role': 'user', 'content': refused})
                 break
+        if self.truncated:
+            self.emit({'event': 'delta', 'data': {'text': '\n\n(The answer was cut short at the length limit.)'}})
         prose_ids, integers = scan_prose(''.join(self.text_parts))
         if not prose_ids and not integers:
             return
@@ -205,7 +210,9 @@ class Loop:
         runnable: list[ToolCall] = []
         for call in calls:
             if call.name not in TOOLS:
-                self.emit({'event': 'tool', 'data': {'name': call.name, 'status': 'failed', 'call_id': call.id}})
+                self.calls_made += 1
+                if call.name != FINAL:
+                    self.emit({'event': 'tool', 'data': {'name': call.name, 'status': 'failed', 'call_id': call.id}})
                 blocks[call.id] = result_block(call.id, TOOL_UNAVAILABLE, error=True)
             elif self.calls_made >= self.settings.max_tool_calls:
                 self.emit({'event': 'tool', 'data': {'name': call.name, 'status': 'failed', 'call_id': call.id}})
@@ -261,6 +268,7 @@ class Loop:
                     'usage': dict(self.usage),
                     'model_calls': self.model_calls,
                     'verified': verification.verified,
+                    'truncated': self.truncated,
                     'unverified': len(verification.unverified),
                     'undeclared': verification.undeclared,
                 },
@@ -307,3 +315,5 @@ async def stream_answer(
         if not task.done():
             task.cancel()
             await asyncio.gather(task, return_exceptions=True)
+        if model_client is None:
+            await model.aclose()  # close only the client this call built; an injected one belongs to its caller
