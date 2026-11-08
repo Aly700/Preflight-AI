@@ -34,6 +34,8 @@ CATEGORIES = {
     'missing records',
     'ambiguity',
     'out-of-scope requests',
+    'injection',
+    'tool failures',
 }
 TOOLS = {
     'get_aircraft_summary',
@@ -64,8 +66,8 @@ def load_cases(path: Path) -> tuple[str, list[dict[str, Any]]]:
     version, cases = document['version'], document['cases']
     if not isinstance(version, str) or not version.strip():
         raise ValueError('version must be a nonempty string')
-    if not isinstance(cases, list) or len(cases) != 22:
-        raise ValueError('question file must contain exactly 22 cases')
+    if not isinstance(cases, list) or len(cases) not in (8, 12, 22):
+        raise ValueError('question file must contain 8, 12, or 22 cases')
     seen: set[str] = set()
     for case in cases:
         check_keys(case, {'id', 'category', 'question', 'expect'}, {'history'}, 'case')
