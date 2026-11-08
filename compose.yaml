@@ -18,7 +18,7 @@ services:
       - api-password
       - mcp-password
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d preflight_oss"]
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d preflight_oss"]
       interval: 5s
       timeout: 3s
       retries: 12

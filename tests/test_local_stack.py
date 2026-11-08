@@ -15,6 +15,7 @@ import sys
 import tempfile
 from typing import Any
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -84,12 +85,36 @@ class ComposeConfiguration(unittest.TestCase):
     def setUp(self):
         self.ensure_secrets = load_script('init_secrets').ensure_secrets
 
+    def test_postgres_healthcheck_uses_tcp(self):
+        text = (ROOT / 'compose.yaml').read_text()
+        self.assertIn('pg_isready -h 127.0.0.1 -U postgres -d preflight_oss', text)
+
+    def test_ci_waits_with_timeout_logs_failures_and_builds_web(self):
+        text = (ROOT / '.github/workflows/ci.yml').read_text()
+        compose, containers = text.split('\n  compose:\n', 1)[1].split('\n  containers:\n', 1)
+        with self.subTest(check='wait timeout'):
+            self.assertIn('- run: docker compose up -d --wait --wait-timeout 180', compose)
+        with self.subTest(check='failure logs before teardown'):
+            self.assertIn('- run: docker compose logs --no-color\n        if: failure()\n', compose)
+            self.assertLess(compose.index('docker compose logs --no-color'), compose.index('docker compose down -v'))
+        with self.subTest(check='web image for each platform'):
+            self.assertIn('platform: [linux/amd64, linux/arm64]', containers)
+            self.assertIn('- run: docker build --platform ${{ matrix.platform }} frontend', containers)
+
     def test_roles_script_uses_psql_variables_not_string_interpolation(self):
         script = ROOT / 'compose/postgres-roles.sh'
         text = script.read_text()
         self.assertIn('set -eu', text)
         self.assertIn("PASSWORD :'", text)
         self.assertNotIn("PASSWORD '$", text)
+        self.assertIn("<<'SQL'", text)
+        for role in ('api', 'mcp'):
+            with self.subTest(role=role, check='no password argv'):
+                self.assertNotIn(f'-v {role}_password=', text)
+            with self.subTest(role=role, check='read inside psql'):
+                self.assertIn(r'\set ' + f'{role}_password `cat /run/secrets/{role}-password`', text)
+            with self.subTest(role=role, check='SQL binding'):
+                self.assertIn(f"PASSWORD :'{role}_password'", text)
         self.assertIn('preflight_reader', text)
         self.assertTrue(script.stat().st_mode & stat.S_IXUSR, 'roles script must be executable')
 
@@ -153,6 +178,7 @@ class ComposeConfiguration(unittest.TestCase):
         )
         published = {name: s['ports'] for name, s in services.items() if s.get('ports')}
         self.assertEqual(list(published), ['preflight-oss-web'])
+        self.assertIn('-h 127.0.0.1', ' '.join(services['preflight-oss-postgres']['healthcheck']['test']))
         port = published['preflight-oss-web'][0]
         self.assertEqual((port['host_ip'], str(port['published']), port['target']), ('127.0.0.1', '8080', 8080))
         for name, service in services.items():
@@ -255,6 +281,31 @@ HISTORY = {'issue': {'issue_id': 'ISSUE-0001'}, 'total_events': 7, 'limit': 1, '
 class StackCheck(unittest.TestCase):
     def setUp(self):
         self.check = load_script('compose_check')
+
+    def test_service_health_accepts_json_lines_and_arrays(self):
+        entries = [
+            {'Service': 'preflight-oss-postgres', 'Health': 'healthy', 'State': 'running'},
+            {'Service': 'preflight-oss-api', 'Health': '', 'State': 'running'},
+            {'Service': 'preflight-oss-mcp', 'State': 'exited'},
+            {'Service': 'preflight-oss-web'},
+        ]
+        expected = {
+            'preflight-oss-postgres': 'healthy',
+            'preflight-oss-api': 'running',
+            'preflight-oss-mcp': 'exited',
+            'preflight-oss-web': 'unknown',
+        }
+        outputs = {
+            'json lines': '\n' + '\n\n'.join(json.dumps(entry) for entry in entries) + '\n',
+            'compact array': json.dumps(entries),
+            'formatted array': '\n' + json.dumps(entries, indent=2) + '\n',
+        }
+        for shape, output in outputs.items():
+            with self.subTest(shape=shape), patch.object(self.check, 'run', return_value=output) as run:
+                self.assertEqual(self.check.service_health('test-project'), expected)
+                run.assert_called_once_with(
+                    ['docker', 'compose', '-p', 'test-project', 'ps', '--all', '--format', 'json']
+                )
 
     def test_compare_evidence_flags_a_total_mismatch_and_accepts_a_match(self):
         events = [

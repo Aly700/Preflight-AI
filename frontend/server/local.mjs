@@ -32,11 +32,11 @@ const IMMUTABLE = 'public, max-age=31536000, immutable';
 const notFound = () =>
   Response.json({detail: 'Not found'}, {status: 404, headers: {'Cache-Control': 'no-store', ...SECURITY_HEADERS}});
 
-/** The decoded URL path, or null for malformed percent-encoding or an embedded NUL. */
+/** The decoded URL path, or null for malformed encoding, an embedded NUL or a parent segment. */
 function decodePath(pathname) {
   try {
     const decoded = decodeURIComponent(pathname);
-    return decoded.includes('\0') ? null : decoded;
+    return decoded.includes('\0') || decoded.split('/').includes('..') ? null : decoded;
   } catch {
     return null;
   }
@@ -76,7 +76,7 @@ export function createHandler({staticDir, baseURL, accessKey, fetchImpl = fetch}
     }
     const head = request.method === 'HEAD';
     const decoded = decodePath(pathname);
-    if (decoded === null) return notFound();
+    if (decoded === null || decoded === '/_headers') return notFound();
     const file = await resolveFile(root, decoded);
     if (file) return fileResponse(root, file, {head});
     // Single-page application: extension-less paths are client routes.
@@ -157,7 +157,10 @@ export function serve({port, host, staticDir, baseURL, accessKey, fetchImpl}) {
     });
     try {
       const origin = `http://${req.headers.host ?? `${host}:${port}`}`;
-      const response = await handle(toRequest(req, origin, controller.signal));
+      // Check the raw path before the URL constructor removes dot segments.
+      const response = decodePath(req.url.split('?')[0]) === null
+        ? notFound()
+        : await handle(toRequest(req, origin, controller.signal));
       await sendResponse(res, response, controller.signal);
     } catch {
       if (!res.headersSent) res.writeHead(500, {'Content-Type': 'application/json', ...SECURITY_HEADERS});

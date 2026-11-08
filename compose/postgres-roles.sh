@@ -6,12 +6,10 @@
 # the table privileges to preflight_reader.
 set -eu
 
-api_password="$(cat /run/secrets/api-password)"
-mcp_password="$(cat /run/secrets/mcp-password)"
-
 psql -X -q -v ON_ERROR_STOP=1 \
-    --username "${POSTGRES_USER:-postgres}" --dbname "${POSTGRES_DB:-postgres}" \
-    -v api_password="$api_password" -v mcp_password="$mcp_password" <<'SQL'
+    --username "${POSTGRES_USER:-postgres}" --dbname "${POSTGRES_DB:-postgres}" <<'SQL'
+\set api_password `cat /run/secrets/api-password`
+\set mcp_password `cat /run/secrets/mcp-password`
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'preflight_reader') THEN

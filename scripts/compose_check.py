@@ -123,10 +123,13 @@ def run(command: list[str], *, timeout: float = 120) -> str:
 def service_health(project: str = PROJECT) -> dict[str, str]:
     """Each service's health (or state when it has no health check) from `docker compose ps`."""
     health: dict[str, str] = {}
-    for line in run(['docker', 'compose', '-p', project, 'ps', '--all', '--format', 'json']).splitlines():
-        if not line.strip():
-            continue
-        entry = json.loads(line)
+    output = run(['docker', 'compose', '-p', project, 'ps', '--all', '--format', 'json']).strip()
+    entries = (
+        json.loads(output)
+        if output.startswith('[')
+        else [json.loads(line) for line in output.splitlines() if line.strip()]
+    )
+    for entry in entries:
         health[entry['Service']] = entry.get('Health') or entry.get('State') or 'unknown'
     return health
 

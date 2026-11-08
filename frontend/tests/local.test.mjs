@@ -18,13 +18,10 @@ before(async () => {
   await writeFile(path.join(dist, 'index.html'), '<!doctype html><title>ui</title>');
   await writeFile(path.join(dist, 'assets', 'app.js'), 'console.log(1)');
   await writeFile(path.join(dist, 'icon.svg'), '<svg/>');
+  await writeFile(path.join(dist, '_headers'), '/*\n  X-Content-Type-Options: nosniff\n');
   await writeFile(path.join(parent, 'secret.txt'), 'outside the static root');
 });
 after(() => rm(parent, {recursive: true, force: true}));
-
-const handler = (overrides = {}) =>
-  createHandler({staticDir: dist, baseURL: 'http://preflight-oss-api:8000', accessKey: KEY, ...overrides});
-const get = (pathname, init) => handler(init?.handler).then((h) => h(new Request('http://web.local' + pathname, init?.request)));
 
 test('serves index with security headers and no-store, assets immutable', async () => {
   const handle = createHandler({staticDir: dist, baseURL: 'http://preflight-oss-api:8000', accessKey: KEY});
@@ -58,12 +55,30 @@ test('unknown client route falls back to index.html; unknown /api path is 404 JS
 
 test('static path traversal is refused', async () => {
   const handle = createHandler({staticDir: dist, baseURL: 'http://preflight-oss-api:8000', accessKey: KEY});
-  for (const target of ['/%2e%2e/secret.txt', '/..%2fsecret.txt', '/assets/%2e%2e/%2e%2e/secret.txt', '/%00/secret.txt', '/%zz']) {
+  for (const target of ['/%2e%2e/secret.txt', '/..%2fsecret.txt', '/assets/%2e%2e/%2e%2e/secret.txt', '/%00/secret.txt', '/%zz', '/..%2fetc/passwd']) {
     const response = await handle(new Request('http://web.local' + target));
     assert.equal(response.status, 404, target);
     assert.ok(!(await response.text()).includes('outside the static root'), target);
   }
 });
+
+test('Cloudflare header rules are not served locally', async () => {
+  const handle = createHandler({staticDir: dist, baseURL: 'http://preflight-oss-api:8000', accessKey: KEY});
+  const response = await handle(new Request('http://web.local/_headers'));
+  assert.equal(response.status, 404);
+});
+
+for (const target of ['/assets/../../etc/passwd', '/%2e%2e/%2e%2e/x']) {
+  test(`extension-less traversal is refused before URL normalization: ${target}`, async (t) => {
+    // Exercise the actual Node request listener without opening a socket.
+    t.mock.method(http.Server.prototype, 'listen', function () { return this; });
+    const server = serve({port: 0, host: '127.0.0.1', staticDir: dist, baseURL: 'http://preflight-oss-api:8000', accessKey: KEY});
+    const request = {method: 'GET', url: target, headers: {host: 'web.local'}};
+    const response = new http.ServerResponse(request);
+    await server.listeners('request')[0](request, response);
+    assert.equal(response.statusCode, 404);
+  });
+}
 
 test('chat routes are forwarded over plain http with the server-side key', async () => {
   const calls = [];
