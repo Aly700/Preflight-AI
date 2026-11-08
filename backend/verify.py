@@ -1,5 +1,6 @@
 """The claims contract: the `final_answer` tool the model calls last, and the check of what it declares."""
 
+from collections.abc import Collection
 from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation
 import re
@@ -142,6 +143,14 @@ def field_value(value: Any, path: str) -> Any:
     return value
 
 
+def selector_field(item: dict[str, Any], path: str) -> Any:
+    """A selector's field: a dotted path, or a plain key that exactly one nested object carries."""
+    if '.' in path or path in item:
+        return field_value(item, path)
+    nested = [child[path] for child in item.values() if isinstance(child, dict) and path in child]
+    return nested[0] if len(nested) == 1 else None
+
+
 def selector_matches(value: Any, expected: str) -> bool:
     """Match a selector literal without confusing booleans with numbers."""
     folded = expected.casefold()
@@ -176,7 +185,7 @@ def resolve_path(payload: Any, path: str) -> Any:
                 matches = [
                     item
                     for item in value
-                    if isinstance(item, dict) and selector_matches(field_value(item, field_path), expected)
+                    if isinstance(item, dict) and selector_matches(selector_field(item, field_path), expected)
                 ]
                 if len(matches) != 1:
                     raise LookupError(path)
@@ -314,13 +323,16 @@ def verify_claims(
     results: dict[str, dict[str, Any]],
     seen_ids: set[str],
     names: dict[str, str] | None = None,
+    question_ids: Collection[str] = frozenset(),
 ) -> Verification:
     """Check declared numbers against the results they name and prose IDs against what tools returned.
 
     Declared mismatches are reported to the reader. Undeclared bare integers are
     only counted (dates, times and years excluded), for evaluation. A number may
     name its tool call by id or, failing that, by tool name, or declare a
-    derivation whose operands reference tool results in the same way.
+    derivation whose operands reference tool results in the same way. IDs the
+    user supplied (`question_ids`) are not claims: they need no citation or tool
+    evidence, though numbers stated about them still do.
     """
     names = names or {}
     unverified: list[str] = []
@@ -390,12 +402,13 @@ def verify_claims(
         if not any(same_number(value, actual) for actual in numeric):
             unverified.append(f'{label} ({number_token(value)}) does not match the tool result ({numeric[0]!r})')
     prose_ids, integers = scan_prose(prose)
-    for record in sorted(prose_ids - cited):
+    asked = set(question_ids)
+    for record in sorted(prose_ids - cited - asked):
         unverified.append(f'{record} is not among the cited records')
-    for record in sorted(cited - seen_ids):
+    for record in sorted(cited - seen_ids - asked):
         unverified.append(f'{record} was cited but no tool returned it')
     undeclared = sum(token not in declared_tokens for token in integers)
-    if claims is None and (prose_ids or undeclared):
+    if claims is None and (prose_ids - asked or undeclared):
         unverified.append('no claims were declared for the records or numbers in this answer')
     note = ('Unverified: ' + '; '.join(unverified)) if unverified else ''
     return Verification(verified=not unverified, unverified=unverified, undeclared=undeclared, note=note)

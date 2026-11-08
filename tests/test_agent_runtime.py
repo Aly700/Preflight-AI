@@ -240,6 +240,13 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
         await collect(model, FakeTools())
         self.assertEqual(model.close_calls, 0)
 
+    async def test_a_decline_naming_the_question_aircraft_needs_no_claims_round(self):
+        model = FakeModel([Turn('I cannot judge whether DEMO-AIR-0008 is airworthy.')])
+        events = await collect(model, FakeTools(), question='Is DEMO-AIR-0008 airworthy?')
+        self.assertEqual(len(model.calls), 1)
+        self.assertIs(events[-1]['data']['verified'], True)
+        self.assertNotIn('Unverified', ''.join(e['data']['text'] for e in events if e['event'] == 'delta'))
+
     async def test_parallel_calls_are_bounded_to_four(self):
         calls = [ToolCall(f't{i}', 'list_open_issues', {'limit': 1}) for i in range(5)]
         model = FakeModel([Turn('', calls, 'tool_use'), Turn('Done.')])
@@ -371,7 +378,7 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(events[-1]['data']['verified'])
         self.assertIn('not authoritative', ''.join(e['data']['text'] for e in events if e['event'] == 'delta'))
 
-    async def test_tool_outage_mid_answer_ends_unverified_not_error(self):
+    async def test_tool_outage_mid_answer_ends_with_done_not_error(self):
         tools = FakeTools(fail=TOOLS)
         model = FakeModel(
             [
@@ -400,8 +407,9 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(events[-2]['data']['results'], [])
         self.assertEqual(events[-1]['event'], 'done')
         self.assertEqual(events[-1]['data']['tool_calls'], 0)
-        self.assertFalse(events[-1]['data']['verified'])
-        self.assertEqual(events[-1]['data']['unverified'], 1)
+        # The answer states no record facts; ISSUE-0001 comes from the question, so it is context, not a claim.
+        self.assertTrue(events[-1]['data']['verified'])
+        self.assertEqual(events[-1]['data']['unverified'], 0)
 
     async def test_aircraft_group_counts_verify_cited_records(self):
         model = FakeModel(

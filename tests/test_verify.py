@@ -759,3 +759,58 @@ class ClaimVerification(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class QuestionIdsAndNestedSelectors(unittest.TestCase):
+    def test_ids_from_the_question_need_no_citation_or_tool_evidence(self):
+        decline = verify_claims(
+            prose='I cannot judge whether DEMO-AIR-0008 is airworthy.',
+            claims=None,
+            results={},
+            seen_ids=set(),
+            question_ids={'DEMO-AIR-0008'},
+        )
+        self.assertTrue(decline.verified, decline.note)
+        missing = verify_claims(
+            prose='DEMO-AIR-9999 was not found.',
+            claims={'cited_ids': ['DEMO-AIR-9999'], 'numbers': []},
+            results={},
+            seen_ids=set(),
+            question_ids={'DEMO-AIR-9999'},
+        )
+        self.assertTrue(missing.verified, missing.note)
+
+    def test_other_ids_and_numbers_still_need_evidence(self):
+        result = verify_claims(
+            prose='DEMO-AIR-0008 has 5 open issues, like DEMO-AIR-0002.',
+            claims=None,
+            results={},
+            seen_ids=set(),
+            question_ids={'DEMO-AIR-0008'},
+        )
+        self.assertFalse(result.verified)
+        self.assertIn('no claims were declared', result.note)
+        cited = verify_claims(
+            prose='DEMO-AIR-0008 is like DEMO-AIR-0002.',
+            claims={'cited_ids': ['DEMO-AIR-0008'], 'numbers': []},
+            results={},
+            seen_ids=set(),
+            question_ids={'DEMO-AIR-0008'},
+        )
+        self.assertEqual(cited.unverified, ['DEMO-AIR-0002 is not among the cited records'])
+
+    def test_selector_field_falls_back_to_a_unique_nested_object(self):
+        payload = {
+            'summaries': [
+                {'aircraft': {'aircraft_id': 'DEMO-AIR-0007'}, 'issue_status_counts': {'closed': 1}},
+                {'aircraft': {'aircraft_id': 'DEMO-AIR-0001'}, 'issue_status_counts': {'closed': 3}},
+            ]
+        }
+        self.assertEqual(resolve_path(payload, 'summaries[aircraft_id=DEMO-AIR-0007].issue_status_counts.closed'), 1)
+        self.assertEqual(
+            resolve_path(payload, "summaries[?aircraft_id=='DEMO-AIR-0001'].issue_status_counts.closed"), 3
+        )
+        # Two nested objects carrying the key make the fallback ambiguous, so nothing matches.
+        ambiguous = {'items': [{'a': {'x_id': 'X'}, 'b': {'x_id': 'X'}}]}
+        with self.assertRaises(LookupError):
+            resolve_path(ambiguous, 'items[x_id=X]')

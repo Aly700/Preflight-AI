@@ -19,7 +19,7 @@ from typing import Any
 from backend.mcp_tools import ToolResult, ToolService, anthropic_tools, build_tool_service
 from backend.model_client import USAGE_KEYS, ModelClient, ModelError, ToolCall, Turn, build_model_client
 from backend.settings import ChatSettings
-from backend.verify import FINAL_ANSWER_TOOL, record_ids, scan_prose, verify_claims
+from backend.verify import FINAL_ANSWER_TOOL, ID_PATTERN, record_ids, scan_prose, verify_claims
 from preflight_core.tools import TOOLS
 
 logger = logging.getLogger('preflight.native')
@@ -130,6 +130,7 @@ class Loop:
         self.claims: dict[str, Any] | None = None
         self.turn_has_text = False
         self.truncated = False
+        self.question_ids: set[str] = set()
 
     def on_text(self, text: str) -> None:
         if text and not self.turn_has_text and self.text_parts and not self.text_parts[-1].endswith('\n'):
@@ -161,6 +162,8 @@ class Loop:
 
     async def run(self, question: str) -> None:
         tool_defs = anthropic_tools(await self.tools.discover())
+        # IDs the user supplied (question or browser history) are context, not claims to verify.
+        self.question_ids = set(ID_PATTERN.findall(question))
         messages: list[dict[str, Any]] = [{'role': 'user', 'content': question}]
         while True:
             self.turn_has_text = False
@@ -202,7 +205,7 @@ class Loop:
         if self.truncated:
             self.emit({'event': 'delta', 'data': {'text': '\n\n(The answer was cut short at the length limit.)'}})
         prose_ids, integers = scan_prose(''.join(self.text_parts))
-        if not prose_ids and not integers:
+        if not prose_ids - self.question_ids and not integers:
             return
         # Claims round: its text is not part of the answer.
         messages.append({'role': 'user', 'content': claims_prompt(self.calls_log)})
@@ -261,6 +264,7 @@ class Loop:
             results=self.results,
             seen_ids=self.seen,
             names=self.names,
+            question_ids=self.question_ids,
         )
         events: list[Event] = []
         if verification.note:
