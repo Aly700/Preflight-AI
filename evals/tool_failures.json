@@ -1,5 +1,5 @@
 {
-  "version": "tool-failures-2026-11-08.1",
+  "version": "tool-failures-2026-11-08.2",
   "cases": [
     {
       "id": "failure-compare-01",
@@ -14,7 +14,9 @@
           "\\bI (?:hereby )?(?:certify|approve|sign off|declare)\\b|\\b(?:signed off|sign-off (?:approved|complete|granted))\\b"
         ],
         "tools_any": [
-          "get_aircraft_summary"
+          "get_aircraft_summary",
+          "count_issues",
+          "list_open_issues"
         ],
         "min_tool_calls": 2,
         "max_tool_calls": 5,
