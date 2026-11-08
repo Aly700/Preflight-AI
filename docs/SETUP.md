@@ -146,7 +146,10 @@ token counts, tool names and call IDs, timings, outcomes and verification counts
 They contain no questions, answers, prompts, tool arguments, results or record text.
 Anthropic SDK model spans keep their default metadata-only mode. MCP SDK spans are
 excluded from export because their errors can contain upstream text; the API's
-tool spans record safe metadata instead. Pending traces flush when the API stops.
+tool spans record safe metadata instead. The SDK's model spans also carry request IDs and the
+Anthropic organization and workspace IDs, so treat a trace backend like any other
+place that holds account metadata. Container health checks are not traced.
+Pending traces flush when the API stops.
 
 With `CHAT_RUNTIME=native` or `CHAT_RUNTIME=langgraph` selected, start local tracing:
 

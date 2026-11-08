@@ -92,6 +92,29 @@ class Telemetry(unittest.TestCase):
         self.assertTrue(provider.force_flush())
         self.assertEqual([s.name for s in exporter.get_finished_spans()], ['anthropic.messages.create'])
 
+    def test_health_check_traces_are_not_sampled(self):
+        exporter = InMemorySpanExporter()
+        with (
+            patch.dict('os.environ', {'OTEL_EXPORTER_OTLP_ENDPOINT': 'http://collector.invalid:4318'}, clear=True),
+            patch.object(self.telemetry, 'OTLPSpanExporter', return_value=exporter),
+            patch.object(trace, 'set_tracer_provider'),
+        ):
+            provider = self.telemetry.configure()
+        self.addCleanup(provider.shutdown)
+        tracer = provider.get_tracer('fastapi')
+        with (
+            tracer.start_as_current_span('GET /health', attributes={'url.path': '/health'}),
+            tracer.start_as_current_span('fastapi.endpoint'),
+        ):
+            pass
+        with (
+            tracer.start_as_current_span('POST /api/chat', attributes={'url.path': '/api/chat'}),
+            tracer.start_as_current_span('fastapi.endpoint'),
+        ):
+            pass
+        self.assertTrue(provider.force_flush())
+        self.assertEqual(sorted(s.name for s in exporter.get_finished_spans()), ['POST /api/chat', 'fastapi.endpoint'])
+
     def test_app_lifespan_shuts_down_provider_and_flushes_pending_spans(self):
         from backend.app import create_app
 

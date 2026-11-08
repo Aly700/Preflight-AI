@@ -424,13 +424,15 @@ async def stream_loop(
             await task  # propagate model, transport and limit failures; never turn them into done
             events = loop.final_events()
             done = events[-1]['data']
-            for key, attribute in (
-                ('input_tokens', 'gen_ai.usage.input_tokens'),
-                ('output_tokens', 'gen_ai.usage.output_tokens'),
-                ('cache_read_input_tokens', 'gen_ai.usage.cache_read.input_tokens'),
-                ('cache_creation_input_tokens', 'gen_ai.usage.cache_creation.input_tokens'),
-            ):
-                span.set_attribute(attribute, done['usage'][key])
+            usage = done['usage']
+            # As in the SDK's model spans, input tokens include the cached ones.
+            span.set_attribute(
+                'gen_ai.usage.input_tokens',
+                usage['input_tokens'] + usage['cache_read_input_tokens'] + usage['cache_creation_input_tokens'],
+            )
+            span.set_attribute('gen_ai.usage.output_tokens', usage['output_tokens'])
+            span.set_attribute('gen_ai.usage.cache_read.input_tokens', usage['cache_read_input_tokens'])
+            span.set_attribute('gen_ai.usage.cache_write.input_tokens', usage['cache_creation_input_tokens'])
             for key in ('tool_calls', 'rounds', 'model_calls', 'unverified', 'truncated'):
                 span.set_attribute(f'preflight.{key}', done[key])
             if isinstance(done['verified'], bool):

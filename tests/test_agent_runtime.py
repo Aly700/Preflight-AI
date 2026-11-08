@@ -295,10 +295,11 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
                     'gen_ai.provider.name': 'aws.bedrock' if provider == 'bedrock' else 'anthropic',
                     'gen_ai.request.model': model.model,
                     'preflight.runtime': self.runtime_name,
-                    'gen_ai.usage.input_tokens': done['usage']['input_tokens'],
+                    # As in the SDK's model spans, input tokens include the cached ones.
+                    'gen_ai.usage.input_tokens': 9 + 11 + 5,
                     'gen_ai.usage.output_tokens': done['usage']['output_tokens'],
-                    'gen_ai.usage.cache_read.input_tokens': done['usage']['cache_read_input_tokens'],
-                    'gen_ai.usage.cache_creation.input_tokens': done['usage']['cache_creation_input_tokens'],
+                    'gen_ai.usage.cache_read.input_tokens': 11,
+                    'gen_ai.usage.cache_write.input_tokens': 5,
                     **{
                         f'preflight.{key}': done[key]
                         for key in ('tool_calls', 'rounds', 'model_calls', 'verified', 'unverified', 'truncated')
