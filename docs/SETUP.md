@@ -99,7 +99,7 @@ What each step does:
 `CHAT_RUNTIME` selects how an answer is produced:
 
 - `copilot` (default): the Copilot SDK's own loop. Works with `copilot`, `anthropic` and `openai` providers.
-- `native`: this repository's loop over the Anthropic Messages API
+- `native`, or `langgraph` (the same loop orchestrated by a LangGraph StateGraph): this repository's loop over the Anthropic Messages API
   (`MODEL_PROVIDER=anthropic` or `bedrock`). The model discovers the tools from the MCP
   service each answer, can call several in one turn and take up to
   `MAX_TOOL_ROUNDS` turns and `MAX_TOOL_CALLS` calls (6 and 12 by default), and
@@ -126,7 +126,7 @@ once; after editing the file with an editor that saves by renaming, run
 `.env` file in the repository root for `${...}` interpolation; `.env.example` sets
 `MODEL_PROVIDER=copilot`, so copying it to `.env` switches the stack to Copilot.
 
-`MODEL_PROVIDER=bedrock` runs Claude on Amazon Bedrock with `CHAT_RUNTIME=native`
+`MODEL_PROVIDER=bedrock` runs Claude on Amazon Bedrock with `CHAT_RUNTIME=native` or `CHAT_RUNTIME=langgraph`
 only. Set `COPILOT_MODEL` to the Bedrock model or inference-profile ID (for example,
 `global.anthropic.claude-sonnet-4-6`) and set `AWS_REGION`. Credentials
 come from the standard AWS credential chain at request time, including the
@@ -139,7 +139,7 @@ selects Bedrock, publishes only the API on loopback and makes the web service op
 
 ### Tools through AgentCore Gateway
 
-With `CHAT_RUNTIME=native`, the API can reach the tools through Amazon Bedrock
+With `CHAT_RUNTIME=native` or `CHAT_RUNTIME=langgraph`, the API can reach the tools through Amazon Bedrock
 AgentCore Gateway instead of calling the MCP service directly:
 
 ```sh

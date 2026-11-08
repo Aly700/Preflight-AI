@@ -23,7 +23,8 @@ __all__ = ['ChatSettings', 'SettingsError']
 MODEL_NAME = re.compile(r'^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$')
 AWS_REGION = re.compile(r'^[a-z]{2}(?:-[a-z]+)+-[0-9]$')
 PROVIDERS = ('copilot', 'anthropic', 'openai', 'bedrock')
-RUNTIMES = ('copilot', 'native')
+RUNTIMES = ('copilot', 'native', 'langgraph')
+NATIVE_RUNTIMES = ('native', 'langgraph')
 NATIVE_PROVIDERS = ('anthropic', 'bedrock')
 WORKSPACE_ID = re.compile(r'^[A-Za-z0-9_-]{1,128}$')
 MCP_TOOL_PREFIX = re.compile(r'[A-Za-z0-9][A-Za-z0-9-]{0,99}___')
@@ -69,14 +70,14 @@ def workspace_id(environ: Mapping[str, str]) -> str | None:
 
 
 def chat_runtime(environ: Mapping[str, str], provider: str) -> str:
-    """`copilot` (the SDK's own loop) or `native` (this repository's loop over the Messages API)."""
+    """The Copilot SDK loop, or the Messages API loop driven by native code or LangGraph."""
     value = environ.get('CHAT_RUNTIME', '').strip() or 'copilot'
     if value not in RUNTIMES:
         raise SettingsError('CHAT_RUNTIME must be one of ' + ', '.join(RUNTIMES))
-    if value == 'native' and provider not in NATIVE_PROVIDERS:
-        raise SettingsError('CHAT_RUNTIME=native requires MODEL_PROVIDER=' + ' or '.join(NATIVE_PROVIDERS))
-    if provider == 'bedrock' and value != 'native':
-        raise SettingsError('CHAT_RUNTIME must be native when MODEL_PROVIDER is bedrock')
+    if value in NATIVE_RUNTIMES and provider not in NATIVE_PROVIDERS:
+        raise SettingsError('CHAT_RUNTIME=native or langgraph requires MODEL_PROVIDER=' + ' or '.join(NATIVE_PROVIDERS))
+    if provider == 'bedrock' and value not in NATIVE_RUNTIMES:
+        raise SettingsError('CHAT_RUNTIME must be native or langgraph when MODEL_PROVIDER is bedrock')
     return value
 
 
@@ -125,8 +126,8 @@ class ChatSettings:
         prefix = source.get('MCP_TOOL_PREFIX', '')
         if prefix and MCP_TOOL_PREFIX.fullmatch(prefix) is None:
             raise SettingsError('MCP_TOOL_PREFIX has an invalid format')
-        if auth == 'sigv4' and source.get('CHAT_RUNTIME', '').strip() != 'native':
-            raise SettingsError('MCP_AUTH=sigv4 requires CHAT_RUNTIME=native')
+        if auth == 'sigv4' and source.get('CHAT_RUNTIME', '').strip() not in NATIVE_RUNTIMES:
+            raise SettingsError('MCP_AUTH=sigv4 requires CHAT_RUNTIME=native or langgraph')
         runtime = chat_runtime(source, provider)
         url = mcp_url(source)
         if auth == 'sigv4' and urlsplit(url).scheme != 'https':

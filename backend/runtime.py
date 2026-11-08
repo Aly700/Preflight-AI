@@ -1,4 +1,4 @@
-"""Pick the chat runtime by configuration; both runtimes share one event contract."""
+"""Pick the chat runtime by configuration; all runtimes share one event contract."""
 
 from collections.abc import AsyncGenerator
 from typing import Any
@@ -12,6 +12,12 @@ async def stream_answer(question: str, settings: ChatSettings) -> AsyncGenerator
         from backend.agent_runtime import stream_answer as native_answer
 
         async for event in native_answer(question, settings):
+            yield event
+        return
+    if settings.runtime == 'langgraph':
+        from backend.graph_runtime import stream_answer as graph_answer
+
+        async for event in graph_answer(question, settings):
             yield event
         return
     from backend.copilot_chat import stream_answer as copilot_answer

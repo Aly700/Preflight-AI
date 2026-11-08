@@ -11,7 +11,8 @@ The events emitted are the same the UI already reads from the Copilot runtime.
 from __future__ import annotations
 
 import asyncio
-from collections.abc import AsyncGenerator, Callable
+from collections.abc import AsyncGenerator, Callable, Coroutine
+from contextlib import aclosing
 import json
 import logging
 from typing import Any
@@ -115,7 +116,11 @@ def claims_prompt(calls: list[tuple[str, str, dict[str, Any]]]) -> str:
 
 class Loop:
     def __init__(
-        self, settings: ChatSettings, model: ModelClient, tools: ToolService, emit: Callable[[Event], None]
+        self,
+        settings: ChatSettings,
+        model: ModelClient,
+        tools: ToolService,
+        emit: Callable[[Event], None] = lambda _: None,
     ) -> None:
         self.settings = settings
         self.model = model
@@ -136,6 +141,7 @@ class Loop:
         self.turn_has_text = False
         self.truncated = False
         self.question_ids: set[str] = set()
+        self.tool_defs: list[dict[str, Any]] = []
 
     def on_text(self, text: str) -> None:
         if text and not self.turn_has_text and self.text_parts and not self.text_parts[-1].endswith('\n'):
@@ -165,53 +171,58 @@ class Loop:
             self.usage[key] += turn.usage.get(key, 0)
         return turn
 
-    async def run(self, question: str) -> None:
-        tool_defs = anthropic_tools(await self.tools.discover())
+    async def start(self, question: str) -> list[dict[str, Any]]:
+        self.tool_defs = anthropic_tools(await self.tools.discover())
         # IDs the user supplied (question or browser history) are context, not claims to verify.
         self.question_ids = set(ID_PATTERN.findall(question))
-        messages: list[dict[str, Any]] = [{'role': 'user', 'content': question}]
-        while True:
+        return [{'role': 'user', 'content': question}]
+
+    async def model_step(self, messages: list[dict[str, Any]]) -> Turn:
+        self.turn_has_text = False
+        turn = await self.model_turn(
+            messages=messages, tools=self.tool_defs, tool_choice={'type': 'auto'}, on_text=self.on_text
+        )
+        self.truncated |= turn.stop_reason == 'max_tokens'
+        self.rounds += 1
+        messages.append({'role': 'assistant', 'content': assistant_blocks(turn)})
+        return turn
+
+    async def tool_step(self, messages: list[dict[str, Any]], turn: Turn) -> None:
+        messages.append({'role': 'user', 'content': await self.execute(turn.tool_calls)})
+
+    async def wrap_up_step(self, messages: list[dict[str, Any]]) -> None:
+        # Wrap-up: the model answers from what it has; no further tools are offered.
+        messages.append({'role': 'user', 'content': NO_MORE_TOOLS})
+        try:
             self.turn_has_text = False
             turn = await self.model_turn(
-                messages=messages, tools=tool_defs, tool_choice={'type': 'auto'}, on_text=self.on_text
+                messages=messages,
+                tools=self.tool_defs,
+                tool_choice={'type': 'none'},
+                on_text=self.on_text,
             )
-            self.truncated |= turn.stop_reason == 'max_tokens'
-            self.rounds += 1
-            messages.append({'role': 'assistant', 'content': assistant_blocks(turn)})
-            if not turn.tool_calls:
-                break
-            messages.append({'role': 'user', 'content': await self.execute(turn.tool_calls)})
-            if self.rounds >= self.settings.max_tool_rounds:
-                # Wrap-up: the model answers from what it has; no further tools are offered.
-                messages.append({'role': 'user', 'content': NO_MORE_TOOLS})
-                try:
-                    self.turn_has_text = False
-                    turn = await self.model_turn(
-                        messages=messages,
-                        tools=tool_defs,
-                        tool_choice={'type': 'none'},
-                        on_text=self.on_text,
-                    )
-                except ModelError:
-                    # Not every model accepts tool_choice none; the instruction alone then has to do.
-                    self.turn_has_text = False
-                    turn = await self.model_turn(
-                        messages=messages,
-                        tools=tool_defs,
-                        tool_choice={'type': 'auto'},
-                        on_text=self.on_text,
-                    )
-                self.truncated |= turn.stop_reason == 'max_tokens'
-                messages.append({'role': 'assistant', 'content': assistant_blocks(turn)})
-                if turn.tool_calls:
-                    refused = [result_block(c.id, LIMIT_REACHED, error=True) for c in turn.tool_calls]
-                    messages.append({'role': 'user', 'content': refused})
-                break
+        except ModelError:
+            # Not every model accepts tool_choice none; the instruction alone then has to do.
+            self.turn_has_text = False
+            turn = await self.model_turn(
+                messages=messages,
+                tools=self.tool_defs,
+                tool_choice={'type': 'auto'},
+                on_text=self.on_text,
+            )
+        self.truncated |= turn.stop_reason == 'max_tokens'
+        messages.append({'role': 'assistant', 'content': assistant_blocks(turn)})
+        if turn.tool_calls:
+            refused = [result_block(c.id, LIMIT_REACHED, error=True) for c in turn.tool_calls]
+            messages.append({'role': 'user', 'content': refused})
+
+    def finish_step(self) -> bool:
         if self.truncated:
             self.emit({'event': 'delta', 'data': {'text': '\n\n(The answer was cut short at the length limit.)'}})
         prose_ids, integers = scan_prose(''.join(self.text_parts))
-        if not prose_ids - self.question_ids and not integers:
-            return
+        return bool(prose_ids - self.question_ids or integers)
+
+    async def claims_step(self, messages: list[dict[str, Any]]) -> None:
         # Claims round: its text is not part of the answer.
         messages.append({'role': 'user', 'content': claims_prompt(self.calls_log)})
         # Not every model accepts a forced tool choice, so the claims tool is simply the only tool offered.
@@ -224,6 +235,19 @@ class Loop:
         )
         final_call = next((c for c in turn.tool_calls if c.name == FINAL), None)
         self.claims = dict(final_call.input) if final_call is not None else None
+
+    async def run(self, question: str) -> None:
+        messages = await self.start(question)
+        while True:
+            turn = await self.model_step(messages)
+            if not turn.tool_calls:
+                break
+            await self.tool_step(messages, turn)
+            if self.rounds >= self.settings.max_tool_rounds:
+                await self.wrap_up_step(messages)
+                break
+        if self.finish_step():
+            await self.claims_step(messages)
 
     async def execute(self, calls: list[ToolCall]) -> list[dict[str, Any]]:
         """Run one turn's tool calls concurrently (bounded) and return their result blocks in order."""
@@ -312,14 +336,26 @@ async def stream_answer(
     in-flight tool call; failures of the model or the transport propagate to the
     caller, which turns them into the fixed error frame.
     """
-    queue: asyncio.Queue[Event | None] = asyncio.Queue()
     model = model_client if model_client is not None else build_model_client(settings)
     service = tools if tools is not None else build_tool_service(settings)
-    loop = Loop(settings, model, service, queue.put_nowait)
+    loop = Loop(settings, model, service)
+    async with aclosing(
+        stream_loop(loop, loop.run(question), owned_model=model if model_client is None else None)
+    ) as stream:
+        async for event in stream:
+            yield event
+
+
+async def stream_loop(
+    loop: Loop, drive: Coroutine[Any, Any, None], *, owned_model: ModelClient | None
+) -> AsyncGenerator[Event]:
+    """Stream either driver with identical error propagation, cancellation and client ownership."""
+    queue: asyncio.Queue[Event | None] = asyncio.Queue()
+    loop.emit = queue.put_nowait
 
     async def run() -> None:
         try:
-            await loop.run(question)
+            await drive
         finally:
             queue.put_nowait(None)
 
@@ -337,5 +373,5 @@ async def stream_answer(
         if not task.done():
             task.cancel()
             await asyncio.gather(task, return_exceptions=True)
-        if model_client is None:
-            await model.aclose()  # close only the client this call built; an injected one belongs to its caller
+        if owned_model is not None:
+            await owned_model.aclose()  # an injected client belongs to its caller

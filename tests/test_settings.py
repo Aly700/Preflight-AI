@@ -60,13 +60,13 @@ class ChatSettingsContract(unittest.TestCase):
                 self.assertEqual(settings.aws_region, 'ca-central-1')
                 self.assertIsNone(settings.mcp_token)
 
-    def test_sigv4_requires_native_runtime(self):
+    def test_sigv4_requires_native_or_langgraph_runtime(self):
         environ = self.gateway_environment()
         for provider in ('anthropic', 'bedrock'):
             for runtime in ('', 'copilot'):
                 with (
                     self.subTest(provider=provider, runtime=runtime),
-                    self.assertRaisesRegex(SettingsError, '^MCP_AUTH=sigv4 requires CHAT_RUNTIME=native$'),
+                    self.assertRaisesRegex(SettingsError, '^MCP_AUTH=sigv4 requires CHAT_RUNTIME=native or langgraph$'),
                 ):
                     ChatSettings.from_environment({**environ, 'CHAT_RUNTIME': runtime, 'MODEL_PROVIDER': provider})
 
@@ -273,6 +273,49 @@ class ChatSettingsContract(unittest.TestCase):
             ChatSettings.from_environment({**native, 'MAX_TOOL_ROUNDS': '0'})
         with self.assertRaisesRegex(SettingsError, 'MAX_TOOL_CALLS'):
             ChatSettings.from_environment({**native, 'MAX_TOOL_CALLS': 'many'})
+
+    def test_langgraph_accepts_native_providers_and_auth_modes(self):
+        environ = self.gateway_environment()
+        for provider in ('anthropic', 'bedrock'):
+            for auth in ('bearer', 'sigv4'):
+                with self.subTest(provider=provider, auth=auth):
+                    settings = ChatSettings.from_environment(
+                        {
+                            **environ,
+                            'CHAT_RUNTIME': 'langgraph',
+                            'MODEL_PROVIDER': provider,
+                            'MCP_AUTH': auth,
+                        }
+                    )
+                    self.assertEqual(settings.runtime, 'langgraph')
+                    self.assertEqual(settings.provider, provider)
+                    self.assertEqual(settings.mcp_auth, auth)
+                    self.assertEqual((settings.max_tool_rounds, settings.max_tool_calls), (6, 12))
+                    if provider == 'bedrock':
+                        self.assertIsNone(settings.model_api_key)
+                    if auth == 'sigv4':
+                        self.assertIsNone(settings.mcp_token)
+
+    def test_both_native_runtimes_reject_other_providers_and_name_the_options(self):
+        for runtime in ('native', 'langgraph'):
+            for provider in ('copilot', 'openai'):
+                with (
+                    self.subTest(runtime=runtime, provider=provider),
+                    self.assertRaisesRegex(
+                        SettingsError, 'CHAT_RUNTIME=native or langgraph requires MODEL_PROVIDER=anthropic or bedrock'
+                    ),
+                ):
+                    ChatSettings.from_environment(
+                        {
+                            **self.environ,
+                            'CHAT_RUNTIME': runtime,
+                            'MODEL_PROVIDER': provider,
+                        }
+                    )
+
+    def test_bedrock_runtime_error_names_both_allowed_runtimes(self):
+        with self.assertRaisesRegex(SettingsError, 'CHAT_RUNTIME must be native or langgraph'):
+            ChatSettings.from_environment({**self.environ, 'MODEL_PROVIDER': 'bedrock'})
 
     def test_empty_key_file_is_not_configured(self):
         key = Path(self.temp.name) / 'MODEL_API_KEY_FILE'
