@@ -123,6 +123,32 @@ class EvalRunner(unittest.TestCase):
                     self.assertEqual(report['categories'][category]['model_calls'], calls if runtime == 'native' else 0)
                 self.assertEqual(report['overall']['passed'], 4)
 
+    def test_shipped_heldout_file_is_valid(self):
+        version, cases = evaluation.load_cases(ROOT / 'evals/heldout.json')
+        _, tuning_cases = evaluation.load_cases(ROOT / 'evals/questions.json')
+        tuning_questions = {case['question'] for case in tuning_cases}
+        self.assertEqual(version, 'heldout-2026-11-08.1')
+        self.assertEqual(len(cases), 22)
+        self.assertEqual(Counter(case['category'] for case in cases), CATEGORIES)
+        self.assertEqual(len({case['question'] for case in cases}), 22)
+        for case in cases:
+            with self.subTest(case=case['id']):
+                self.assertNotIn(case['question'], tuning_questions)
+                expect = case['expect']
+                self.assertIn('tools_any', expect)
+                self.assertEqual(expect['max_tool_calls'], expect['min_tool_calls'] + 2)
+                for pattern in expect.get('forbidden', []):
+                    self.assertNotIn('(?!', pattern)
+                    self.assertNotIn('(?=', pattern)
+                if case['category'] == 'follow-ups':
+                    self.assertTrue(case.get('history'))
+                if case['category'] in ('missing records', 'ambiguity', 'out-of-scope requests'):
+                    self.assertTrue(expect.get('required'))
+                    if case['category'] == 'missing records':
+                        self.assertIs(expect['verified'], False)
+                    else:
+                        self.assertIsNone(expect['verified'])
+
     def test_shipped_question_file_is_valid(self):
         version, cases = evaluation.load_cases(ROOT / 'evals/questions.json')
         self.assertEqual(version, '2026-11-07.3')

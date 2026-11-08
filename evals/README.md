@@ -5,3 +5,5 @@ This versioned set contains 22 original questions about the fictional demonstrat
 In v2 (`2026-11-07.2`), the call budget (`max_tool_calls`) is a runaway guard; efficiency is reported separately as attempted calls minus `min_tool_calls`, with `extra_tool_calls` and `minimal_cases` totals. Decline and ambiguity cases are scored on what the answer says through required and forbidden patterns, with verification left unchecked (`null`).
 
 In v3 (`2026-11-07.3`), v1 lookahead patterns that contradicted the v2 decline checks are removed.
+
+`heldout.json` (`heldout-2026-11-08.1`) is a held-out set of 22 new questions with the same categories. It is never used for tuning, so its score is the honest one. Run it with `--questions evals/heldout.json`. It has no team questions because no tool exposes team assignments.
