@@ -1,0 +1,474 @@
+{
+  "version": "retrieval-2026-11-09.1",
+  "note": "Written from the documents, phrased differently from their wording. A passage is relevant when it belongs to one of doc_ids and contains one of phrases (case-insensitive, whitespace-normalised). The first two questions match queries previewed against an early index. OCR read the 16:25 in DOC-0014 as 46:25, so retrieval-14 also accepts the phrase \"evening round\".",
+  "cases": [
+    {
+      "id": "retrieval-01",
+      "question": "When does the Friday backlog sweep begin, and how long is it?",
+      "doc_ids": [
+        "DOC-0008"
+      ],
+      "phrases": [
+        "09:10",
+        "twenty minutes"
+      ]
+    },
+    {
+      "id": "retrieval-02",
+      "question": "What colour card is used when people disagree at intake?",
+      "doc_ids": [
+        "DOC-0001"
+      ],
+      "phrases": [
+        "amber query card"
+      ]
+    },
+    {
+      "id": "retrieval-03",
+      "question": "Who arranges the next queue action when nobody is written in the person box?",
+      "doc_ids": [
+        "DOC-0002",
+        "DOC-0041"
+      ],
+      "phrases": [
+        "shift lead"
+      ]
+    },
+    {
+      "id": "retrieval-04",
+      "question": "At what times are dependency slips for blocked issues checked each day?",
+      "doc_ids": [
+        "DOC-0003"
+      ],
+      "phrases": [
+        "10:15",
+        "15:15"
+      ]
+    },
+    {
+      "id": "retrieval-05",
+      "question": "What two things does a request to revisit closed paperwork need?",
+      "doc_ids": [
+        "DOC-0004"
+      ],
+      "phrases": [
+        "reason and a named reviewer"
+      ]
+    },
+    {
+      "id": "retrieval-06",
+      "question": "What has to be written in the paperwork when an issue is closed?",
+      "doc_ids": [
+        "DOC-0005"
+      ],
+      "phrases": [
+        "closure note"
+      ]
+    },
+    {
+      "id": "retrieval-07",
+      "question": "When two issue entries are merged as duplicates, what happens to their IDs on the cover sheet?",
+      "doc_ids": [
+        "DOC-0006",
+        "DOC-0029"
+      ],
+      "phrases": [
+        "both issue IDs",
+        "Both issue IDs"
+      ]
+    },
+    {
+      "id": "retrieval-08",
+      "question": "What information travels on the strip attached to a handover packet?",
+      "doc_ids": [
+        "DOC-0007",
+        "DOC-0016",
+        "DOC-0022",
+        "DOC-0056"
+      ],
+      "phrases": [
+        "context strip"
+      ]
+    },
+    {
+      "id": "retrieval-09",
+      "question": "Does finishing a task automatically close the issue it belongs to?",
+      "doc_ids": [
+        "DOC-0009"
+      ],
+      "phrases": [
+        "automatically close"
+      ]
+    },
+    {
+      "id": "retrieval-10",
+      "question": "Can the note taker's name be used to fill an empty assignment?",
+      "doc_ids": [
+        "DOC-0010",
+        "DOC-0041",
+        "DOC-0002"
+      ],
+      "phrases": [
+        "recorder"
+      ]
+    },
+    {
+      "id": "retrieval-11",
+      "question": "At Station 01, when does the avionics desk send its review request to the roster clerk?",
+      "doc_ids": [
+        "DOC-0011"
+      ],
+      "phrases": [
+        "09:40"
+      ]
+    },
+    {
+      "id": "retrieval-12",
+      "question": "Until what time is the cabin desk held before the relief coordinator takes over?",
+      "doc_ids": [
+        "DOC-0012"
+      ],
+      "phrases": [
+        "12:30"
+      ]
+    },
+    {
+      "id": "retrieval-13",
+      "question": "How does the late electrical desk sort its documentation requests?",
+      "doc_ids": [
+        "DOC-0013"
+      ],
+      "phrases": [
+        "missing attachment heading"
+      ]
+    },
+    {
+      "id": "retrieval-14",
+      "question": "What time is the evening round of calls to owners of blocked hydraulics items?",
+      "doc_ids": [
+        "DOC-0014"
+      ],
+      "phrases": [
+        "16:25",
+        "evening round"
+      ]
+    },
+    {
+      "id": "retrieval-15",
+      "question": "When did the daily reply window start across program BETA, and at what time of day is it?",
+      "doc_ids": [
+        "DOC-0015",
+        "DOC-0027"
+      ],
+      "phrases": [
+        "13:30"
+      ]
+    },
+    {
+      "id": "retrieval-16",
+      "question": "What should be checked before making a replacement for a lost controls cover sheet?",
+      "doc_ids": [
+        "DOC-0016"
+      ],
+      "phrases": [
+        "station index"
+      ]
+    },
+    {
+      "id": "retrieval-17",
+      "question": "When does lunch relief start for electrical review appointments?",
+      "doc_ids": [
+        "DOC-0017"
+      ],
+      "phrases": [
+        "11:40"
+      ]
+    },
+    {
+      "id": "retrieval-18",
+      "question": "What is the striped insert on the roster for?",
+      "doc_ids": [
+        "DOC-0019"
+      ],
+      "phrases": [
+        "striped roster insert"
+      ]
+    },
+    {
+      "id": "retrieval-19",
+      "question": "On the Saturday desk split, until when does the avionics desk take intake conversations?",
+      "doc_ids": [
+        "DOC-0020"
+      ],
+      "phrases": [
+        "14:20"
+      ]
+    },
+    {
+      "id": "retrieval-20",
+      "question": "What colour card holds the sender's own question during early controls intake?",
+      "doc_ids": [
+        "DOC-0023"
+      ],
+      "phrases": [
+        "cream intake card"
+      ]
+    },
+    {
+      "id": "retrieval-21",
+      "question": "The hydraulics review call was moved; what is the new time?",
+      "doc_ids": [
+        "DOC-0024"
+      ],
+      "phrases": [
+        "14:45"
+      ]
+    },
+    {
+      "id": "retrieval-22",
+      "question": "Which subsystem's queue did program ALPHA give its review time to in November?",
+      "doc_ids": [
+        "DOC-0025"
+      ],
+      "phrases": [
+        "hydraulics"
+      ]
+    },
+    {
+      "id": "retrieval-23",
+      "question": "On which day and at what time does ALPHA's weekly queue review happen now?",
+      "doc_ids": [
+        "DOC-0026",
+        "DOC-0025"
+      ],
+      "phrases": [
+        "Wednesday"
+      ]
+    },
+    {
+      "id": "retrieval-24",
+      "question": "When are the weekend contact rounds for BETA at Station 01?",
+      "doc_ids": [
+        "DOC-0027",
+        "DOC-0019"
+      ],
+      "phrases": [
+        "10:00 and 14:00",
+        "14:00"
+      ]
+    },
+    {
+      "id": "retrieval-25",
+      "question": "How soon must a reviewer be named once a task is waiting for review?",
+      "doc_ids": [
+        "DOC-0028"
+      ],
+      "phrases": [
+        "within the same shift"
+      ]
+    },
+    {
+      "id": "retrieval-26",
+      "question": "Over which dates was the keeper and origin tab trial run?",
+      "doc_ids": [
+        "DOC-0029",
+        "DOC-0046"
+      ],
+      "phrases": [
+        "2026-05-25"
+      ]
+    },
+    {
+      "id": "retrieval-27",
+      "question": "What fields does the new weekly BETA queue report contain?",
+      "doc_ids": [
+        "DOC-0030"
+      ],
+      "phrases": [
+        "decision"
+      ]
+    },
+    {
+      "id": "retrieval-28",
+      "question": "When is the glossary training session for ALPHA coordinators?",
+      "doc_ids": [
+        "DOC-0031"
+      ],
+      "phrases": [
+        "12:40"
+      ]
+    },
+    {
+      "id": "retrieval-29",
+      "question": "During which week were changes to existing priorities frozen for the records audit?",
+      "doc_ids": [
+        "DOC-0032",
+        "DOC-0045"
+      ],
+      "phrases": [
+        "2026-08-24"
+      ]
+    },
+    {
+      "id": "retrieval-30",
+      "question": "Which queue cover form is being retired, and from when?",
+      "doc_ids": [
+        "DOC-0033"
+      ],
+      "phrases": [
+        "single-line"
+      ]
+    },
+    {
+      "id": "retrieval-31",
+      "question": "Where is the electrical queue binder for DEMO-AIR-0012 being moved, and when?",
+      "doc_ids": [
+        "DOC-0034",
+        "DOC-0048"
+      ],
+      "phrases": [
+        "DEMO-STATION-03",
+        "09:40"
+      ]
+    },
+    {
+      "id": "retrieval-32",
+      "question": "In the afternoon desk split, which hours does TEAM-0004 cover electrical?",
+      "doc_ids": [
+        "DOC-0035"
+      ],
+      "phrases": [
+        "14:00 to 18:00"
+      ]
+    },
+    {
+      "id": "retrieval-33",
+      "question": "What separate team spaces are on a dependency sheet when another desk must answer?",
+      "doc_ids": [
+        "DOC-0037"
+      ],
+      "phrases": [
+        "answering-team"
+      ]
+    },
+    {
+      "id": "retrieval-34",
+      "question": "What time is the shared handover checkpoint between Station 01 and Station 02?",
+      "doc_ids": [
+        "DOC-0042"
+      ],
+      "phrases": [
+        "15:40"
+      ]
+    },
+    {
+      "id": "retrieval-35",
+      "question": "When are topic headings due for the structures items going to the Friday sweep?",
+      "doc_ids": [
+        "DOC-0043"
+      ],
+      "phrases": [
+        "16:00"
+      ]
+    },
+    {
+      "id": "retrieval-36",
+      "question": "When is the follow-up meeting after the BETA records audit?",
+      "doc_ids": [
+        "DOC-0045"
+      ],
+      "phrases": [
+        "10:50"
+      ]
+    },
+    {
+      "id": "retrieval-37",
+      "question": "Who was named as reviewer for the hydraulics return papers at the review board?",
+      "doc_ids": [
+        "DOC-0047"
+      ],
+      "phrases": [
+        "PERSON-0029"
+      ]
+    },
+    {
+      "id": "retrieval-38",
+      "question": "Why was a copied intake card mistaken for a new submission?",
+      "doc_ids": [
+        "DOC-0049"
+      ],
+      "phrases": [
+        "shortened"
+      ]
+    },
+    {
+      "id": "retrieval-39",
+      "question": "What went wrong with ownership during the hydraulics shift change?",
+      "doc_ids": [
+        "DOC-0050"
+      ],
+      "phrases": [
+        "recorder's name"
+      ]
+    },
+    {
+      "id": "retrieval-40",
+      "question": "What happened when an attachment was filed under a meeting's short name?",
+      "doc_ids": [
+        "DOC-0054"
+      ],
+      "phrases": [
+        "short name"
+      ]
+    },
+    {
+      "id": "retrieval-41",
+      "question": "Why did priority proposals start to look like settled decisions?",
+      "doc_ids": [
+        "DOC-0055"
+      ],
+      "phrases": [
+        "recopied"
+      ]
+    },
+    {
+      "id": "retrieval-42",
+      "question": "Does moving queue papers to another station change the aircraft's station?",
+      "doc_ids": [
+        "DOC-0060",
+        "DOC-0034",
+        "DOC-0048"
+      ],
+      "phrases": [
+        "station field",
+        "aircraft location"
+      ]
+    },
+    {
+      "id": "retrieval-43",
+      "question": "Which practice has the receiver repeat the next action and its due date?",
+      "doc_ids": [
+        "DOC-0002",
+        "DOC-0019",
+        "DOC-0034",
+        "DOC-0050"
+      ],
+      "phrases": [
+        "receiver echo"
+      ]
+    },
+    {
+      "id": "retrieval-44",
+      "question": "What does reason-before-rank require before a priority is chosen?",
+      "doc_ids": [
+        "DOC-0001",
+        "DOC-0032",
+        "DOC-0055",
+        "DOC-0058"
+      ],
+      "phrases": [
+        "reason-before-rank"
+      ]
+    }
+  ]
+}

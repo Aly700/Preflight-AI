@@ -3,6 +3,8 @@
 import json
 from typing import Any
 
+import numpy as np
+from numpy.typing import NDArray
 import psycopg
 
 from mcp_service.embeddings import get_embedder
@@ -49,6 +51,21 @@ def issue_filters(values: dict[str, Any], *, unresolved_only: bool = False) -> t
     return (' WHERE ' + ' AND '.join(clauses)) if clauses else '', bound
 
 
+def document_filters(kind: str | None, related_id: str | None, limit: int) -> tuple[str, list[Any]]:
+    # The literal integer limit preserves the existing SQL and index plan shape.
+    if type(limit) is not int or limit < 1:
+        raise ValueError('Candidate limit must be a positive integer')
+    clauses: list[str] = []
+    values: list[Any] = []
+    if kind is not None:
+        clauses.append('d.kind = %s')
+        values.append(kind)
+    if related_id is not None:
+        clauses.append('d.related_ids @> ARRAY[%s]')
+        values.append(related_id)
+    return (' WHERE ' + ' AND '.join(clauses)) if clauses else '', values
+
+
 class Repository:
     def __init__(self, connection: psycopg.Connection[Row]) -> None:
         self.connection = connection
@@ -57,41 +74,42 @@ class Repository:
         row = self.connection.execute('SELECT 1 AS ready').fetchone()
         return row is not None and row['ready'] == 1
 
-    def search_documents(self, query: str, top_k: int, kind: str | None, related_id: str | None) -> Row:
-        # The MCP handler runs the entire repository call in its bounded worker pool,
-        # including model loading and inference. No query or passage text is logged.
-        vector = json.dumps(get_embedder().embed_query(query).tolist())
-        clauses: list[str] = []
-        values: list[Any] = []
-        if kind is not None:
-            clauses.append('d.kind = %s')
-            values.append(kind)
-        if related_id is not None:
-            clauses.append('d.related_ids @> ARRAY[%s]')
-            values.append(related_id)
-        where = ' WHERE ' + ' AND '.join(clauses) if clauses else ''
+    def vector_candidates(
+        self, query_vector: NDArray[np.float32], kind: str | None, related_id: str | None, limit: int = 20
+    ) -> list[Row]:
+        vector = json.dumps(query_vector.tolist())
+        where, values = document_filters(kind, related_id, limit)
         # Keep cosine distance as the direct ascending ORDER BY expression so the
         # planner can use passages_embedding_idx (HNSW vector_cosine_ops).
-        vector_rows = self.connection.execute(
+        return self.connection.execute(
             'SELECT '
             + PASSAGE_FIELDS
             + ' FROM preflight.passages p JOIN preflight.documents d ON d.doc_id = p.doc_id'
             + where
-            + ' ORDER BY p.embedding <=> %s::vector LIMIT 20',
+            + f' ORDER BY p.embedding <=> %s::vector LIMIT {limit}',
             [*values, vector],
         ).fetchall()
+
+    def keyword_candidates(self, query: str, kind: str | None, related_id: str | None, limit: int = 20) -> list[Row]:
+        where, values = document_filters(kind, related_id, limit)
         # plainto_tsquery removes English stop words and escapes lexemes; OR keeps
         # any meaningful term rather than requiring every term of a question.
-        keyword_rows = self.connection.execute(
+        return self.connection.execute(
             "WITH question AS (SELECT replace(plainto_tsquery('english', %s)::text, ' & ', ' | ')::tsquery AS terms) "
             'SELECT '
             + PASSAGE_FIELDS
             + ' FROM preflight.passages p JOIN preflight.documents d ON d.doc_id = p.doc_id CROSS JOIN question'
             + (where + ' AND ' if where else ' WHERE ')
             + 'p.text_search @@ question.terms'
-            + ' ORDER BY ts_rank_cd(p.text_search, question.terms) DESC, p.passage_id LIMIT 20',
+            + f' ORDER BY ts_rank_cd(p.text_search, question.terms) DESC, p.passage_id LIMIT {limit}',
             [query, *values],
         ).fetchall()
+
+    def search_documents(self, query: str, top_k: int, kind: str | None, related_id: str | None) -> Row:
+        # The MCP handler runs the entire repository call in its bounded worker pool,
+        # including model loading and inference. No query or passage text is logged.
+        vector_rows = self.vector_candidates(get_embedder().embed_query(query), kind, related_id)
+        keyword_rows = self.keyword_candidates(query, kind, related_id)
         return {'results': fuse_passages(vector_rows, keyword_rows, top_k)}
 
     def aircraft_summary(self, aircraft_id: str) -> Row:

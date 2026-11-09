@@ -46,6 +46,8 @@ class Embedder:
         if pad_id is None:
             raise ValueError('Embedding tokenizer has no [PAD] token')
         self.tokenizer.enable_padding(pad_id=pad_id, pad_token='[PAD]')
+        # ONNX Runtime ships with Microsoft telemetry hooks; this service sends nothing anywhere.
+        ort.disable_telemetry_events()
         options = ort.SessionOptions()
         options.intra_op_num_threads = intra_op_threads
         options.inter_op_num_threads = 1

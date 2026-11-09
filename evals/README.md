@@ -181,3 +181,60 @@ tool-failure set, `failure-compare-01` also accepts a grouped count as the fallb
 both directions with refusal sentences taken from the run and compliant answers. The first run's
 saved answers were rescored offline against version 2; no case changed except through these
 patterns and that tool list.
+
+## Retrieval evaluation
+
+`retrieval.json` is a fixed, 44-case gold set written from the fictional documents,
+with paraphrased questions, acceptable document IDs and alternative evidence phrases.
+Its note identifies two previously previewed queries and one OCR-aware phrase
+alternative. A passage is relevant only if its document is in `doc_ids` **and** its
+text contains at least one `phrases` entry, ignoring case and normalising whitespace.
+
+`scripts/retrieval_eval.py` shares one metrics core across two modes:
+
+- **System:** real PostgreSQL keyword, vector and hybrid retrieval through the MCP
+  repository, using database OCR text for relevance. It uses the service's local
+  BGE model and read-only database configuration in one repeatable-read snapshot.
+  Run inside an MCP container built with the candidate-method refactor and with the
+  documents loaded. From the repository root (stdin carries Python, not gold JSON):
+
+  ```sh
+  mkdir -p build
+  docker cp evals/retrieval.json preflight-oss-mcp:/tmp/preflight-retrieval.json
+  docker exec -i preflight-oss-mcp python - --mode system \
+    --gold /tmp/preflight-retrieval.json --output /tmp/preflight-retrieval-system.json \
+    < scripts/retrieval_eval.py
+  docker cp preflight-oss-mcp:/tmp/preflight-retrieval-system.json build/retrieval-system.json
+  ```
+
+- **Offline:** exact in-memory cosine ranking on the host. BGE uses the committed
+  OCR passage embeddings and embeds clean Markdown chunks in memory with the same
+  checksum-verified model. Clean relevance uses clean text; nothing in the corpus
+  is rewritten. This measures embeddings and OCR effects, not PostgreSQL's keyword
+  search, approximate vector index or hybrid fusion. Equal cosine scores sort by
+  passage ID.
+
+  ```sh
+  MODEL_DIR="$HOME/.cache/preflight-oss/bge-small-en-v1.5/5c38ec7c405ec4b44b94cc5a9bb96e735b38267a"
+  .venv/bin/python -B scripts/retrieval_eval.py --mode offline \
+    --model-dir "$MODEL_DIR" --output build/retrieval-offline.json
+  # Optional paid AWS calls on cache misses; requires separately installed boto3:
+  .venv/bin/python -B scripts/retrieval_eval.py --mode offline \
+    --model-dir "$MODEL_DIR" --titan --region ca-central-1 \
+    --output build/retrieval-titan.json
+  ```
+
+Titan embeds queries and both passage sets with `amazon.titan-embed-text-v2:0`,
+1024 dimensions and `normalize: true`, using the default AWS credential chain.
+`boto3` is imported only on cache misses. The `build/retrieval-cache/` cache keys
+include model, embedding settings and an exact text hash; files contain vectors,
+never text. Fully cached reruns make no AWS calls.
+
+Both modes report passage recall@5 (any relevant passage), document recall@5 (any
+passage of a gold document), MRR@10 and case count. First-relevant ranks are one-based
+positions within the top ten, with `null` for a miss. JSON reports contain metrics
+and case IDs/ranks without questions or passage text, paths or timestamps; identical
+inputs and rankings produce identical reports. `--gold` accepts a file path and
+otherwise uses `evals/retrieval.json` under the repository root (the working directory
+when Python comes from stdin). Results are recorded in [docs](../docs/RETRIEVAL_EVALUATION.md),
+not in this file.

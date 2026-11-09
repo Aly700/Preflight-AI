@@ -96,6 +96,16 @@ class EmbedderTests(unittest.TestCase):
             self.assertEqual(empty.dtype, np.float32)
             session.return_value.run.assert_called_once()
 
+    def test_onnx_runtime_telemetry_is_disabled_before_the_session_is_created(self):
+        calls = []
+        with (
+            patch.object(self.module, 'MODEL_SHA256', self.hashes),
+            patch.object(self.module.ort, 'disable_telemetry_events', side_effect=lambda: calls.append('off')),
+            patch.object(self.module.ort, 'InferenceSession', side_effect=lambda *a, **k: calls.append('session')),
+        ):
+            self.module.Embedder(self.directory)
+        self.assertEqual(calls, ['off', 'session'])
+
     def test_query_has_exact_prefix_and_service_uses_environment_default(self):
         with (
             patch.object(self.module, 'MODEL_SHA256', self.hashes),
