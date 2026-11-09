@@ -28,6 +28,8 @@ PASSAGE = {
     'station': None,
     'program': None,
     'related_ids': ['ISSUE-0001', 'TASK-0001'],
+    'author_id': 'PERSON-0014',
+    'team_id': 'TEAM-0002',
     'text': 'The Friday queue sweep starts at 14:00.',
 }
 DOCUMENT_RESULT = {'results': [{**PASSAGE, 'score': 2 / 61, 'keyword_rank': 1, 'vector_rank': 1}]}
@@ -247,6 +249,17 @@ class DocumentContractTests(unittest.IsolatedAsyncioTestCase):
                 model.model_validate({'results': [{**DOCUMENT_RESULT['results'][0], **change}]})
         with self.assertRaises(ValidationError):
             model.model_validate({**DOCUMENT_RESULT, 'sql': 'SELECT 1'})
+
+    def test_passages_carry_their_author_and_team_so_cited_authors_verify(self):
+        self.assertIn('d.author_id', repository.PASSAGE_FIELDS)
+        self.assertIn('d.team_id', repository.PASSAGE_FIELDS)
+        from backend.verify import record_ids
+
+        self.assertTrue({'PERSON-0014', 'TEAM-0002', 'DOC-0008#2', 'ISSUE-0001'} <= set(record_ids(DOCUMENT_RESULT)))
+        from preflight_core.models import DocumentPassage
+
+        self.assertIn('author_id', DocumentPassage.model_fields)
+        self.assertIn('team_id', DocumentPassage.model_fields)
 
     def test_record_id_pattern_accepts_documents_and_passages_only_in_doc_namespace(self):
         for ident in ('DOC-0001', 'DOC-9999#12', 'ISSUE-1', 'DEMO-AIR-0001'):

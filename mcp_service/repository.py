@@ -15,7 +15,8 @@ ISSUE_FIELDS = 'issue_id, aircraft_id, title, description, subsystem, priority, 
 GROUP_COLUMNS = {'subsystem': 'subsystem', 'priority': 'priority', 'status': 'status', 'aircraft': 'aircraft_id'}
 FILTER_COLUMNS = {'aircraft_id': 'aircraft_id', 'status': 'status', 'subsystem': 'subsystem', 'priority': 'priority'}
 PASSAGE_FIELDS = (
-    'p.passage_id, p.doc_id, d.title, d.kind, d.doc_date AS date, d.station, d.program, d.related_ids, p.text'
+    'p.passage_id, p.doc_id, d.title, d.kind, d.doc_date AS date, d.station, d.program, d.related_ids,'
+    ' d.author_id, d.team_id, p.text'
 )
 
 

@@ -161,7 +161,9 @@ class AdapterOrchestration(unittest.IsolatedAsyncioTestCase):
         factory, _ = fake_runtime(script)
         events = await collect(factory)
         sources = next(e['data'] for e in events if e['event'] == 'sources')
-        self.assertEqual(sources['records'], ['DOC-0008', 'DOC-0008#2', 'ISSUE-0001', 'TASK-0001'])
+        self.assertEqual(
+            sources['records'], ['DOC-0008', 'DOC-0008#2', 'ISSUE-0001', 'PERSON-0014', 'TASK-0001', 'TEAM-0002']
+        )
         self.assertEqual(sources['tools'], ['search_documents'])
         evidence = next(e['data']['results'] for e in events if e['event'] == 'evidence')
         self.assertEqual(evidence[0]['result'], DOCUMENT_RESULT)

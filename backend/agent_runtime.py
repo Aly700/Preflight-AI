@@ -96,6 +96,8 @@ def claims_prompt(calls: list[tuple[str, str, dict[str, Any]]]) -> str:
     lines = [
         'Now call the final_answer tool, the only tool available, to declare the claims in your answer above: '
         'declare only counts and quantities that come from tool results, not ranks, ordinals, dates or IDs. '
+        'Do not declare times of day, dates, durations or counts taken from document passages: '
+        'citing the passage supports them. '
         'For a computed number (a total minus a subtotal, a sum, a gap, or a count of listed items, optionally '
         'only those with a given field value), declare derived instead of path. '
         'For count, the operand path points at the list. '

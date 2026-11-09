@@ -149,6 +149,9 @@ class DocumentPassage(ResultModel):
     station: str | None
     program: str | None
     related_ids: list[RecordId]
+    # The document's author and team, so an answer that names them verifies.
+    author_id: RecordId
+    team_id: RecordId
     text: str
     score: float = Field(ge=0, allow_inf_nan=False)
     keyword_rank: CandidateRank | None

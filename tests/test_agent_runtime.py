@@ -186,6 +186,10 @@ class NativePrompts(unittest.TestCase):
         self.assertIn('where with present true', prompt)
         self.assertIn('present false', prompt)
 
+    def test_claims_prompt_leaves_document_times_and_counts_to_the_passage_citation(self):
+        prompt = claims_prompt([])
+        self.assertIn('times of day, dates, durations or counts taken from document passages', prompt)
+
     def test_claims_prompt_excludes_ratios_and_percentages(self):
         self.assertIn('Do not declare ratios or percentages.', claims_prompt([]))
 
@@ -262,7 +266,10 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(events[-1]['data']['verified'], verified)
                 self.assertEqual(events[-1]['data']['undeclared'], 0)
                 sources = next(e['data'] for e in events if e['event'] == 'sources')
-                self.assertEqual(sources['records'], ['DOC-0008', 'DOC-0008#2', 'ISSUE-0001', 'TASK-0001'])
+                self.assertEqual(
+                    sources['records'],
+                    ['DOC-0008', 'DOC-0008#2', 'ISSUE-0001', 'PERSON-0014', 'TASK-0001', 'TEAM-0002'],
+                )
                 evidence = next(e['data']['results'] for e in events if e['event'] == 'evidence')
                 self.assertEqual(evidence[0]['tool'], 'search_documents')
                 self.assertEqual(evidence[0]['result'], DOCUMENT_RESULT)
