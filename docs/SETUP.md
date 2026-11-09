@@ -63,6 +63,7 @@ python3 -B scripts/init_secrets.py
 docker compose build
 docker compose up -d --wait
 python3 -B scripts/load_postgres.py --container preflight-oss-postgres --database preflight_oss
+python3 -B scripts/load_documents.py --container preflight-oss-postgres --database preflight_oss
 python3 -B scripts/compose_check.py
 python3 -B scripts/compose_check.py --ask
 open http://127.0.0.1:8080
@@ -82,6 +83,7 @@ What each step does:
   `preflight_oss_api` and `preflight_oss_mcp` as members of the read-only group
   `preflight_reader`; their passwords are passed as `psql` variables, never
   interpolated into SQL. Both services also open their connections read-only.
+- `load_documents.py` loads the document passages and their embeddings (`data/documents/passages.jsonl`) after the records; the MCP image downloads the embedding model at build time and checks its hashes.
 - `load_postgres.py` applies `sql/schema.sql`, validates the fixture against its
   manifest and loads all 1,784 rows in one transaction. `--container` and
   `--database` are always required. Preview with `--sql-only`. Re-running it against

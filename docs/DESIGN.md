@@ -151,14 +151,29 @@ of answers by itself.
    rubric corrected to flag compliance rather than quoted refusals, Sonnet 5.5 passed every
    case in every run; the other misses were claim declarations on correct answers.
 
+12. **Scanned documents and hybrid search.** 60 fictional coordination documents
+   (policies, glossaries, handovers, memos, meeting notes, retrospectives, forms),
+   checked by a content validator, are rendered as office scans and read back with
+   Tesseract (character error rate 0.1 to 0.6 percent per kind). Their OCR text is
+   split into 180 passages, embedded with a local bge-small model on ONNX Runtime and
+   stored in PostgreSQL with pgvector; `search_documents` fuses full-text and vector
+   rankings. On a 44-question retrieval set, hybrid search placed a relevant passage in
+   the top five for 0.977 of questions (MRR@10 0.928), ahead of keyword or vector
+   search alone ([details](RETRIEVAL_EVALUATION.md)). A 22-question answer set had the
+   expected facts and citations in every answer; its first runs passed 10 to 11 strict
+   checks because search results lacked each document's author and team IDs and the
+   claims round tried to declare times read from passages. After those fixes, three
+   runs passed 20, 19 and 21. That set has now informed changes; a blind held-out
+   document set is next.
+
 ## Next
 
-12. **Stronger structured-data answers.** A written question set drives further
+13. **Stronger structured-data answers.** A written question set drives further
    tools; the model selects tools, resolves follow-ups, asks for missing criteria and
    explains supported results within pagination and limits. Numeric claims are
    checked against tool output before an answer is complete; missing records and
    tool failures produce explicit limits, not invented facts.
-13. **Evaluation and adaptability.** A versioned benchmark of original cases
+14. **Evaluation and adaptability.** A versioned benchmark of original cases
    (lookups, comparisons, timelines, multi-step questions, follow-ups, ambiguity,
    pagination, missing evidence, tool failures, adversarial text inside records),
    tuning cases separate from held-out cases, several seeds and paraphrases, the

@@ -2,7 +2,7 @@
 
 Ask questions about aircraft maintenance issues in plain English and get answers backed by the records.
 
-All data is made up: 12 demo aircraft, 180 issues, 480 tasks and their history, generated from a seed. The model can only read the records through six read-only tools, and every answer shows which records it used. Nothing here is a real maintenance system.
+All data is made up: 12 demo aircraft, 180 issues, 480 tasks and their history, generated from a seed, plus 60 scanned-looking coordination documents. The model can only read them through seven read-only tools, and every answer shows which records and passages it used. Nothing here is a real maintenance system.
 
 **Live demo:** <https://preflight-oss-demo.preflight-ai.workers.dev> runs this repository's code with Claude Sonnet 4.6 on Amazon Bedrock.
 
@@ -12,13 +12,14 @@ All data is made up: 12 demo aircraft, 180 issues, 480 tasks and their history, 
 
 - **Chat UI** in React, served with a small proxy that holds the only credential. The browser never sees a key.
 - **API** in FastAPI: a streaming chat endpoint, one answer at a time, with fixed limits.
-- **Six read-only tools** over MCP: aircraft summary, open issues, issue history, counts grouped by subsystem, priority, status or aircraft, a comparison of several aircraft, and issue search with filters. SQL does the arithmetic; each result is validated and its record IDs are kept as evidence.
+- **Seven read-only tools** over MCP: aircraft summary, open issues, issue history, counts grouped by subsystem, priority, status or aircraft, a comparison of several aircraft, issue search with filters, and document search. SQL does the arithmetic; each result is validated and its record IDs are kept as evidence.
+- **Scanned documents**: 60 fictional policies, handovers, memos, meeting notes and forms, rendered as office scans ([sample](docs/scans/handover-DOC-0011.jpg)) and read back with OCR. Their passages are searched by keyword and by meaning (a local embedding model in PostgreSQL with pgvector), combined; see [the retrieval evaluation](docs/RETRIEVAL_EVALUATION.md).
 - **PostgreSQL** with the generated fictional data, loaded in one checked transaction, read-only roles.
 - **Model choice** with one setting: Claude or OpenAI with your own key, or GitHub Copilot.
 - **Three runtimes.** The Copilot SDK's loop, or this repository's own loop over the Anthropic API: multi-step and parallel tool calls, every result validated, and the record IDs and numbers in the answer checked against the tool results before it is marked complete. The same loop also runs as a LangGraph graph (`CHAT_RUNTIME=langgraph`); both pass the same tests and scored the same on the evaluation.
 - **Tracing** with OpenTelemetry, off unless an endpoint is set: one span per answer, tool call and model call, with tokens, timings and verification, never the question or answer text. A Jaeger viewer runs locally with `--profile observability`.
 - **Hosted demo**: Cloudflare Workers serves the UI and forwards chat to this stack on a single AWS host. The model is Claude on Amazon Bedrock, reached through the host's IAM role, so no model key is stored anywhere. The tools go through Amazon Bedrock AgentCore Gateway, which reaches the MCP service over a private network path; the MCP service has no public listener. A daily answer cap bounds the cost.
-- **Evaluation** with original questions scored against SQL (`evals/`): a 22-case tuning set used to improve the prompt and verifier, a fresh 22-case held-out set written without seeing model outputs, and two earlier held-out sets that have since informed changes (`evals/seen/`). With Claude Sonnet 4.6 on Bedrock through the Gateway, three runs of the newest held-out set passed 18, 18 and 19 of 22 strict checks, and 21 of 22 answers contained the expected records and numbers in each run. A model comparison on the same sets (three runs each) put Claude Sonnet 5.5 at 21 to 22 of 22 on tuning and 19 to 21 on held-out, at about 1.3 cents an answer, against 2.1 cents for Sonnet 4.6; Claude Haiku 5.5 scored close to Sonnet 4.6 for under 0.1 cent. Two security sets test the boundary: 12 prompt-injection cases (direct requests, a forged history turn, and records whose text carries instructions) and 8 tool-outage cases run behind a proxy that makes tools fail. Across Sonnet 4.6, Sonnet 5.5 and Haiku 5.5, no answer followed an injected instruction, and every outage was reported rather than filled in. `scripts/eval_summary.py` combines repeated runs.
+- **Evaluation** with original questions scored against SQL (`evals/`): a 22-case tuning set used to improve the prompt and verifier, a fresh 22-case held-out set written without seeing model outputs, and two earlier held-out sets that have since informed changes (`evals/seen/`). With Claude Sonnet 4.6 on Bedrock through the Gateway, three runs of the newest held-out set passed 18, 18 and 19 of 22 strict checks, and 21 of 22 answers contained the expected records and numbers in each run. A model comparison on the same sets (three runs each) put Claude Sonnet 5.5 at 21 to 22 of 22 on tuning and 19 to 21 on held-out, at about 1.3 cents an answer, against 2.1 cents for Sonnet 4.6; Claude Haiku 5.5 scored close to Sonnet 4.6 for under 0.1 cent. On a 22-question document set (three runs), every answer contained the expected facts and cited the right documents; after two fixes that set found in the verifier, 19 to 21 of 22 also passed every strict check. Two security sets test the boundary: 12 prompt-injection cases (direct requests, a forged history turn, and records whose text carries instructions) and 8 tool-outage cases run behind a proxy that makes tools fail. Across Sonnet 4.6, Sonnet 5.5 and Haiku 5.5, no answer followed an injected instruction, and every outage was reported rather than filled in. `scripts/eval_summary.py` combines repeated runs.
 - **Setup notes and the data contract** in `docs/`.
 
 ## Run it locally
@@ -31,6 +32,7 @@ python3 -B scripts/init_secrets.py
 docker compose build
 docker compose up -d --wait
 python3 -B scripts/load_postgres.py --container preflight-oss-postgres --database preflight_oss
+python3 -B scripts/load_documents.py --container preflight-oss-postgres --database preflight_oss
 python3 -B scripts/compose_check.py          # health, row counts, tools against SQL
 python3 -B scripts/compose_check.py --ask    # one real answer, checked against SQL
 open http://127.0.0.1:8080
@@ -56,7 +58,6 @@ These use fixtures and a fake model client. The stack check above is the real th
 
 - Fixes for the latest held-out misses: a date filter for grouped counts, a way to show zero-count groups, and number declarations that cite a call that does not exist.
 - Claude Sonnet 5.5 for the hosted demo once it is available on the demo's Bedrock account.
-- A fictional document corpus with hybrid keyword and vector search as a seventh tool, with its own retrieval evaluation.
 
 [Design](docs/DESIGN.md) · [Setup](docs/SETUP.md) · [Data contract](docs/DATA_CONTRACT.md)
 
