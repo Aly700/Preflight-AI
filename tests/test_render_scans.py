@@ -31,7 +31,7 @@ class RenderScansTests(unittest.TestCase):
         path.write_text(
             f'---\ndoc_id: DOC-0001\nkind: {kind}\ntitle: Queue context\ndate: 2026-08-11\n'
             'program: DEMO-PROGRAM-ALPHA\nauthor: PERSON-0025\nteam: TEAM-0001\n'
-            'related_ids: TEAM-0001\nauthored_by: fixture / fixture\nspec_version: fixture\n---\n' + body,
+            'related_ids: TEAM-0001\nauthored_by: Preflight AI project\nspec_version: fixture\n---\n' + body,
             encoding='utf-8',
         )
         return path

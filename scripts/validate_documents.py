@@ -178,9 +178,8 @@ def document_problems(text: str, slot: dict[str, Any], known_ids: set[str]) -> t
     title = ' '.join(normalized(fields.get('title', '')).casefold().split())
     if 'title' in fields and not title:
         problems.append('title must be nonempty')
-    attribution = fields.get('authored_by', '').split('/')
-    if len(attribution) != 2 or not all(part.strip() for part in attribution):
-        problems.append('authored_by must name tool / model')
+    if not fields.get('authored_by', ''):
+        problems.append('authored_by must be nonempty')
     low, high = word_range(slot['kind'])
     if not low <= len(WORD.findall(normalized(body))) <= high:
         problems.append(f'body word count outside {low}-{high}')

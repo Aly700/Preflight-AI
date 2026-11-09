@@ -62,7 +62,7 @@ class PassageTests(unittest.TestCase):
             source = (
                 '---\n' + f'doc_id: {ident}\nkind: memo\ntitle: Fixture {label}\ndate: 2026-10-01\n'
                 'author: PERSON-0001\nteam: TEAM-0001\nrelated_ids: ISSUE-0001, TASK-0001\n'
-                'authored_by: test / fixture\nspec_version: documents-2026-11-08.1\n---\n'
+                'authored_by: Preflight AI project\nspec_version: documents-2026-11-08.1\n---\n'
                 + f'{label} clean-body '
                 * 150
             )

@@ -3,7 +3,7 @@
   "kind": "policy",
   "renderer_version": "scans-2026-11-09.2",
   "seed": 20261109,
-  "source_sha256": "a6f81540849136b7bdf840cd21aca88a2ad56480ea982ca0cab10bc8c897e06a",
+  "source_sha256": "9a527bf42814b35d125404739cd8a95c50c36bba0009946297a742d85730772a",
   "tesseract_version": "tesseract 5.5.0",
   "pages": [
     {

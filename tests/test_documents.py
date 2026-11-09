@@ -161,7 +161,7 @@ class DocumentValidatorTests(unittest.TestCase):
         slot = self.slots[0] if slot is None else slot
         header = {key: value for key, value in slot.items() if key != 'word_range'}
         header['related_ids'] = ', '.join(slot['related_ids'])
-        header.update(authored_by='fixture-tool / fixture-model', spec_version=VERSION)
+        header.update(authored_by='Preflight AI project', spec_version=VERSION)
         header.update(fields or {})
         if body is None:
             body = 'Queue context remains fictional. ' * ((slot['word_range'][0] + 20) // 4)
@@ -419,11 +419,11 @@ class DocumentValidatorTests(unittest.TestCase):
                 (self.directory / 'DOC-0001.md').write_text(text, encoding='utf-8')
                 self.assert_invalid('front matter')
 
-    def test_authorship_must_name_tool_and_model(self):
-        for value in ('', 'only-a-tool', 'tool / '):
+    def test_authorship_must_be_nonempty(self):
+        for value in ('', ' ', '\t'):
             with self.subTest(value=value):
                 self.write_document(fields={'authored_by': value})
-                self.assert_invalid('authored_by must name tool / model')
+                self.assert_invalid('authored_by must be nonempty')
 
     def test_invalid_utf8_reports_only_a_rule(self):
         (self.directory / 'DOC-0001.md').write_bytes(b'\xffPRIVATE_BODY_SENTINEL')

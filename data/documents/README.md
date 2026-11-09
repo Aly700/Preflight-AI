@@ -87,7 +87,7 @@ keys. Values are literal strings; do not add YAML quotes. Dates use `YYYY-MM-DD`
 | `author` | Exact slot person ID |
 | `team` | Exact slot team ID; must match the author's CSV team |
 | `related_ids` | Slot IDs in the same order, comma-separated; spaces around commas optional |
-| `authored_by` | Actual authoring tool and model as `tool / model`; both required |
+| `authored_by` | who prepared the fictional document set |
 | `spec_version` | `documents-2026-11-08.1` |
 
 The body uses plain Markdown paragraphs, short lists, optional headings, and at
