@@ -9,6 +9,7 @@ import io
 import json
 import os
 from pathlib import Path
+import re
 import stat
 import subprocess
 import sys
@@ -84,6 +85,15 @@ def docker_compose_available() -> bool:
 class ComposeConfiguration(unittest.TestCase):
     def setUp(self):
         self.ensure_secrets = load_script('init_secrets').ensure_secrets
+
+    def test_every_pinned_image_digest_is_a_full_sha256(self):
+        skip = {'.venv', 'node_modules', 'build'}
+        files = [ROOT / 'compose.yaml', *(p for p in ROOT.rglob('Dockerfile') if not skip.intersection(p.parts))]
+        digests = [d for f in files for d in re.findall(r'@sha256:([0-9A-Za-z]+)', f.read_text())]
+        self.assertTrue(digests)
+        for digest in digests:
+            with self.subTest(digest=digest):
+                self.assertRegex(digest, r'^[0-9a-f]{64}$')
 
     def test_tracing_is_opt_in_with_only_jaeger_ui_published_on_loopback(self):
         text = (ROOT / 'compose.yaml').read_text()

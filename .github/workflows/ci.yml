@@ -70,6 +70,7 @@ jobs:
       - run: docker compose -f compose.yaml -f .github/compose.ci.yaml build
       - run: docker compose up -d --wait --wait-timeout 180
       - run: python3 -B scripts/load_postgres.py --container preflight-oss-postgres --database preflight_oss
+      - run: python3 -B scripts/load_documents.py --container preflight-oss-postgres --database preflight_oss
       - run: python3 -B scripts/compose_check.py --output compose-check.json
       - uses: actions/upload-artifact@v4
         if: always()
@@ -103,5 +104,13 @@ jobs:
           push: false
           cache-from: type=gha,scope=backend-${{ matrix.arch }}
           cache-to: type=gha,mode=max,scope=backend-${{ matrix.arch }}
-      - run: docker build --platform linux/${{ matrix.arch }} -f mcp_service/Dockerfile .
+      # The MCP image downloads the embedding model; its layers are cached the same way.
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: mcp_service/Dockerfile
+          platforms: linux/${{ matrix.arch }}
+          push: false
+          cache-from: type=gha,scope=mcp-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=mcp-${{ matrix.arch }}
       - run: docker build --platform linux/${{ matrix.arch }} frontend

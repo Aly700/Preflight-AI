@@ -1,5 +1,5 @@
-# CI only: reuse the API image layers between runs through the GitHub Actions cache, so the
-# Copilot runtime is downloaded from GitHub releases only when its layer changes.
+# CI only: reuse the API and MCP image layers between runs through the GitHub Actions cache, so the
+# Copilot runtime and the embedding model are downloaded only when their layers change.
 services:
   preflight-oss-api:
     build:
@@ -7,3 +7,9 @@ services:
         - type=gha,scope=compose-api
       cache_to:
         - type=gha,mode=max,scope=compose-api
+  preflight-oss-mcp:
+    build:
+      cache_from:
+        - type=gha,scope=compose-mcp
+      cache_to:
+        - type=gha,mode=max,scope=compose-mcp

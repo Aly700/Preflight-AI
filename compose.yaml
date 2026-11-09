@@ -6,7 +6,8 @@ name: preflight-oss
 services:
   preflight-oss-postgres:
     container_name: preflight-oss-postgres
-    image: postgres:17@sha256:ff87138949ad9a46f32ff23bd6852b52ce024a13dffe9b4087be98292cdd3b4f
+    build:
+      context: ./compose/postgres
     environment:
       POSTGRES_DB: preflight_oss
       POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
@@ -34,6 +35,7 @@ services:
       PGPORT: "5432"
       PGDATABASE: preflight_oss
       PGUSER: preflight_oss_mcp
+      PREFLIGHT_EMBEDDING_MODEL_DIR: /opt/models/bge-small-en-v1.5
       PGPASSWORD_FILE: /run/secrets/mcp-password
       MCP_TOKEN_FILE: /run/secrets/mcp-token
       MCP_ALLOWED_HOSTS: preflight-oss-mcp:*,localhost:*,127.0.0.1:*

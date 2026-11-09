@@ -38,6 +38,9 @@ SELECT json_build_object(
     'teams', (SELECT count(*) FROM preflight.teams),
     'people', (SELECT count(*) FROM preflight.people),
     'shifts', (SELECT count(*) FROM preflight.shifts)),
+  'document_counts', json_build_object(
+    'documents', (SELECT count(*) FROM preflight.documents),
+    'passages', (SELECT count(*) FROM preflight.passages)),
   'unresolved_total', (SELECT count(*) FROM preflight.issues WHERE status <> 'closed'),
   'first_unresolved', (SELECT coalesce(json_agg(issue_id ORDER BY issue_id), '[]'::json) FROM
     (SELECT issue_id FROM preflight.issues WHERE status <> 'closed' ORDER BY issue_id LIMIT 5) first_five),
@@ -338,6 +341,20 @@ def answer_mentions(events: Iterable[tuple[str, dict[str, Any]]], facts: dict[st
     return str(facts['unresolved_total']) in text
 
 
+def compare_document_counts(
+    counts: dict[str, int], passages: Path = ROOT / 'data/documents/passages.jsonl'
+) -> list[str]:
+    rows = [json.loads(line) for line in passages.read_text(encoding='utf-8').splitlines()]
+    if not rows:
+        raise ValueError('Passage fixture is empty')
+    expected = {'documents': len({row['doc_id'] for row in rows}), 'passages': len(rows)}
+    return [
+        f'{name} count {counts.get(name)!r} differs from passage fixture {count}'
+        for name, count in expected.items()
+        if counts.get(name) != count
+    ]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--base', default='http://127.0.0.1:8080')
@@ -359,6 +376,8 @@ def main() -> None:
         report['total_rows'] = sum(facts['counts'].values())
         if report['total_rows'] != TOTAL_ROWS:
             failures.append(f'total rows {report["total_rows"]} differ from {TOTAL_ROWS}')
+        report['document_counts'] = facts['document_counts']
+        failures += compare_document_counts(facts['document_counts'])
         report['tool_mismatches'] = compare_tools(tool_results(project=args.project), facts)
         failures += report['tool_mismatches']
         report['status'] = chat_status(args.base)
