@@ -18,6 +18,8 @@ from typing import Any
 import unittest
 from unittest.mock import patch
 
+from test_document_search import DOCUMENT_RESULT
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -276,6 +278,7 @@ class ComposeConfiguration(unittest.TestCase):
 
 
 FACTS: dict[str, Any] = {
+    'passage_ids': ['DOC-0008#2', 'DOC-0001#1'],
     'counts': {
         'aircraft': 12,
         'issues': 180,
@@ -351,6 +354,42 @@ class StackCheck(unittest.TestCase):
     def setUp(self):
         self.check = load_script('compose_check')
 
+    def test_document_search_is_called_with_known_query_and_ids_come_from_sql(self):
+        self.assertIn("'search_documents': call('search_documents'", self.check.TOOL_CLIENT)
+        self.assertIn("'query': 'When does the Friday queue sweep start?'", self.check.TOOL_CLIENT)
+        self.assertIn("'top_k': 3", self.check.TOOL_CLIENT)
+        sql = ' '.join(self.check.FACTS_SQL.split())
+        self.assertIn("'passage_ids'", sql)
+        self.assertIn('json_agg(passage_id ORDER BY passage_id)', sql)
+        self.assertIn('FROM preflight.passages', sql)
+
+    def test_document_search_checks_top_three_and_every_passage_against_sql(self):
+        results = {
+            'get_aircraft_summary': SUMMARY,
+            'list_open_issues': PAGE,
+            'get_issue_history': HISTORY,
+            'count_issues': COUNTS,
+            'compare_aircraft': COMPARISON,
+            'search_issues': CLOSED,
+            'search_documents': DOCUMENT_RESULT,
+        }
+        self.assertEqual(self.check.compare_tools(results, FACTS), [])
+        first = DOCUMENT_RESULT['results'][0]
+        other = {**first, 'passage_id': 'DOC-0001#1', 'doc_id': 'DOC-0001'}
+        for passages in (
+            [],
+            [other] * 3 + [first],
+            [first, {**other, 'passage_id': 'DOC-9999#1'}],
+            [{**first, 'passage_id': 'DOC-9999#1'}],
+        ):
+            with self.subTest(passages=passages):
+                mismatches = self.check.compare_tools({**results, 'search_documents': {'results': passages}}, FACTS)
+                self.assertTrue(mismatches)
+                self.assertTrue(all('search_documents' in m for m in mismatches))
+        self.assertEqual(
+            self.check.compare_tools({**results, 'search_documents': {'results': [other, other, first]}}, FACTS), []
+        )
+
     def test_service_health_accepts_json_lines_and_arrays(self):
         entries = [
             {'Service': 'preflight-oss-postgres', 'Health': 'healthy', 'State': 'running'},
@@ -400,6 +439,7 @@ class StackCheck(unittest.TestCase):
             'count_issues': COUNTS,
             'compare_aircraft': COMPARISON,
             'search_issues': CLOSED,
+            'search_documents': DOCUMENT_RESULT,
         }
         self.assertEqual(self.check.compare_tools(results, FACTS), [])
         wrong = {**results, 'get_issue_history': {**HISTORY, 'total_events': 6}}
@@ -407,7 +447,7 @@ class StackCheck(unittest.TestCase):
         self.assertEqual(len(mismatches), 1)
         self.assertIn('get_issue_history', mismatches[0])
         missing = self.check.compare_tools({'list_open_issues': PAGE}, FACTS)
-        self.assertEqual(len(missing), 5)
+        self.assertEqual(len(missing), 6)
 
     def test_compare_tools_checks_the_three_new_tools(self):
         results = {
@@ -417,6 +457,7 @@ class StackCheck(unittest.TestCase):
             'count_issues': COUNTS,
             'compare_aircraft': COMPARISON,
             'search_issues': CLOSED,
+            'search_documents': DOCUMENT_RESULT,
         }
         self.assertEqual(self.check.compare_tools(results, FACTS), [])
         wrong_count = {**COUNTS, 'groups': [{'key': 'avionics', 'count': 1}, *COUNTS['groups'][1:]]}
@@ -440,6 +481,7 @@ class StackCheck(unittest.TestCase):
             'count_issues': COUNTS,
             'compare_aircraft': {**COMPARISON, 'ranked_by_unresolved': []},
             'search_issues': CLOSED,
+            'search_documents': DOCUMENT_RESULT,
         }
         mismatches = self.check.compare_tools(results, FACTS)
         self.assertEqual(len(mismatches), 1)
@@ -457,6 +499,7 @@ class StackCheck(unittest.TestCase):
             'count_issues': COUNTS,
             'compare_aircraft': {**COMPARISON, 'summaries': swapped},
             'search_issues': CLOSED,
+            'search_documents': DOCUMENT_RESULT,
         }
         mismatches = self.check.compare_tools(results, FACTS)
         self.assertEqual(len(mismatches), 1)
@@ -470,6 +513,7 @@ class StackCheck(unittest.TestCase):
             'count_issues': COUNTS,
             'compare_aircraft': COMPARISON,
             'search_issues': {**CLOSED, 'items': []},
+            'search_documents': DOCUMENT_RESULT,
         }
         mismatches = self.check.compare_tools(results, FACTS)
         self.assertEqual(len(mismatches), 1)
@@ -484,6 +528,7 @@ class StackCheck(unittest.TestCase):
             'count_issues': COUNTS,
             'compare_aircraft': COMPARISON,
             'search_issues': {**CLOSED, 'items': wrong_items},
+            'search_documents': DOCUMENT_RESULT,
         }
         mismatches = self.check.compare_tools(results, FACTS)
         self.assertEqual(len(mismatches), 1)

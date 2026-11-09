@@ -5,12 +5,13 @@ patterns are the fictional namespaces from the data contract; nothing resembles
 a real aircraft, person or organization identifier.
 """
 
+from datetime import date as Date
 import re
 from typing import Annotated, Literal
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
-RECORD_ID = re.compile(r'^(?:DEMO-AIR|ISSUE|TASK|EVT|TEAM|PERSON|SHIFT)-[0-9]+$')
+RECORD_ID = re.compile(r'^(?:(?:DEMO-AIR|ISSUE|TASK|EVT|TEAM|PERSON|SHIFT)-[0-9]+|DOC-[0-9]{4}(?:#[0-9]+)?)$')
 
 AircraftId = Annotated[str, Field(pattern=r'^DEMO-AIR-[0-9]+$', max_length=64, strict=True)]
 IssueId = Annotated[str, Field(pattern=r'^ISSUE-[0-9]+$', max_length=64, strict=True)]
@@ -36,6 +37,11 @@ EventType = Literal[
 ]
 Count = Annotated[int, Field(ge=0)]
 Flag = Annotated[bool, Field(strict=True)]
+RecordId = Annotated[str, Field(pattern=RECORD_ID.pattern, max_length=64, strict=True)]
+DocumentQuery = Annotated[str, Field(min_length=3, max_length=300, strict=True)]
+DocumentTopK = Annotated[int, Field(ge=1, le=8, strict=True)]
+DocumentKind = Literal['policy', 'glossary', 'handover', 'memo', 'coordination', 'retrospective', 'form']
+CandidateRank = Annotated[int, Field(ge=1, le=20, strict=True)]
 
 
 class Aircraft(BaseModel):
@@ -132,3 +138,22 @@ class AircraftComparison(ResultModel):
     summaries: list[AircraftSummary]
     ranked_by_unresolved: list[AircraftRank]
     unresolved_spread: Count
+
+
+class DocumentPassage(ResultModel):
+    passage_id: str = Field(pattern=r'^DOC-[0-9]{4}#[0-9]+$')
+    doc_id: str = Field(pattern=r'^DOC-[0-9]{4}$')
+    title: str
+    kind: DocumentKind
+    date: Date
+    station: str | None
+    program: str | None
+    related_ids: list[RecordId]
+    text: str
+    score: float = Field(ge=0, allow_inf_nan=False)
+    keyword_rank: CandidateRank | None
+    vector_rank: CandidateRank | None
+
+
+class DocumentSearchResult(ResultModel):
+    results: list[DocumentPassage] = Field(max_length=8)

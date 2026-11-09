@@ -1,14 +1,33 @@
 """Allowlisted SELECTs with bound values; no caller-supplied SQL or CSV reads."""
 
+import json
 from typing import Any
 
 import psycopg
+
+from mcp_service.embeddings import get_embedder
 
 Row = dict[str, Any]
 ISSUE_FIELDS = 'issue_id, aircraft_id, title, description, subsystem, priority, status, opened_at, closed_at'
 # Grouping and filter columns are chosen from these fixed names; input values only ever bind as parameters.
 GROUP_COLUMNS = {'subsystem': 'subsystem', 'priority': 'priority', 'status': 'status', 'aircraft': 'aircraft_id'}
 FILTER_COLUMNS = {'aircraft_id': 'aircraft_id', 'status': 'status', 'subsystem': 'subsystem', 'priority': 'priority'}
+PASSAGE_FIELDS = (
+    'p.passage_id, p.doc_id, d.title, d.kind, d.doc_date AS date, d.station, d.program, d.related_ids, p.text'
+)
+
+
+def fuse_passages(vector: list[Row], keyword: list[Row], top_k: int) -> list[Row]:
+    """RRF with one-based ranks and k=60; equal scores sort by passage ID."""
+    fused: dict[str, Row] = {}
+    for rows, rank_field in ((vector, 'vector_rank'), (keyword, 'keyword_rank')):
+        for rank, row in enumerate(rows, 1):
+            passage = fused.setdefault(
+                row['passage_id'], {**row, 'score': 0.0, 'vector_rank': None, 'keyword_rank': None}
+            )
+            passage[rank_field] = rank
+            passage['score'] += 1 / (60 + rank)
+    return sorted(fused.values(), key=lambda row: (-row['score'], row['passage_id']))[:top_k]
 
 
 def issue_filters(values: dict[str, Any], *, unresolved_only: bool = False) -> tuple[str, list[Any]]:
@@ -37,6 +56,43 @@ class Repository:
     def healthy(self) -> bool:
         row = self.connection.execute('SELECT 1 AS ready').fetchone()
         return row is not None and row['ready'] == 1
+
+    def search_documents(self, query: str, top_k: int, kind: str | None, related_id: str | None) -> Row:
+        # The MCP handler runs the entire repository call in its bounded worker pool,
+        # including model loading and inference. No query or passage text is logged.
+        vector = json.dumps(get_embedder().embed_query(query).tolist())
+        clauses: list[str] = []
+        values: list[Any] = []
+        if kind is not None:
+            clauses.append('d.kind = %s')
+            values.append(kind)
+        if related_id is not None:
+            clauses.append('d.related_ids @> ARRAY[%s]')
+            values.append(related_id)
+        where = ' WHERE ' + ' AND '.join(clauses) if clauses else ''
+        # Keep cosine distance as the direct ascending ORDER BY expression so the
+        # planner can use passages_embedding_idx (HNSW vector_cosine_ops).
+        vector_rows = self.connection.execute(
+            'SELECT '
+            + PASSAGE_FIELDS
+            + ' FROM preflight.passages p JOIN preflight.documents d ON d.doc_id = p.doc_id'
+            + where
+            + ' ORDER BY p.embedding <=> %s::vector LIMIT 20',
+            [*values, vector],
+        ).fetchall()
+        # plainto_tsquery removes English stop words and escapes lexemes; OR keeps
+        # any meaningful term rather than requiring every term of a question.
+        keyword_rows = self.connection.execute(
+            "WITH question AS (SELECT replace(plainto_tsquery('english', %s)::text, ' & ', ' | ')::tsquery AS terms) "
+            'SELECT '
+            + PASSAGE_FIELDS
+            + ' FROM preflight.passages p JOIN preflight.documents d ON d.doc_id = p.doc_id CROSS JOIN question'
+            + (where + ' AND ' if where else ' WHERE ')
+            + 'p.text_search @@ question.terms'
+            + ' ORDER BY ts_rank_cd(p.text_search, question.terms) DESC, p.passage_id LIMIT 20',
+            [query, *values],
+        ).fetchall()
+        return {'results': fuse_passages(vector_rows, keyword_rows, top_k)}
 
     def aircraft_summary(self, aircraft_id: str) -> Row:
         aircraft = self.connection.execute(

@@ -8,6 +8,7 @@ from collections.abc import Sequence
 import hashlib
 import os
 from pathlib import Path
+from threading import Lock
 
 import numpy as np
 from numpy.typing import NDArray
@@ -72,3 +73,16 @@ class Embedder:
 
     def embed_query(self, text: str) -> NDArray[np.float32]:
         return self.embed_passages([QUERY_PREFIX + text]).reshape(DIMENSIONS)
+
+
+_embedder: Embedder | None = None
+_embedder_lock = Lock()
+
+
+def get_embedder() -> Embedder:
+    """Load the configured local model on first use, once per service process."""
+    global _embedder
+    with _embedder_lock:
+        if _embedder is None:
+            _embedder = Embedder()
+        return _embedder

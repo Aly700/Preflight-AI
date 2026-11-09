@@ -93,7 +93,7 @@ FINAL_ANSWER_TOOL: dict[str, Any] = {
 
 
 def record_ids(payload: Any) -> list[str]:
-    """Collect fictional record IDs from `*_id` and `key` fields, never from free text."""
+    """Collect IDs from `*_id`, `key` and string items of `*_ids` lists, never free text."""
     found: set[str] = set()
 
     def visit(value: Any) -> None:
@@ -102,6 +102,8 @@ def record_ids(payload: Any) -> list[str]:
                 if (key.endswith('_id') or key == 'key') and isinstance(item, str) and RECORD_ID.fullmatch(item):
                     found.add(item)
                 else:
+                    if key.endswith('_ids') and isinstance(item, list):
+                        found.update(entry for entry in item if isinstance(entry, str) and RECORD_ID.fullmatch(entry))
                     visit(item)
         elif isinstance(value, list):
             for item in value:
@@ -119,7 +121,7 @@ class Verification:
     note: str = ''
 
 
-ID_PATTERN = re.compile(r'\b(?:DEMO-AIR|ISSUE|TASK|EVT|TEAM|PERSON|SHIFT)-[0-9]+\b')
+ID_PATTERN = re.compile(r'\b(?:(?:DEMO-AIR|ISSUE|TASK|EVT|TEAM|PERSON|SHIFT)-[0-9]+|DOC-[0-9]{4}(?:#[0-9]+)?)\b')
 DATE = re.compile(r'\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2})?(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?)?')
 TIME = re.compile(r'\b\d{1,2}:\d{2}(?::\d{2})?\b')
 THOUSANDS = re.compile(r'\b\d{1,3}(?:,\d{3})+\b')

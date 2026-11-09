@@ -1,4 +1,4 @@
-"""The single declaration of the six read-only tools: names, argument sets and result schemas.
+"""The single declaration of the seven read-only tools: names, argument sets and result schemas.
 
 The MCP service uses this to reject unknown tools and unexpected arguments
 before any handler runs. The Copilot adapter uses it to recognise permitted
@@ -9,7 +9,15 @@ once, which is why the list is short and every change to it is reviewed.
 from collections.abc import Mapping
 from dataclasses import dataclass
 
-from preflight_core.models import AircraftComparison, AircraftSummary, IssueCounts, IssueHistory, IssuePage, ResultModel
+from preflight_core.models import (
+    AircraftComparison,
+    AircraftSummary,
+    DocumentSearchResult,
+    IssueCounts,
+    IssueHistory,
+    IssuePage,
+    ResultModel,
+)
 
 MCP_SERVER_NAME = 'preflight'
 
@@ -43,6 +51,7 @@ TOOL_CONTRACTS: tuple[ToolContract, ...] = (
         ),
         IssuePage,
     ),
+    ToolContract('search_documents', frozenset({'query', 'top_k', 'kind', 'related_id'}), DocumentSearchResult),
 )
 TOOLS: Mapping[str, ToolContract] = {contract.name: contract for contract in TOOL_CONTRACTS}
 QUALIFIED_NAMES: Mapping[str, str] = {contract.qualified_name: contract.name for contract in TOOL_CONTRACTS}

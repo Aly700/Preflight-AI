@@ -460,6 +460,52 @@ class DerivedClaimVerification(unittest.TestCase):
 
 
 class ClaimVerification(unittest.TestCase):
+    def test_document_citations_require_the_exact_returned_passage(self):
+        payload = {'results': [{'doc_id': 'DOC-0001', 'passage_id': 'DOC-0001#2'}]}
+        for ident in ('DOC-0001', 'DOC-0001#2', 'DOC-0001#3', 'DOC-9999'):
+            with self.subTest(ident=ident):
+                self.assertEqual(scan_prose(f'According to ({ident}).'), ({ident}, []))
+                result = verify_claims(
+                    prose=f'According to ({ident}).',
+                    claims={'cited_ids': [ident], 'numbers': []},
+                    results={'search': payload},
+                    seen_ids=set(record_ids(payload)),
+                )
+                self.assertEqual(result.verified, ident in ('DOC-0001', 'DOC-0001#2'), result.note)
+                if not result.verified:
+                    self.assertIn(f'{ident} was cited but no tool returned it', result.note)
+        result = verify_claims(prose='See DOC-0001#2.', claims=None, results={}, seen_ids=set())
+        self.assertFalse(result.verified)
+        self.assertEqual(result.undeclared, 0)
+
+    def test_ids_lists_collect_only_record_strings_and_preserve_nested_id_fields(self):
+        payload = {
+            'results': [
+                {
+                    'passage_id': 'DOC-0001#2',
+                    'doc_id': 'DOC-0001',
+                    'related_ids': [
+                        'ISSUE-0001',
+                        'TASK-0001',
+                        'ISSUE-0001',
+                        'not an ID',
+                        None,
+                        42,
+                        {'event_id': 'EVT-0001'},
+                    ],
+                    'text': 'DOC-9999#1 and ISSUE-9999 are untrusted text',
+                }
+            ],
+            'other_ids': ['PERSON-0001'],
+            'unrelated': ['SHIFT-0001'],
+            'related_id': 'TEAM-0001',
+            'related_ids': 'TASK-9999',
+        }
+        self.assertEqual(
+            record_ids(payload),
+            ['DOC-0001', 'DOC-0001#2', 'EVT-0001', 'ISSUE-0001', 'PERSON-0001', 'TASK-0001', 'TEAM-0001'],
+        )
+
     def test_thousands_separators_are_one_number(self):
         for formatted, value in (('1,784', 1784), ('12,345', 12345), ('123,456,789', 123456789)):
             with self.subTest(formatted=formatted):

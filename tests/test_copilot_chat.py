@@ -7,6 +7,8 @@ from types import SimpleNamespace
 from typing import Any
 import unittest
 
+from test_document_search import DOCUMENT_RESULT
+
 from backend.copilot_chat import provider_config, stream_answer
 from backend.settings import ChatSettings
 from preflight_core.tools import TOOLS
@@ -140,6 +142,31 @@ async def collect(factory, **kwargs):
 
 
 class AdapterOrchestration(unittest.IsolatedAsyncioTestCase):
+    async def test_document_passages_validate_and_supply_sources_and_evidence(self):
+        script = [
+            event(
+                'tool.execution_start',
+                mcp_server_name='preflight',
+                mcp_tool_name='search_documents',
+                tool_call_id='docs',
+            ),
+            event(
+                'tool.execution_complete',
+                tool_call_id='docs',
+                success=True,
+                result=SimpleNamespace(structured_content=DOCUMENT_RESULT, content=''),
+            ),
+            event('assistant.message_delta', delta_content='The sweep starts at 14:00 (DOC-0008#2).'),
+        ]
+        factory, _ = fake_runtime(script)
+        events = await collect(factory)
+        sources = next(e['data'] for e in events if e['event'] == 'sources')
+        self.assertEqual(sources['records'], ['DOC-0008', 'DOC-0008#2', 'ISSUE-0001', 'TASK-0001'])
+        self.assertEqual(sources['tools'], ['search_documents'])
+        evidence = next(e['data']['results'] for e in events if e['event'] == 'evidence')
+        self.assertEqual(evidence[0]['result'], DOCUMENT_RESULT)
+        self.assertEqual(events[-1]['event'], 'done')
+
     async def test_success_forwards_tool_activity_text_then_sources_evidence_done(self):
         factory, seen = fake_runtime(tool_call() + ANSWER)
         events = await collect(factory)

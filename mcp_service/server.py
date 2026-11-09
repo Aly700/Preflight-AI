@@ -1,4 +1,4 @@
-"""Six read-only MCP tools, authenticated HTTP, and database-backed health."""
+"""Seven read-only MCP tools, authenticated HTTP, and database-backed health."""
 
 from collections.abc import Awaitable, Callable, Iterator
 from contextlib import AbstractContextManager, contextmanager
@@ -26,6 +26,10 @@ from preflight_core.models import (
     AircraftComparison,
     AircraftId,
     AircraftSummary,
+    DocumentKind,
+    DocumentQuery,
+    DocumentSearchResult,
+    DocumentTopK,
     Flag,
     GroupBy,
     IssueCounts,
@@ -36,6 +40,7 @@ from preflight_core.models import (
     PageLimit,
     PageOffset,
     Priority,
+    RecordId,
     Subsystem,
 )
 from preflight_core.settings import mcp_hosts_from_environment
@@ -177,6 +182,22 @@ def create_server(repository_factory: RepositoryFactory = open_repository) -> MC
                 'search_issues', status, subsystem, priority, aircraft_id, opened_after, opened_before, limit, offset
             )
         )
+
+    @server.tool(annotations=READ_ONLY)
+    async def search_documents(
+        query: DocumentQuery,
+        top_k: DocumentTopK = 5,
+        kind: DocumentKind | None = None,
+        related_id: RecordId | None = None,
+    ) -> DocumentSearchResult:
+        """Search fictional passages for policies, procedures of the coordination process,
+        decisions, handovers, meeting outcomes and definitions.
+
+        Use the record tools for counts, statuses and current values. Hybrid keyword/vector
+        retrieval returns passage IDs to cite, with optional kind and related record filters.
+        This tool cannot change any records.
+        """
+        return DocumentSearchResult.model_validate(await read('search_documents', query, top_k, kind, related_id))
 
     @server.custom_route('/health', methods=['GET'])
     async def health(request: Request) -> JSONResponse:

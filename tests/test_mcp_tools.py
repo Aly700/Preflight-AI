@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock, patch
 import httpx2
 from mcp import Client
 from mcp.client.streamable_http import streamable_http_client
+from test_document_search import DOCUMENT_RESULT
 from test_mcp import FixtureRepository
 
 from backend import mcp_tools
@@ -168,7 +169,7 @@ class McpToolsContract(unittest.IsolatedAsyncioTestCase):
             build.assert_called_once_with(settings)
             self.assertIs(loop.call_args.args[2], build.return_value)
 
-    async def test_discover_returns_the_six_registry_tools_with_schemas(self):
+    async def test_discover_returns_the_seven_registry_tools_with_schemas(self):
         async with self.running():
             specs = await self.tools().discover()
             self.assertEqual(
@@ -180,11 +181,22 @@ class McpToolsContract(unittest.IsolatedAsyncioTestCase):
                     'count_issues',
                     'compare_aircraft',
                     'search_issues',
+                    'search_documents',
                 ],
             )
             page = next(s for s in specs if s.name == 'list_open_issues')
             self.assertEqual(set(page.input_schema['properties']), {'aircraft_id', 'priority', 'limit', 'offset'})
             self.assertTrue(page.description)
+
+    async def test_document_search_is_allowlisted_and_validates_passage_results(self):
+        async with self.running():
+            with patch.object(self.repo, 'search_documents', return_value=DOCUMENT_RESULT, create=True):
+                result = await self.tools().call('docs', 'search_documents', {'query': 'Friday sweep'})
+                self.assertTrue(result.ok, result.error)
+                self.assertEqual(result.payload, DOCUMENT_RESULT)
+            with patch.object(self.repo, 'search_documents', return_value={'results': [{'text': 'bad'}]}, create=True):
+                result = await self.tools().call('docs', 'search_documents', {'query': 'Friday sweep'})
+                self.assertFalse(result.ok)
 
     async def test_call_validates_result_and_collects_payload(self):
         async with self.running():
@@ -278,7 +290,7 @@ class McpToolsContract(unittest.IsolatedAsyncioTestCase):
         tools = anthropic_tools(specs)
         self.assertNotIn('final_answer', [t['name'] for t in tools])
         self.assertEqual([t['name'] for t in tools], [s.name for s in specs])
-        self.assertEqual(len(tools), 6)
+        self.assertEqual(len(tools), 7)
         self.assertEqual(set(tools[0]), {'name', 'description', 'input_schema'})
 
 

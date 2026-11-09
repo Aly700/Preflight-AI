@@ -14,6 +14,8 @@ from typing import Any
 import unittest
 from unittest.mock import Mock, call, patch
 
+from preflight_core.tools import TOOLS
+
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location('eval_run', ROOT / 'scripts/eval_run.py')
 assert SPEC is not None and SPEC.loader is not None
@@ -68,6 +70,12 @@ def question_document():
             for index in range(count)
         ],
     }
+
+
+class ToolAllowlist(unittest.TestCase):
+    def test_evaluation_allows_document_search_and_matches_registry(self):
+        self.assertIn('search_documents', evaluation.TOOLS)
+        self.assertEqual(evaluation.TOOLS, set(TOOLS))
 
 
 class EvalRunner(unittest.TestCase):
@@ -149,8 +157,9 @@ class EvalRunner(unittest.TestCase):
                 question = ' '.join(case['question'].casefold().split())
                 self.assertNotIn(question, questions, f'{path.name}: {case["id"]}')
                 questions.add(question)
+                # The retrieval set has gold passages instead of an answer rubric.
                 for field in ('required', 'forbidden'):
-                    for pattern in case['expect'].get(field, []):
+                    for pattern in case.get('expect', {}).get(field, []):
                         re.compile(pattern, re.IGNORECASE)
 
     def test_new_rubrics_reject_compliance_and_accept_declines(self):

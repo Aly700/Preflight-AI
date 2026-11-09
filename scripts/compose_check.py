@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Check the running local stack: health, loaded rows, the three tools against SQL, and optionally one answer.
+"""Check the running local stack: health, loaded rows, seven tools against SQL, and optionally one answer.
 
-Standard library only. Without `--ask` nothing contacts a model: the checks are
+Standard library only. Without `--ask` no chat model is called: the checks are
 container health, row counts from an independent SQL query, the chat status
-route, and the three MCP tools called through their real HTTP transport and
+route, and the seven MCP tools called through their real HTTP transport and
 authentication, compared with SQL. `--ask` sends one fixed question through the
 web entry point and compares the answer's tool evidence with the same SQL facts.
 """
@@ -41,6 +41,7 @@ SELECT json_build_object(
   'document_counts', json_build_object(
     'documents', (SELECT count(*) FROM preflight.documents),
     'passages', (SELECT count(*) FROM preflight.passages)),
+  'passage_ids', (SELECT coalesce(json_agg(passage_id ORDER BY passage_id), '[]'::json) FROM preflight.passages),
   'unresolved_total', (SELECT count(*) FROM preflight.issues WHERE status <> 'closed'),
   'first_unresolved', (SELECT coalesce(json_agg(issue_id ORDER BY issue_id), '[]'::json) FROM
     (SELECT issue_id FROM preflight.issues WHERE status <> 'closed' ORDER BY issue_id LIMIT 5) first_five),
@@ -76,7 +77,7 @@ SELECT json_build_object(
 );
 """
 
-# Runs inside the MCP container: the three tools through the real HTTP transport and bearer authentication.
+# Runs inside the MCP container: all tools through the real HTTP transport and bearer authentication.
 TOOL_CLIENT = r"""
 import json, sys, urllib.request
 token = open('/run/secrets/mcp-token').read().strip()
@@ -112,6 +113,7 @@ print(json.dumps({
     'count_issues': call('count_issues', {'group_by': 'subsystem', 'unresolved_only': True}, 4),
     'compare_aircraft': call('compare_aircraft', {'aircraft_ids': ['DEMO-AIR-0001', 'DEMO-AIR-0002']}, 5),
     'search_issues': call('search_issues', {'status': 'closed', 'limit': 5}, 6),
+    'search_documents': call('search_documents', {'query': 'When does the Friday queue sweep start?', 'top_k': 3}, 7),
 }))
 """
 
@@ -162,7 +164,7 @@ def sql_facts(container: str, database: str) -> dict[str, Any]:
 
 
 def tool_results(service: str = 'preflight-oss-mcp', project: str = PROJECT) -> dict[str, Any]:
-    """The three tools called inside the MCP container through its own HTTP transport."""
+    """All tools called inside the MCP container through its own HTTP transport."""
     output = run(['docker', 'compose', '-p', project, 'exec', '-T', service, 'python', '-c', TOOL_CLIENT])
     results: dict[str, Any] = json.loads(output)
     return results
@@ -273,6 +275,7 @@ def compare_tools(results: dict[str, Any], facts: dict[str, Any]) -> list[str]:
         'count_issues',
         'compare_aircraft',
         'search_issues',
+        'search_documents',
     ):
         if tool not in results:
             mismatches.append(f'{tool}: no result')
@@ -333,6 +336,14 @@ def compare_tools(results: dict[str, Any], facts: dict[str, Any]) -> list[str]:
             or any(i.get('status') != 'closed' for i in items)
         ):
             mismatches.append('search_issues: page differs from SQL or an item is not closed')
+    if 'search_documents' in results:
+        passages = results['search_documents'].get('results', [])
+        if not any(p.get('doc_id') == 'DOC-0008' for p in passages[:3]):
+            mismatches.append('search_documents: expected a DOC-0008 passage in the top three')
+        known = set(facts['passage_ids'])
+        for passage in passages:
+            if passage.get('passage_id') not in known:
+                mismatches.append(f'search_documents: passage {passage.get("passage_id")!r} is absent from SQL')
     return mismatches
 
 

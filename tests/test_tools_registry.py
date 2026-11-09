@@ -42,7 +42,7 @@ class RegistryAgreement(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(copilot_chat.permission(rogue, {}).kind, 'reject')
         decision = copilot_chat.ToolPolicy().before({'toolName': MCP_SERVER_NAME + '-execute_sql'}, {})
         self.assertEqual(decision['permissionDecision'], 'deny')
-        self.assertEqual(len(TOOL_CONTRACTS), 6)  # widening the allowlist is a reviewed decision, not a side effect
+        self.assertEqual(len(TOOL_CONTRACTS), 7)  # widening the allowlist is a reviewed decision, not a side effect
         self.assertEqual(set(QUALIFIED_NAMES.values()), set(TOOLS))
 
     def test_new_result_models_reject_extra_fields(self):

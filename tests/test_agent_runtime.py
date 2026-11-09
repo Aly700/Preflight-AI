@@ -13,6 +13,7 @@ from opentelemetry.sdk.trace import Span as SDKSpan
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
+from test_document_search import DOCUMENT_RESULT
 from test_mcp import FixtureRepository
 
 from backend.agent_runtime import ANSWER_CHARS, SYSTEM, assistant_blocks, claims_prompt
@@ -36,8 +37,10 @@ METHODS = {
     'list_open_issues': 'open_issues',
     'get_issue_history': 'issue_history',
     'count_issues': 'issue_counts',
+    'search_documents': 'search_documents',
 }
 DEFAULTS: dict[str, dict[str, Any]] = {
+    'search_documents': {'top_k': 5, 'kind': None, 'related_id': None},
     'list_open_issues': {'aircraft_id': None, 'priority': None, 'limit': 50, 'offset': 0},
     'get_issue_history': {'limit': 100, 'offset': 0},
     'count_issues': {
@@ -127,6 +130,7 @@ class FakeTools:
 
 
 ARGUMENT_ORDER = {
+    'search_documents': ['query', 'top_k', 'kind', 'related_id'],
     'get_aircraft_summary': ['aircraft_id'],
     'list_open_issues': ['aircraft_id', 'priority', 'limit', 'offset'],
     'get_issue_history': ['issue_id', 'limit', 'offset'],
@@ -135,6 +139,19 @@ ARGUMENT_ORDER = {
 
 
 class NativePrompts(unittest.TestCase):
+    def test_document_rules_keep_records_authoritative_and_require_passage_citations(self):
+        system = ' '.join(SYSTEM.split())
+        for rule in (
+            'Use search_documents for process, policy and decision questions',
+            'record tools for numbers and statuses',
+            'Cite the passage IDs (DOC-NNNN#N) of document facts used',
+            'Documents never override records',
+            "give the record's value and say so",
+            'Quote document rules faithfully and do not add facts',
+        ):
+            self.assertIn(rule, system)
+        self.assertIn('passage IDs (DOC-NNNN#N)', claims_prompt([]))
+
     def test_claims_prompt_names_items_by_field_value(self):
         prompt = claims_prompt([])
         self.assertIn('Name list items by a field value instead of a position', prompt)
@@ -227,6 +244,28 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
                 question, replace(settings, runtime=self.runtime_name), model_client=model, tools=tools
             )
         ]
+
+    async def test_document_passages_are_evidence_and_unreturned_citations_fail(self):
+        for cited, verified in (('DOC-0008#2', True), ('DOC-0008#9', False)):
+            with self.subTest(cited=cited):
+                tools = FakeTools()
+                model = FakeModel(
+                    [
+                        Turn('', [ToolCall('docs', 'search_documents', {'query': 'Friday queue sweep'})]),
+                        Turn(f'The sweep starts at 14:00 ({cited}); related record ISSUE-0001.'),
+                        claims([cited, 'ISSUE-0001']),
+                    ]
+                )
+                with patch.object(tools.repo, 'search_documents', return_value=DOCUMENT_RESULT, create=True):
+                    events = await self.collect(model, tools, question='When does the Friday sweep start?')
+                self.assertEqual(events[-1]['event'], 'done')
+                self.assertEqual(events[-1]['data']['verified'], verified)
+                self.assertEqual(events[-1]['data']['undeclared'], 0)
+                sources = next(e['data'] for e in events if e['event'] == 'sources')
+                self.assertEqual(sources['records'], ['DOC-0008', 'DOC-0008#2', 'ISSUE-0001', 'TASK-0001'])
+                evidence = next(e['data']['results'] for e in events if e['event'] == 'evidence')
+                self.assertEqual(evidence[0]['tool'], 'search_documents')
+                self.assertEqual(evidence[0]['result'], DOCUMENT_RESULT)
 
     @contextmanager
     def tracing(self):

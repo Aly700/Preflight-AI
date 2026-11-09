@@ -44,6 +44,7 @@ TOOLS = {
     'count_issues',
     'compare_aircraft',
     'search_issues',
+    'search_documents',
 }
 USAGE_KEYS = ('input_tokens', 'output_tokens', 'cache_creation_input_tokens', 'cache_read_input_tokens')
 Events = list[tuple[str, dict[str, Any]]]

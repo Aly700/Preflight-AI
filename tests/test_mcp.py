@@ -155,7 +155,7 @@ class McpContract(unittest.IsolatedAsyncioTestCase):
         self.factory = factory
         self.server = create_server(repository_factory=factory)
 
-    async def test_only_the_six_read_only_tools_are_discoverable(self):
+    async def test_only_the_seven_read_only_tools_are_discoverable(self):
         async with Client(self.server) as client:
             listing = await client.list_tools()
         self.assertEqual(
@@ -167,6 +167,7 @@ class McpContract(unittest.IsolatedAsyncioTestCase):
                 'count_issues',
                 'compare_aircraft',
                 'search_issues',
+                'search_documents',
             },
         )
         for tool in listing.tools:
