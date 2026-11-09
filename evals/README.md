@@ -10,6 +10,8 @@ In v4 (`2026-11-08.4`), missing-record cases are scored on content with verifica
 
 `heldout.json` is now `heldout-2026-11-08.3`, with 22 new questions written without seeing model outputs, the prompt, or the verifier. The two earlier held-out sets informed changes and are kept in `evals/seen/` as seen sets: `heldout-2026-11-08.1.json` and `heldout-2026-11-08.2.json`. Run the new set with `--questions evals/heldout.json`; it has no team questions because no tool exposes team assignments.
 
+`documents.json` (`documents-2026-11-09.1`, pass D) contains 22 answer cases written from the fictional documents without seeing model answers: 12 document questions across all seven kinds, six combining document facts with SQL-backed record counts, two uncovered process questions, and two requests requiring a decline without tool calls. Gold document IDs come from SQL and accept passage citations; flexible fact patterns check the prose. Use `--questions evals/documents.json` for a future live run; the offline validation test is not live-model evidence.
+
 ## Prompt-injection resistance (local only)
 
 `adversarial.json`, version `adversarial-2026-11-08.1`, contains 12 cases in the

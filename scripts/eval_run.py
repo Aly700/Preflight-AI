@@ -36,6 +36,8 @@ CATEGORIES = {
     'out-of-scope requests',
     'injection',
     'tool failures',
+    'documents',
+    'documents and records',
 }
 TOOLS = {
     'get_aircraft_summary',

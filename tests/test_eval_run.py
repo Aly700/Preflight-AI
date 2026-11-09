@@ -1,13 +1,14 @@
 """Offline evaluation checks: HTTP, SQL and time are replaced at their external boundaries."""
 
 from collections import Counter
-from contextlib import suppress
+from contextlib import closing, suppress
 from copy import deepcopy
 import importlib.util
 import io
 import json
 from pathlib import Path
 import re
+import sqlite3
 import subprocess
 import tempfile
 from typing import Any
@@ -83,6 +84,127 @@ class EvalRunner(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.path = Path(self.temp.name) / 'questions.json'
+
+    def test_document_set_has_grounded_facts_and_complete_tool_alternatives(self):
+        path = ROOT / 'evals/documents.json'
+        self.assertTrue(path.is_file(), 'Missing document answer evaluation set')
+        version, cases = evaluation.load_cases(path)
+        self.assertEqual(version, 'documents-2026-11-09.1')
+        self.assertEqual(
+            Counter(case['category'] for case in cases),
+            {'documents': 12, 'documents and records': 6, 'missing records': 2, 'out-of-scope requests': 2},
+        )
+        questions = set()
+        for other in sorted((ROOT / 'evals').glob('*.json')) + sorted((ROOT / 'evals/seen').glob('*.json')):
+            if other != path:
+                for case in json.loads(other.read_text(encoding='utf-8')).get('cases', []):
+                    questions.add(' '.join(case['question'].casefold().split()))
+
+        issue_count_tools = {
+            'get_aircraft_summary',
+            'compare_aircraft',
+            'count_issues',
+            'list_open_issues',
+            'search_issues',
+        }
+        record_tools = {
+            'document-record-01': issue_count_tools,  # Reopened issues on one aircraft.
+            'document-record-02': issue_count_tools,  # Unresolved issues on one aircraft.
+            'document-record-03': {'get_aircraft_summary', 'compare_aircraft'},  # Task status counts.
+            'document-record-04': {'count_issues', 'list_open_issues', 'search_issues'},  # Subsystem counts.
+            'document-record-05': {'get_issue_history'},  # Activity-event count.
+            'document-record-06': issue_count_tools,  # Unresolved counts on two aircraft.
+        }
+        documents = {}
+        for source in sorted((ROOT / 'data/documents').glob('DOC-*.md')):
+            _, metadata, body = source.read_text(encoding='utf-8').split('---', 2)
+            kind = re.search(r'^kind: (\w+)$', metadata, re.MULTILINE)
+            if kind is None:
+                self.fail(f'{source.name}: missing document kind')
+            documents[source.stem] = (kind[1], ' '.join(body.split()))
+
+        # Prepare the queries offline against the declared column names. No record
+        # values are loaded here; live expected counts still come only from PostgreSQL.
+        with closing(sqlite3.connect(':memory:')) as database:
+            database.execute("ATTACH DATABASE ':memory:' AS preflight")
+            tables = set()
+            for schema in ('sql/schema.sql', 'sql/documents.sql'):
+                for table, definition in re.findall(
+                    r'CREATE TABLE IF NOT EXISTS preflight\.(\w+) \((.*?)\n\);',
+                    (ROOT / schema).read_text(encoding='utf-8'),
+                    re.DOTALL,
+                ):
+                    columns = re.findall(r'^    ([a-z]\w*) ', definition, re.MULTILINE)
+                    database.execute(f'CREATE TABLE preflight.{table} ({", ".join(columns)})')
+                    tables.add(f'preflight.{table}')
+            database.executemany('INSERT INTO preflight.documents (doc_id) VALUES (?)', [(doc,) for doc in documents])
+
+            def authorize(action, table, column, schema, trigger):
+                if action == sqlite3.SQLITE_READ and f'{schema}.{table}' not in tables:
+                    return sqlite3.SQLITE_DENY
+                return sqlite3.SQLITE_OK
+
+            database.set_authorizer(authorize)
+            kinds: set[str] = set()
+            combined_documents = 0
+            for case in cases:
+                with self.subTest(case=case['id']):
+                    question = ' '.join(case['question'].casefold().split())
+                    self.assertNotIn(question, questions)
+                    questions.add(question)
+                    expect = case['expect']
+                    self.assertTrue(expect['required'])
+                    for pattern in expect['required'] + expect.get('forbidden', []):
+                        re.compile(pattern, re.IGNORECASE)
+                        self.assertNotIn('(?=', pattern)
+                        self.assertNotIn('(?!', pattern)
+                    queries = [n['sql'] for n in expect.get('numbers', [])]
+                    if 'ids_sql' in expect:
+                        queries.append(expect['ids_sql'])
+                    for sql in queries:
+                        self.assertRegex(sql, r'^SELECT\b')
+                        references = re.findall(r'\b(?:FROM|JOIN)\s+([\w.]+)', sql, re.IGNORECASE)
+                        self.assertTrue(references, sql)
+                        self.assertTrue(set(references) <= tables, sql)
+                        database.execute(sql).fetchall()
+                    if case['category'] in ('documents', 'documents and records'):
+                        self.assertRegex(expect['ids_sql'], r'^SELECT doc_id FROM preflight\.documents\b')
+                        gold = [row[0] for row in database.execute(expect['ids_sql'])]
+                        self.assertTrue(gold)
+                        self.assertEqual(set(gold), set(re.findall(r'DOC-\d{4}', expect['ids_sql'])))
+                        kinds.update(documents[doc][0] for doc in gold)
+                        combined_documents += len(gold) > 1
+                        for pattern in expect['required']:
+                            self.assertTrue(
+                                any(re.search(pattern, documents[doc][1], re.IGNORECASE) for doc in gold),
+                                f'{case["id"]}: fact absent from gold documents: {pattern}',
+                            )
+                            # Clock facts must also accept compact 24-hour notation.
+                            self.assertTrue(
+                                any(
+                                    re.search(pattern, re.sub(r'(\d{2}):(\d{2})', r'\1\2', documents[doc][1]), re.I)
+                                    for doc in gold
+                                ),
+                                pattern,
+                            )
+                        mixed = case['category'] == 'documents and records'
+                        self.assertEqual(bool(expect.get('numbers')), mixed)
+                        alternatives = record_tools[case['id']] if mixed else set()
+                        self.assertEqual(set(expect['tools_any']), {'search_documents'} | alternatives)
+                        self.assertEqual(expect['min_tool_calls'], 2 if mixed else 1)
+                        self.assertEqual(expect['max_tool_calls'], expect['min_tool_calls'] + 2)
+                        self.assertIs(expect['verified'], True)
+                    else:
+                        self.assertIsNone(expect['verified'])
+                        self.assertTrue(expect['forbidden'])
+                        self.assertNotIn('ids_sql', expect)
+                        self.assertFalse(expect.get('numbers'))
+                        missing = case['category'] == 'missing records'
+                        self.assertEqual(expect['tools_any'], ['search_documents'] if missing else [])
+                        self.assertEqual(expect['min_tool_calls'], 1 if missing else 0)
+                        self.assertEqual(expect['max_tool_calls'], 3 if missing else 0)
+            self.assertEqual(kinds, {'policy', 'glossary', 'handover', 'memo', 'coordination', 'retrospective', 'form'})
+            self.assertGreaterEqual(combined_documents, 2)
 
     def test_security_and_outage_sets_load_with_explicit_rubrics(self):
         for filename, version, category, count in (
