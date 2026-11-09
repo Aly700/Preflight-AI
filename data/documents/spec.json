@@ -1,0 +1,1250 @@
+{
+  "version": "documents-2026-11-08.1",
+  "seed": 20261108,
+  "vocabulary": {
+    "issue_statuses": [
+      "open",
+      "in_progress",
+      "blocked",
+      "reopened",
+      "closed"
+    ],
+    "task_statuses": [
+      "todo",
+      "in_progress",
+      "awaiting_review",
+      "completed",
+      "blocked"
+    ],
+    "priorities": [
+      "low",
+      "medium",
+      "high"
+    ],
+    "subsystems": [
+      "hydraulics",
+      "avionics",
+      "electrical",
+      "cabin",
+      "structures",
+      "controls"
+    ],
+    "task_kinds": [
+      "review",
+      "investigation",
+      "documentation",
+      "inspection",
+      "rectification"
+    ]
+  },
+  "slots": [
+    {
+      "doc_id": "DOC-0001",
+      "kind": "policy",
+      "title": "Issue-queue intake 01",
+      "date": "2026-08-11",
+      "author": "PERSON-0025",
+      "team": "TEAM-0001",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0009",
+        "ISSUE-0084",
+        "TASK-0222",
+        "TASK-0223",
+        "TEAM-0001"
+      ]
+    },
+    {
+      "doc_id": "DOC-0002",
+      "kind": "policy",
+      "title": "Triage ownership 02",
+      "date": "2026-10-04",
+      "author": "PERSON-0003",
+      "team": "TEAM-0003",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0012",
+        "ISSUE-0141",
+        "TASK-0373",
+        "TASK-0374",
+        "TEAM-0003"
+      ]
+    },
+    {
+      "doc_id": "DOC-0003",
+      "kind": "policy",
+      "title": "Queue-priority discussion 03",
+      "date": "2026-10-14",
+      "author": "PERSON-0018",
+      "team": "TEAM-0006",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0001",
+        "ISSUE-0077",
+        "TASK-0202",
+        "TASK-0203",
+        "TASK-0204",
+        "TEAM-0006"
+      ]
+    },
+    {
+      "doc_id": "DOC-0004",
+      "kind": "policy",
+      "title": "Blocked queue escalation 04",
+      "date": "2026-09-12",
+      "author": "PERSON-0010",
+      "team": "TEAM-0004",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0006",
+        "ISSUE-0177",
+        "TASK-0470",
+        "TASK-0471",
+        "TEAM-0004"
+      ]
+    },
+    {
+      "doc_id": "DOC-0005",
+      "kind": "policy",
+      "title": "Reopened queue routing 05",
+      "date": "2026-10-07",
+      "author": "PERSON-0023",
+      "team": "TEAM-0005",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0007",
+        "ISSUE-0101",
+        "TASK-0268",
+        "TASK-0270",
+        "TEAM-0005"
+      ]
+    },
+    {
+      "doc_id": "DOC-0006",
+      "kind": "policy",
+      "title": "Review queue scheduling 06",
+      "date": "2026-09-28",
+      "author": "PERSON-0033",
+      "team": "TEAM-0003",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0009",
+        "ISSUE-0128",
+        "TASK-0344",
+        "TEAM-0003"
+      ]
+    },
+    {
+      "doc_id": "DOC-0007",
+      "kind": "policy",
+      "title": "Queue context requirements 07",
+      "date": "2026-07-06",
+      "author": "PERSON-0034",
+      "team": "TEAM-0004",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0009",
+        "ISSUE-0020",
+        "TASK-0052",
+        "TASK-0053",
+        "TASK-0054",
+        "TEAM-0004"
+      ]
+    },
+    {
+      "doc_id": "DOC-0008",
+      "kind": "policy",
+      "title": "Triage meeting cadence 08",
+      "date": "2026-10-26",
+      "author": "PERSON-0014",
+      "team": "TEAM-0002",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0001",
+        "ISSUE-0014",
+        "TASK-0036",
+        "TASK-0037",
+        "TEAM-0002"
+      ]
+    },
+    {
+      "doc_id": "DOC-0009",
+      "kind": "glossary",
+      "title": "Issue statuses and priorities 01",
+      "date": "2026-06-08",
+      "author": "PERSON-0036",
+      "team": "TEAM-0006",
+      "word_range": [
+        300,
+        600
+      ],
+      "related_ids": [
+        "DEMO-AIR-0007",
+        "ISSUE-0101",
+        "TASK-0269",
+        "TEAM-0006"
+      ]
+    },
+    {
+      "doc_id": "DOC-0010",
+      "kind": "glossary",
+      "title": "Task statuses, task kinds and subsystems 02",
+      "date": "2026-10-15",
+      "author": "PERSON-0001",
+      "team": "TEAM-0001",
+      "word_range": [
+        300,
+        600
+      ],
+      "related_ids": [
+        "DEMO-AIR-0006",
+        "ISSUE-0011",
+        "TASK-0030",
+        "TEAM-0001"
+      ]
+    },
+    {
+      "doc_id": "DOC-0011",
+      "kind": "handover",
+      "title": "Station shift queue handover 01",
+      "date": "2026-10-21",
+      "station": "DEMO-STATION-01",
+      "program": "DEMO-PROGRAM-BETA",
+      "author": "PERSON-0029",
+      "team": "TEAM-0005",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0010",
+        "ISSUE-0040",
+        "TASK-0108",
+        "TASK-0109",
+        "TEAM-0005"
+      ]
+    },
+    {
+      "doc_id": "DOC-0012",
+      "kind": "handover",
+      "title": "Station shift ownership handover 02",
+      "date": "2026-10-16",
+      "station": "DEMO-STATION-03",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "author": "PERSON-0006",
+      "team": "TEAM-0006",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0009",
+        "ISSUE-0095",
+        "TASK-0254",
+        "TEAM-0006"
+      ]
+    },
+    {
+      "doc_id": "DOC-0013",
+      "kind": "handover",
+      "title": "Station shift discussion handover 03",
+      "date": "2026-10-17",
+      "station": "DEMO-STATION-02",
+      "program": "DEMO-PROGRAM-BETA",
+      "author": "PERSON-0022",
+      "team": "TEAM-0004",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0006",
+        "ISSUE-0063",
+        "TASK-0164",
+        "TASK-0165",
+        "TASK-0166",
+        "TEAM-0004"
+      ]
+    },
+    {
+      "doc_id": "DOC-0014",
+      "kind": "handover",
+      "title": "Station shift queue handover 04",
+      "date": "2026-09-09",
+      "station": "DEMO-STATION-01",
+      "program": "DEMO-PROGRAM-BETA",
+      "author": "PERSON-0013",
+      "team": "TEAM-0001",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0010",
+        "ISSUE-0018",
+        "TASK-0046",
+        "TASK-0047",
+        "TASK-0048",
+        "TEAM-0001"
+      ]
+    },
+    {
+      "doc_id": "DOC-0015",
+      "kind": "handover",
+      "title": "Station shift ownership handover 05",
+      "date": "2026-03-28",
+      "station": "DEMO-STATION-01",
+      "program": "DEMO-PROGRAM-BETA",
+      "author": "PERSON-0035",
+      "team": "TEAM-0005",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0012",
+        "ISSUE-0149",
+        "TASK-0392",
+        "TASK-0394",
+        "TEAM-0005"
+      ]
+    },
+    {
+      "doc_id": "DOC-0016",
+      "kind": "handover",
+      "title": "Station shift discussion handover 06",
+      "date": "2026-10-20",
+      "station": "DEMO-STATION-01",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "author": "PERSON-0002",
+      "team": "TEAM-0002",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0001",
+        "ISSUE-0170",
+        "TASK-0452",
+        "TEAM-0002"
+      ]
+    },
+    {
+      "doc_id": "DOC-0017",
+      "kind": "handover",
+      "title": "Station shift queue handover 07",
+      "date": "2026-04-23",
+      "station": "DEMO-STATION-01",
+      "program": "DEMO-PROGRAM-BETA",
+      "author": "PERSON-0028",
+      "team": "TEAM-0004",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0012",
+        "ISSUE-0105",
+        "TASK-0281",
+        "TEAM-0004"
+      ]
+    },
+    {
+      "doc_id": "DOC-0018",
+      "kind": "handover",
+      "title": "Station shift ownership handover 08",
+      "date": "2026-05-22",
+      "station": "DEMO-STATION-03",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "author": "PERSON-0021",
+      "team": "TEAM-0003",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0007",
+        "ISSUE-0062",
+        "TASK-0161",
+        "TASK-0162",
+        "TEAM-0003"
+      ]
+    },
+    {
+      "doc_id": "DOC-0019",
+      "kind": "handover",
+      "title": "Station shift discussion handover 09",
+      "date": "2026-10-17",
+      "station": "DEMO-STATION-01",
+      "program": "DEMO-PROGRAM-BETA",
+      "author": "PERSON-0025",
+      "team": "TEAM-0001",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0012",
+        "ISSUE-0061",
+        "TASK-0159",
+        "TASK-0160",
+        "TEAM-0001"
+      ]
+    },
+    {
+      "doc_id": "DOC-0020",
+      "kind": "handover",
+      "title": "Station shift queue handover 10",
+      "date": "2026-06-20",
+      "station": "DEMO-STATION-03",
+      "program": "DEMO-PROGRAM-BETA",
+      "author": "PERSON-0016",
+      "team": "TEAM-0004",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0008",
+        "ISSUE-0070",
+        "TASK-0182",
+        "TEAM-0004"
+      ]
+    },
+    {
+      "doc_id": "DOC-0021",
+      "kind": "handover",
+      "title": "Station shift ownership handover 11",
+      "date": "2026-09-22",
+      "station": "DEMO-STATION-01",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "author": "PERSON-0027",
+      "team": "TEAM-0003",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0011",
+        "ISSUE-0169",
+        "TASK-0451",
+        "TEAM-0003"
+      ]
+    },
+    {
+      "doc_id": "DOC-0022",
+      "kind": "handover",
+      "title": "Station shift discussion handover 12",
+      "date": "2026-05-23",
+      "station": "DEMO-STATION-01",
+      "program": "DEMO-PROGRAM-BETA",
+      "author": "PERSON-0030",
+      "team": "TEAM-0006",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0010",
+        "ISSUE-0090",
+        "TASK-0240",
+        "TASK-0241",
+        "TEAM-0006"
+      ]
+    },
+    {
+      "doc_id": "DOC-0023",
+      "kind": "handover",
+      "title": "Station shift queue handover 13",
+      "date": "2026-03-15",
+      "station": "DEMO-STATION-01",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "author": "PERSON-0025",
+      "team": "TEAM-0001",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0001",
+        "ISSUE-0121",
+        "TASK-0323",
+        "TEAM-0001"
+      ]
+    },
+    {
+      "doc_id": "DOC-0024",
+      "kind": "handover",
+      "title": "Station shift ownership handover 14",
+      "date": "2026-06-14",
+      "station": "DEMO-STATION-01",
+      "program": "DEMO-PROGRAM-BETA",
+      "author": "PERSON-0025",
+      "team": "TEAM-0001",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0010",
+        "ISSUE-0090",
+        "TASK-0241",
+        "TASK-0242",
+        "TEAM-0001"
+      ]
+    },
+    {
+      "doc_id": "DOC-0025",
+      "kind": "memo",
+      "title": "Program queue review 01",
+      "date": "2026-10-24",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "author": "PERSON-0016",
+      "team": "TEAM-0004",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0001",
+        "ISSUE-0014",
+        "TASK-0036",
+        "TASK-0038",
+        "TEAM-0004"
+      ]
+    },
+    {
+      "doc_id": "DOC-0026",
+      "kind": "memo",
+      "title": "Program coordination review 02",
+      "date": "2026-06-09",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "author": "PERSON-0029",
+      "team": "TEAM-0005",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0003",
+        "ISSUE-0071",
+        "TASK-0185",
+        "TEAM-0005"
+      ]
+    },
+    {
+      "doc_id": "DOC-0027",
+      "kind": "memo",
+      "title": "Program backlog discussion 03",
+      "date": "2026-05-20",
+      "program": "DEMO-PROGRAM-BETA",
+      "author": "PERSON-0020",
+      "team": "TEAM-0002",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0010",
+        "ISSUE-0175",
+        "TASK-0466",
+        "TASK-0467",
+        "TEAM-0002"
+      ]
+    },
+    {
+      "doc_id": "DOC-0028",
+      "kind": "memo",
+      "title": "Program queue review 04",
+      "date": "2026-09-04",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "author": "PERSON-0019",
+      "team": "TEAM-0001",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0007",
+        "ISSUE-0089",
+        "TASK-0237",
+        "TASK-0238",
+        "TASK-0239",
+        "TEAM-0001"
+      ]
+    },
+    {
+      "doc_id": "DOC-0029",
+      "kind": "memo",
+      "title": "Program coordination review 05",
+      "date": "2026-05-24",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "author": "PERSON-0019",
+      "team": "TEAM-0001",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0009",
+        "ISSUE-0151",
+        "TASK-0398",
+        "TASK-0399",
+        "TASK-0400",
+        "TEAM-0001"
+      ]
+    },
+    {
+      "doc_id": "DOC-0030",
+      "kind": "memo",
+      "title": "Program backlog discussion 06",
+      "date": "2026-10-18",
+      "program": "DEMO-PROGRAM-BETA",
+      "author": "PERSON-0006",
+      "team": "TEAM-0006",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0002",
+        "ISSUE-0150",
+        "TASK-0395",
+        "TEAM-0006"
+      ]
+    },
+    {
+      "doc_id": "DOC-0031",
+      "kind": "memo",
+      "title": "Program queue review 07",
+      "date": "2026-10-21",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "author": "PERSON-0011",
+      "team": "TEAM-0005",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0011",
+        "ISSUE-0023",
+        "TASK-0060",
+        "TASK-0061",
+        "TASK-0062",
+        "TEAM-0005"
+      ]
+    },
+    {
+      "doc_id": "DOC-0032",
+      "kind": "memo",
+      "title": "Program coordination review 08",
+      "date": "2026-08-23",
+      "program": "DEMO-PROGRAM-BETA",
+      "author": "PERSON-0010",
+      "team": "TEAM-0004",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0002",
+        "ISSUE-0111",
+        "TASK-0297",
+        "TEAM-0004"
+      ]
+    },
+    {
+      "doc_id": "DOC-0033",
+      "kind": "memo",
+      "title": "Program backlog discussion 09",
+      "date": "2026-10-24",
+      "program": "DEMO-PROGRAM-BETA",
+      "author": "PERSON-0003",
+      "team": "TEAM-0003",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0008",
+        "ISSUE-0031",
+        "TASK-0082",
+        "TASK-0083",
+        "TASK-0084",
+        "TEAM-0003"
+      ]
+    },
+    {
+      "doc_id": "DOC-0034",
+      "kind": "memo",
+      "title": "Program queue review 10",
+      "date": "2026-08-08",
+      "program": "DEMO-PROGRAM-BETA",
+      "author": "PERSON-0019",
+      "team": "TEAM-0001",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0012",
+        "ISSUE-0107",
+        "TASK-0287",
+        "TEAM-0001"
+      ]
+    },
+    {
+      "doc_id": "DOC-0035",
+      "kind": "coordination",
+      "title": "Team queue coordination 01",
+      "date": "2026-10-12",
+      "station": "DEMO-STATION-02",
+      "program": "DEMO-PROGRAM-BETA",
+      "author": "PERSON-0028",
+      "team": "TEAM-0004",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0006",
+        "ISSUE-0082",
+        "TASK-0216",
+        "TASK-0218",
+        "TEAM-0004"
+      ]
+    },
+    {
+      "doc_id": "DOC-0036",
+      "kind": "coordination",
+      "title": "Team ownership discussion 02",
+      "date": "2026-10-12",
+      "station": "DEMO-STATION-01",
+      "program": "DEMO-PROGRAM-BETA",
+      "author": "PERSON-0001",
+      "team": "TEAM-0001",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0002",
+        "ISSUE-0150",
+        "TASK-0396",
+        "TEAM-0001"
+      ]
+    },
+    {
+      "doc_id": "DOC-0037",
+      "kind": "coordination",
+      "title": "Team review scheduling 03",
+      "date": "2026-03-02",
+      "station": "DEMO-STATION-01",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "author": "PERSON-0013",
+      "team": "TEAM-0001",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0011",
+        "ISSUE-0162",
+        "TASK-0432",
+        "TEAM-0001"
+      ]
+    },
+    {
+      "doc_id": "DOC-0038",
+      "kind": "coordination",
+      "title": "Team queue coordination 04",
+      "date": "2026-09-11",
+      "station": "DEMO-STATION-02",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "author": "PERSON-0015",
+      "team": "TEAM-0003",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0005",
+        "ISSUE-0092",
+        "TASK-0245",
+        "TASK-0246",
+        "TEAM-0003"
+      ]
+    },
+    {
+      "doc_id": "DOC-0039",
+      "kind": "coordination",
+      "title": "Team ownership discussion 05",
+      "date": "2026-08-05",
+      "station": "DEMO-STATION-02",
+      "program": "DEMO-PROGRAM-BETA",
+      "author": "PERSON-0028",
+      "team": "TEAM-0004",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0004",
+        "ISSUE-0076",
+        "TASK-0199",
+        "TEAM-0004"
+      ]
+    },
+    {
+      "doc_id": "DOC-0040",
+      "kind": "coordination",
+      "title": "Team review scheduling 06",
+      "date": "2026-10-14",
+      "station": "DEMO-STATION-01",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "author": "PERSON-0001",
+      "team": "TEAM-0001",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0003",
+        "ISSUE-0103",
+        "TASK-0274",
+        "TEAM-0001"
+      ]
+    },
+    {
+      "doc_id": "DOC-0041",
+      "kind": "coordination",
+      "title": "Team queue coordination 07",
+      "date": "2026-08-27",
+      "station": "DEMO-STATION-02",
+      "program": "DEMO-PROGRAM-BETA",
+      "author": "PERSON-0034",
+      "team": "TEAM-0004",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0004",
+        "ISSUE-0032",
+        "TASK-0087",
+        "TEAM-0004"
+      ]
+    },
+    {
+      "doc_id": "DOC-0042",
+      "kind": "coordination",
+      "title": "Team ownership discussion 08",
+      "date": "2026-03-04",
+      "station": "DEMO-STATION-01",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "author": "PERSON-0013",
+      "team": "TEAM-0001",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0003",
+        "ISSUE-0168",
+        "TASK-0447",
+        "TASK-0448",
+        "TEAM-0001"
+      ]
+    },
+    {
+      "doc_id": "DOC-0043",
+      "kind": "coordination",
+      "title": "Team review scheduling 09",
+      "date": "2026-10-21",
+      "station": "DEMO-STATION-01",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "author": "PERSON-0001",
+      "team": "TEAM-0001",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0001",
+        "ISSUE-0001",
+        "TASK-0001",
+        "TASK-0002",
+        "TEAM-0001"
+      ]
+    },
+    {
+      "doc_id": "DOC-0044",
+      "kind": "coordination",
+      "title": "Team queue coordination 10",
+      "date": "2026-07-07",
+      "station": "DEMO-STATION-02",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "author": "PERSON-0021",
+      "team": "TEAM-0003",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0005",
+        "ISSUE-0073",
+        "TASK-0192",
+        "TASK-0193",
+        "TEAM-0003"
+      ]
+    },
+    {
+      "doc_id": "DOC-0045",
+      "kind": "coordination",
+      "title": "Team ownership discussion 11",
+      "date": "2026-09-09",
+      "station": "DEMO-STATION-01",
+      "program": "DEMO-PROGRAM-BETA",
+      "author": "PERSON-0014",
+      "team": "TEAM-0002",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0010",
+        "ISSUE-0139",
+        "TASK-0370",
+        "TEAM-0002"
+      ]
+    },
+    {
+      "doc_id": "DOC-0046",
+      "kind": "coordination",
+      "title": "Team review scheduling 12",
+      "date": "2026-08-19",
+      "station": "DEMO-STATION-01",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "author": "PERSON-0023",
+      "team": "TEAM-0005",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0001",
+        "ISSUE-0142",
+        "TASK-0376",
+        "TEAM-0005"
+      ]
+    },
+    {
+      "doc_id": "DOC-0047",
+      "kind": "coordination",
+      "title": "Team queue coordination 13",
+      "date": "2026-07-07",
+      "station": "DEMO-STATION-01",
+      "program": "DEMO-PROGRAM-BETA",
+      "author": "PERSON-0029",
+      "team": "TEAM-0005",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0012",
+        "ISSUE-0033",
+        "TASK-0088",
+        "TASK-0089",
+        "TASK-0090",
+        "TEAM-0005"
+      ]
+    },
+    {
+      "doc_id": "DOC-0048",
+      "kind": "coordination",
+      "title": "Team ownership discussion 14",
+      "date": "2026-10-21",
+      "station": "DEMO-STATION-01",
+      "program": "DEMO-PROGRAM-BETA",
+      "author": "PERSON-0033",
+      "team": "TEAM-0003",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0012",
+        "ISSUE-0099",
+        "TASK-0263",
+        "TEAM-0003"
+      ]
+    },
+    {
+      "doc_id": "DOC-0049",
+      "kind": "retrospective",
+      "title": "Queue intake retrospective 01",
+      "date": "2026-09-01",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "author": "PERSON-0026",
+      "team": "TEAM-0002",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0011",
+        "ISSUE-0074",
+        "TASK-0194",
+        "TASK-0195",
+        "TEAM-0002"
+      ]
+    },
+    {
+      "doc_id": "DOC-0050",
+      "kind": "retrospective",
+      "title": "Triage cadence retrospective 02",
+      "date": "2026-07-17",
+      "program": "DEMO-PROGRAM-BETA",
+      "author": "PERSON-0011",
+      "team": "TEAM-0005",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0002",
+        "ISSUE-0112",
+        "TASK-0298",
+        "TASK-0299",
+        "TASK-0300",
+        "TEAM-0005"
+      ]
+    },
+    {
+      "doc_id": "DOC-0051",
+      "kind": "retrospective",
+      "title": "Handover context retrospective 03",
+      "date": "2026-09-18",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "author": "PERSON-0012",
+      "team": "TEAM-0006",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0007",
+        "ISSUE-0048",
+        "TASK-0128",
+        "TEAM-0006"
+      ]
+    },
+    {
+      "doc_id": "DOC-0052",
+      "kind": "retrospective",
+      "title": "Queue intake retrospective 04",
+      "date": "2026-09-07",
+      "program": "DEMO-PROGRAM-BETA",
+      "author": "PERSON-0031",
+      "team": "TEAM-0001",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0010",
+        "ISSUE-0029",
+        "TASK-0076",
+        "TASK-0077",
+        "TASK-0078",
+        "TEAM-0001"
+      ]
+    },
+    {
+      "doc_id": "DOC-0053",
+      "kind": "retrospective",
+      "title": "Triage cadence retrospective 05",
+      "date": "2026-10-20",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "author": "PERSON-0025",
+      "team": "TEAM-0001",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0003",
+        "ISSUE-0103",
+        "TASK-0274",
+        "TASK-0275",
+        "TASK-0276",
+        "TEAM-0001"
+      ]
+    },
+    {
+      "doc_id": "DOC-0054",
+      "kind": "retrospective",
+      "title": "Handover context retrospective 06",
+      "date": "2026-10-03",
+      "program": "DEMO-PROGRAM-BETA",
+      "author": "PERSON-0022",
+      "team": "TEAM-0004",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0010",
+        "ISSUE-0172",
+        "TASK-0458",
+        "TEAM-0004"
+      ]
+    },
+    {
+      "doc_id": "DOC-0055",
+      "kind": "retrospective",
+      "title": "Queue intake retrospective 07",
+      "date": "2026-10-05",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "author": "PERSON-0004",
+      "team": "TEAM-0004",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0003",
+        "ISSUE-0086",
+        "TASK-0230",
+        "TEAM-0004"
+      ]
+    },
+    {
+      "doc_id": "DOC-0056",
+      "kind": "retrospective",
+      "title": "Triage cadence retrospective 08",
+      "date": "2026-10-22",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "author": "PERSON-0022",
+      "team": "TEAM-0004",
+      "word_range": [
+        180,
+        500
+      ],
+      "related_ids": [
+        "DEMO-AIR-0001",
+        "ISSUE-0106",
+        "TASK-0283",
+        "TEAM-0004"
+      ]
+    },
+    {
+      "doc_id": "DOC-0057",
+      "kind": "form",
+      "title": "Escalation request 01",
+      "date": "2026-09-12",
+      "station": "DEMO-STATION-02",
+      "program": "DEMO-PROGRAM-BETA",
+      "author": "PERSON-0030",
+      "team": "TEAM-0006",
+      "word_range": [
+        120,
+        250
+      ],
+      "related_ids": [
+        "DEMO-AIR-0006",
+        "ISSUE-0024",
+        "TASK-0063",
+        "TASK-0064",
+        "TEAM-0006"
+      ]
+    },
+    {
+      "doc_id": "DOC-0058",
+      "kind": "form",
+      "title": "Queue-priority change request 02",
+      "date": "2026-09-22",
+      "station": "DEMO-STATION-01",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "author": "PERSON-0024",
+      "team": "TEAM-0006",
+      "word_range": [
+        120,
+        250
+      ],
+      "related_ids": [
+        "DEMO-AIR-0001",
+        "ISSUE-0108",
+        "TASK-0288",
+        "TASK-0289",
+        "TASK-0290",
+        "TEAM-0006"
+      ]
+    },
+    {
+      "doc_id": "DOC-0059",
+      "kind": "form",
+      "title": "Ownership discussion request 03",
+      "date": "2026-07-26",
+      "station": "DEMO-STATION-03",
+      "program": "DEMO-PROGRAM-BETA",
+      "author": "PERSON-0002",
+      "team": "TEAM-0002",
+      "word_range": [
+        120,
+        250
+      ],
+      "related_ids": [
+        "DEMO-AIR-0008",
+        "ISSUE-0140",
+        "TASK-0371",
+        "TEAM-0002"
+      ]
+    },
+    {
+      "doc_id": "DOC-0060",
+      "kind": "form",
+      "title": "Review meeting request 04",
+      "date": "2026-06-23",
+      "station": "DEMO-STATION-03",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "author": "PERSON-0030",
+      "team": "TEAM-0006",
+      "word_range": [
+        120,
+        250
+      ],
+      "related_ids": [
+        "DEMO-AIR-0007",
+        "ISSUE-0089",
+        "TASK-0238",
+        "TEAM-0006"
+      ]
+    }
+  ]
+}
