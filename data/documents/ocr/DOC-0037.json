@@ -1,0 +1,24 @@
+{
+  "doc_id": "DOC-0037",
+  "kind": "coordination",
+  "renderer_version": "scans-2026-11-09.2",
+  "seed": 20261145,
+  "source_sha256": "c9781069674bdd6da58852865c178f7ab01da5747da6fe87d4be9250e178ce1a",
+  "tesseract_version": "tesseract 5.5.0",
+  "pages": [
+    {
+      "page_number": 1,
+      "scan_sha256": "23d7a0b75147ad3cec969d25eba1cd15b802df9dc5fae9ac4ef2df52c04fda99",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0037 2026-03-02\nMEETING NOTES — Electrical Dependencies Between\nOwning Desks\nDate: 2026-03-02\nProgram: DEMO-PROGRAM-ALPHA\nAttendees: PERSON-0013 for TEAM-0001; supplying team's\ncoordinator; intake clerk; duty chair.\nPurpose: Agree how the electrical desk follows dependencies\nrequiring an answer from another team. ISSUE-0162 and\nTASK-0432 locate the folder used for the discussion.\nDecisions Use separate owning-team and answering-team spaces\non the dependency sheet. The owning team keeps responsibility\nfor the next queue action while the answering team provides\nthe requested information. Sending a question across the desk\nboundary does not transfer ownership.\nWrite the answer needed, its intended recipient, and a\npromised contact time before leaving the meeting. The intake\nclerk will check the contact plan at 15:00 and carry any\nmissed appointment into the next shift's sheet with its\noriginal date.\nIf the teams cannot identify a receiving role, use\nquestion-first escalation to the duty chair. Begin with the\nmissing answer and then state who will seek it and when. A\ngeneric request to accelerate the queue gives the chair no\nownership decision to resolve.\nAction items\n— Owner: Supplying team's coordinator. Due: 2026-03-03. Name\nthe receiving role for dependency questions.\n_ Owner: PERSON-0013. Due: 2026-03-03. Add the separate team\nspaces to the working desk sheet.\nD. Worker 0013\nDemo Worker 0013, Demo Team 01\nPage 1 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0037 2026-03-02\nMEETING NOTES — Electrical Dependencies Between\nOwning Desks\nDate: 2026-03-02\nProgram: DEMO-PROGRAM-ALPHA\nAttendees: PERSON-0013 for TEAM-0001; supplying team's\ncoordinator; intake clerk; duty chair.\nPurpose: Agree how the electrical desk follows dependencies\nrequiring an answer from another team. ISSUE-0162 and\nTASK-0432 locate the folder used for the discussion.\nDecisions Use separate owning-team and answering-team spaces\non the dependency sheet. The owning team keeps responsibility\nfor the next queue action while the answering team provides\nthe requested information. Sending a question across the desk\nboundary does not transfer ownership.\nWrite the answer needed, its intended recipient, and a\npromised contact time before leaving the meeting. The intake\nclerk will check the contact plan at 15:00 and carry any\nmissed appointment into the next shift's sheet with its\noriginal date.\nIf the teams cannot identify a receiving role, use\nquestion-first escalation to the duty chair. Begin with the\nmissing answer and then state who will seek it and when. A\ngeneric request to accelerate the queue gives the chair no\nownership decision to resolve.\nAction items\n— Owner: Supplying team's coordinator. Due: 2026-03-03. Name\nthe receiving role for dependency questions.\n_ Owner: PERSON-0013. Due: 2026-03-03. Add the separate team\nspaces to the working desk sheet.\nDemo Worker 0013, Demo Team 01\nPage 1 of 2",
+      "mean_word_confidence": 95.466067
+    },
+    {
+      "page_number": 2,
+      "scan_sha256": "8d957a3bd69e62eb9e4a8d2306fc826e6a6bf243eea99ce31303d3603cc844ab",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0037 2026-03-02\n_ Owner: Intake clerk. Due: 2026-03-04 at 15:00. Check the\ncontact plan and retain any missed-contact note beside the\noriginal request.\nD. Worker 0073\nDemo Worker 0013, Demo Team 01\nPage 2 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0037 2026-03-02\n_ Owner: Intake clerk. Due: 2026-03-04 at 15:00. Check the\ncontact plan and retain any missed-contact note beside the\noriginal request.\nDemo Worker 0013, Demo Team 01\nPage 2 of 2",
+      "mean_word_confidence": 94.30551832500001
+    }
+  ]
+}

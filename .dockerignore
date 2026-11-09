@@ -8,5 +8,11 @@
 !preflight_core/**
 !requirements-mcp.txt
 !requirements-chat.txt
+# Ingest image: the scan renderer, OCR step and their fonts.
+!requirements-ingest.txt
+!scripts/render_scans.py
+!scripts/ocr_scans.py
+!assets/fonts/
+!assets/fonts/**
 **/__pycache__/
 **/*.pyc

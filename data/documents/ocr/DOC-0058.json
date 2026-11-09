@@ -1,0 +1,24 @@
+{
+  "doc_id": "DOC-0058",
+  "kind": "form",
+  "renderer_version": "scans-2026-11-09.2",
+  "seed": 20261166,
+  "source_sha256": "65ece980143f570c6995152a3464f6298a0b1dfedf8760f9fbef1921ed9b0616",
+  "tesseract_version": "tesseract 5.5.0",
+  "pages": [
+    {
+      "page_number": 1,
+      "scan_sha256": "9c93995b434fe854b84c35d5cf58576b42aef91fa6de992e488bd774584e6ddb",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0058\n2026-09-22\nRequest to Review an Existing Priority\nForm:\nPriovity change request\nDate:\n2026-07-22\nRequesting desk:\nPERSON-0024 for TEAM-0006\nScope:\nControls queue discussion at\nDEMO-STATION-01, DEMO-PROGRAM-ALPHA\nLocating\nDEMO-AIR-0001, ISSUE-0108, TASK-0288,\nreferences:\nTASK-0289, TASK-0290\nScheduling\nconcern:\nConsequence of\ndelaying the\ndiscussion:\nProposed\npriority:\nPractice:\nApply reacon-before-rank; complete the concern and\nconsequence fielde before proposing low, medium, or high.\nDecision sought:\nReview the justification For a proposed change to an\nexicting priority, keeping thie requect ceparate from the\ncource-record field.\nRequested review\n2026-07-24\ndate:\nReviewing role:\nProgram queue chair, with the owning-team ci\nprecent for the ccope diceuccion. |___*°?5-02~22\n|\nD. Worker 0024\naol,\nDemo Worker 0024, Demo Team 06\nPage 1 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0058\n2026-09-22\nRequest to Review an Existing Priority\nForm:\nDate:\nRequesting desk:\nPERSON-0024 for TEAM-0006\nScope:\nControls queue discussion at\nDEMO-STATION-01, DEMO-PROGRAM-ALPHA\nLocating\nDEMO-AIR-0001, ISSUE-0108, TASK-0288,\nreferences:\nTASK-0289, TASK-0290\nScheduling\nconcern:\nConsequence of\ndelaying the\ndiscussion:\nProposed\npriority:\nPractice:\nDecision sought:\nRequested review\ndate:\nReviewing role:\nDemo Worker 0024, Demo Team 06\nPage 1 of 2",
+      "mean_word_confidence": 90.35908503448276
+    },
+    {
+      "page_number": 2,
+      "scan_sha256": "2d5fd5e34c25ddef10b997685300a274f5df1ab4ba75249caacffc047d617eb6",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0058 2026-09-22\nAttachment\nOriginal priority rationale and any earlier proposal,\nrequired:\nretaining the cubmitting role and date beside each\nexplanation.\nChange history:\nPreserve a superceded proposal and ctate the new\nadministrative consideration that prompted another\nrequest.\nRequester's\nRecord the chair's next quection and contact date here\nfollow-up:\nwithout treating a meeting appointment ac a decicion\nabout the record.\nD. Worker 0024\nDemo Worker 0024, Demo Team 06\nPage 2 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0058 2026-09-22\nAttachment\nrequired:\nChange history:\nRequester's\nfollow-up:\nDemo Worker 0024, Demo Team 06\nPage 2 of 2",
+      "mean_word_confidence": 90.76376344
+    }
+  ]
+}

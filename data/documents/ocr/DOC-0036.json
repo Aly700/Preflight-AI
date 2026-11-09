@@ -1,0 +1,24 @@
+{
+  "doc_id": "DOC-0036",
+  "kind": "coordination",
+  "renderer_version": "scans-2026-11-09.2",
+  "seed": 20261144,
+  "source_sha256": "e01cd1c8f2bdb42e7bef3249ee090c6bdc1bb97a5ad00a0fb1e1d0648c927215",
+  "tesseract_version": "tesseract 5.5.0",
+  "pages": [
+    {
+      "page_number": 1,
+      "scan_sha256": "fc9ac7e37c9c5ed3078e2d7f552a186de4cda39e95519160f667b3e85ef3ebc2",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0036 2026-10-12\nMEETING NOTES — Staffing the Structures Review\nAppointment\nDate: 2026-10-12\nProgram: DEMO-PROGRAM-BETA\nAttendees: PERSON-0001 for TEAM-0001; review roster clerk;\nprogram report editor; collecting coordinator.\nPurpose: Arrange reviewer coverage for the structures\ndiscussion folder located by DEMO-AIR-0002, ISSUE-0150, and\nTASK-0396.\nDecisions The roster clerk will name a primary reviewer and a\nsubstitute interval for appointments receiving work in the\nawaiting_review category. The collecting coordinator will\nconfirm the expected paper-delivery time separately. Paper\ncollection must not consume the receiving reviewer's entire\nappointment without the scheduling clerk knowing.\nUse a review envelope for the appointment request. It contains\nthe question, record reference, expected reply role, and\nrequested discussion slot. The roster clerk returns a specific\nalternative appointment if the requested interval cannot be\nstaffed.\nThe report editor will carry the question requiring a\ndecision, dependency role, and next discussion date into the\nproposed weekly report layout. A schedule-change field will\npreserve the earlier appointment when a new interval is\narranged. The layout discussion concerns field meaning,\nwithout workload figures.\nAction items\n_— Owner: Review roster clerk. Due: 2026-10-13. Confirm the\nprimary reviewer and substitute interval with the collecting\nD. Worker 0001\nDemo Worker 0001, Demo Team 01\nPage 1 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0036 2026-10-12\nMEETING NOTES — Staffing the Structures Review\nAppointment\nDate: 2026-10-12\nProgram: DEMO-PROGRAM-BETA\nAttendees: PERSON-0001 for TEAM-0001; review roster clerk;\nprogram report editor; collecting coordinator.\nPurpose: Arrange reviewer coverage for the structures\ndiscussion folder located by DEMO-AIR-0002, ISSUE-0150, and\nTASK-0396.\nDecisions The roster clerk will name a primary reviewer and a\nsubstitute interval for appointments receiving work in the\nawaiting_review category. The collecting coordinator will\nconfirm the expected paper-delivery time separately. Paper\ncollection must not consume the receiving reviewer's entire\nappointment without the scheduling clerk knowing.\nUse a review envelope for the appointment request. It contains\nthe question, record reference, expected reply role, and\nrequested discussion slot. The roster clerk returns a specific\nalternative appointment if the requested interval cannot be\nstaffed.\nThe report editor will carry the question requiring a\ndecision, dependency role, and next discussion date into the\nproposed weekly report layout. A schedule-change field will\npreserve the earlier appointment when a new interval is\narranged. The layout discussion concerns field meaning,\nwithout workload figures.\nAction items\n_— Owner: Review roster clerk. Due: 2026-10-13. Confirm the\nprimary reviewer and substitute interval with the collecting\nDemo Worker 0001, Demo Team 01\nPage 1 of 2",
+      "mean_word_confidence": 95.36411450980393
+    },
+    {
+      "page_number": 2,
+      "scan_sha256": "45f583d3cbbe89d00fdbf2d5f03098db651a979541de8302aaa012843367aa24",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0036 2026-10-12\ncoordinator.\n— Owner: PERSON-0001. Due: 2026-10-14. Check that the request\ncontains its discussion purpose.\n— Owner: Program report editor. Due: 2026-10-16. Submit the\ndecision-field layout to the program chair for the coming\nreport-format memo.\nD. Worker 0001\nDemo Worker 0001, Demo Team 01\nPage 2 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0036 2026-10-12\ncoordinator.\n— Owner: PERSON-0001. Due: 2026-10-14. Check that the request\ncontains its discussion purpose.\n— Owner: Program report editor. Due: 2026-10-16. Submit the\ndecision-field layout to the program chair for the coming\nreport-format memo.\nDemo Worker 0001, Demo Team 01\nPage 2 of 2",
+      "mean_word_confidence": 92.88261771698114
+    }
+  ]
+}

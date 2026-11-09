@@ -1,0 +1,24 @@
+{
+  "doc_id": "DOC-0017",
+  "kind": "handover",
+  "renderer_version": "scans-2026-11-09.2",
+  "seed": 20261125,
+  "source_sha256": "e4c0e45f0c5afb07f4ac243af5ff509405b4f4ae3d0906c776930b0ac616ff09",
+  "tesseract_version": "tesseract 5.5.0",
+  "pages": [
+    {
+      "page_number": 1,
+      "scan_sha256": "4d764b5ce59087e45ed2598e79d4951f895af1f21a986d4c98387455681aa6ed",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0017 2026-04-23\nSHIFT NOTES — Electrical Review Appointments Across\nLunch Relief\nDate: 2026-04-23\nStation: DEMO-STATION-01\nProgram: DEMO-PROGRAM-BETA\n09:10 — Review desk note from PERSON-0028 for TEAM-0004.\nArrange electrical discussion appointments around lunch relief\nbeginning at 11:40. ISSUE-0105 and TASK-0281 are the reference\npair for the folder used in this handover.\n10:05 — The roster clerk will confirm which reviewer can\nreceive work presented in the awaiting_review category during\nthe relief interval. Put the reviewer's name and availability\non the appointment sheet. A calendar opening alone is not\nconfirmation that the reviewer can take the discussion.\n11:20 — If a reviewer changes, retain the earlier appointment\nand write the substitute's name in the dated margin. Tell the\ncollecting coordinator which papers the substitute expects.\nAvoid asking that coordinator to assemble the same packet\nagain under a different meeting heading.\n13:10 — The returning desk lead checks the appointment margin\nbefore resuming calls. Any discussion that moved during relief\nneeds a new contact time beside the old entry. Keep the folder\nat the electrical review shelf until the receiving person\nknows where to find it.\nNext-shift list\n— Confirm the relief reviewer directly with the roster clerk.\n— Read the substitution margin before contacting the\ncollecting coordinator.\nCarry the expected paper-delivery time into the afternoon\nappointment sheet, keeping it separate from the reviewer's\nD. Worker 0028\nDemo Worker 0028, Demo Team 04\nPage 1 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0017 2026-04-23\nSHIFT NOTES — Electrical Review Appointments Across\nLunch Relief\nDate: 2026-04-23\nStation: DEMO-STATION-01\nProgram: DEMO-PROGRAM-BETA\n09:10 — Review desk note from PERSON-0028 for TEAM-0004.\nArrange electrical discussion appointments around lunch relief\nbeginning at 11:40. ISSUE-0105 and TASK-0281 are the reference\npair for the folder used in this handover.\n10:05 — The roster clerk will confirm which reviewer can\nreceive work presented in the awaiting_review category during\nthe relief interval. Put the reviewer's name and availability\non the appointment sheet. A calendar opening alone is not\nconfirmation that the reviewer can take the discussion.\n11:20 — If a reviewer changes, retain the earlier appointment\nand write the substitute's name in the dated margin. Tell the\ncollecting coordinator which papers the substitute expects.\nAvoid asking that coordinator to assemble the same packet\nagain under a different meeting heading.\n13:10 — The returning desk lead checks the appointment margin\nbefore resuming calls. Any discussion that moved during relief\nneeds a new contact time beside the old entry. Keep the folder\nat the electrical review shelf until the receiving person\nknows where to find it.\nNext-shift list\n— Confirm the relief reviewer directly with the roster clerk.\n— Read the substitution margin before contacting the\ncollecting coordinator.\nCarry the expected paper-delivery time into the afternoon\nappointment sheet, keeping it separate from the reviewer's\nDemo Worker 0028, Demo Team 04\nPage 1 of 2",
+      "mean_word_confidence": 94.95097743277312
+    },
+    {
+      "page_number": 2,
+      "scan_sha256": "cf363a2420338d1365c4e6f57a732f385911a8c643aa8095d0c712e93a280fa0",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0017 2026-04-23\navailability interval.\nD. Worker 0028\nDemo Worker 0028, Demo Team 04\nPage 2 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0017 2026-04-23\navailability interval.\nDemo Worker 0028, Demo Team 04\nPage 2 of 2",
+      "mean_word_confidence": 95.27690752380951
+    }
+  ]
+}

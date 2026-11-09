@@ -1,0 +1,24 @@
+{
+  "doc_id": "DOC-0057",
+  "kind": "form",
+  "renderer_version": "scans-2026-11-09.2",
+  "seed": 20261165,
+  "source_sha256": "ed480a3e587de0d7e4685b3759d5ef5099851aef8b23f3793150ceadda8415ac",
+  "tesseract_version": "tesseract 5.5.0",
+  "pages": [
+    {
+      "page_number": 1,
+      "scan_sha256": "1b0caff61a48ef789afa835835c3cfaeaae2b8181094d71509dcba6abbde1f41",
+      "text": "xs\ns\n2\n:\nx\nSs\n8\n>\n=\n$\nPreflight Demo Program\nDEMO-STATION-02\nDOC-0057 2026-09-12\nRequest for a Cross-Team Escalation Contact\nForm:\nEscalation request\nDate:\n2026-09-12\nRequesting desk:\nPERSON-0030 for TEAM-0006\nScope:\nControls queue coordination at\nDEMO-STATION-02, DEMO-PROGRAM-BETA\nLocating\nDEMO-AIR-0006, ISSUE-0024, TASK-0063,\nreferences:\nTASK-0064\nQuestion\nWhich receiving deck will arrange the next diccussion of the\nrequiring\nownership question?\nescalation:\nPractice:\nUse question-First eccalation; state the micsing angwer\nbefore deceribing the desired meeting or naming a\nrecipient.\nReason for\nescalation:\nProposed\nreceiving role:\nRequested contact\n2026-07-14\ndate:\nExpected\nTdentify the role seeking the ancwer and the next contact\nresponse:\ntime, keeping tack assignment separate from who arranges\nthe conversation.\nAttachment\nDated original question and the previous contact note, with\nD. Worker 0030\nDemo Worker 0030, Demo Team 06\nPage 1 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-02\nDOC-0057 2026-09-12\nRequest for a Cross-Team Escalation Contact\nForm:\nDate:\nRequesting desk:\nPERSON-0030 for TEAM-0006\nScope:\nControls queue coordination at\nDEMO-STATION-02, DEMO-PROGRAM-BETA\nLocating\nDEMO-AIR-0006, ISSUE-0024, TASK-0063,\nreferences:\nTASK-0064\nQuestion\nrequiring\nescalation:\nPractice:\nReason for\nescalation:\nProposed\nreceiving role:\nRequested contact\ndate:\nExpected\nresponse:\nAttachment\nDemo Worker 0030, Demo Team 06\nPage 1 of 2",
+      "mean_word_confidence": 85.28798429545455
+    },
+    {
+      "page_number": 2,
+      "scan_sha256": "249b188593234c4eebc95e0a22fbaabedc428a54b02910b53ec2da580121a1a0",
+      "text": "Preflight Demo Program\nDEMO-STATION-02\nDOC-0057 2026-09-12\nrequired: the cource heading preserved for the receiving deck.\nFallback: Return an unanswered destination quection to the duty\nchair and record the next contact time beside the original\nrequest.\nReceiving\ncoordinator:\nFollow-up record: | Retain the first request with any later destination\ncorrection co the next chift can reconstruct why the\nescalation moved.\nD. Worker 0030\nDemo Worker 0030, Demo Team 06\nPage 2 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-02\nDOC-0057 2026-09-12\nrequired:\nFallback:\nReceiving\ncoordinator:\nFollow-up record: |\nDemo Worker 0030, Demo Team 06\nPage 2 of 2",
+      "mean_word_confidence": 89.98906084722222
+    }
+  ]
+}

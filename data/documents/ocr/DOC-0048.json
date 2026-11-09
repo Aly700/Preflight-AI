@@ -1,0 +1,24 @@
+{
+  "doc_id": "DOC-0048",
+  "kind": "coordination",
+  "renderer_version": "scans-2026-11-09.2",
+  "seed": 20261156,
+  "source_sha256": "8f44452bfbc155dad51555d5a006cdfe8199cf5e71d581e6285ccd986647a250",
+  "tesseract_version": "tesseract 5.5.0",
+  "pages": [
+    {
+      "page_number": 1,
+      "scan_sha256": "334e7e8520d7a327eb97ea023cfdd0048ae1036d7c4e47434f47f2b6746e46a9",
+      "text": "ok\nPreflight Demo Program\nDEMO-STATION-01\nDOC-0048 2026-10-21\nMEETING NOTES — Source Index Access After the Queue\nBinder Transfer\nDate: 2026-10-21\nProgram: DEMO-PROGRAM-BETA\nAttendees: PERSON-0033 for TEAM-0003; DEMO-STATION-01 source\nclerk; DEMO-STATION-03 receiving coordinator; program records\neditor.\nPurpose: Agree how later reference questions reach the correct\ndesk after the queue-paper transfer arrangement for\nDEMO-AIR-0012. ISSUE-0099 and TASK-0263 locate the avionics\nsection used in this discussion.\nDecisions The source station retains its source index and\ntransfer receipt from the arrangement scheduled for 2026-09-01\nat 09:40. The receiving station is the destination for\nbinder-access requests after the documented handover. This\ndivision concerns custody of papers, not an aircraft location\nchange.\nA request must say whether the sender needs a source-copy\nlookup or access to the receiving binder. The source clerk\nanswers index-location questions and directs binder requests\nusing the receiving contact recorded on the receipt. Keep the\noriginal request with any redirection note so the requesting\ndesk can follow the route.\nThe records editor will add the source heading and receiving\nindex heading to the transfer reference sheet. Do not create a\nsecond working binder at the source station merely to avoid\nasking the receiving desk.\nAction items\n_ owner: Source clerk. Due: 2026-10-22. Confirm the retained\nD. Worker 0033\nDemo Worker 0033, Demo Team 03\nPage 1 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0048 2026-10-21\nMEETING NOTES — Source Index Access After the Queue\nBinder Transfer\nDate: 2026-10-21\nProgram: DEMO-PROGRAM-BETA\nAttendees: PERSON-0033 for TEAM-0003; DEMO-STATION-01 source\nclerk; DEMO-STATION-03 receiving coordinator; program records\neditor.\nPurpose: Agree how later reference questions reach the correct\ndesk after the queue-paper transfer arrangement for\nDEMO-AIR-0012. ISSUE-0099 and TASK-0263 locate the avionics\nsection used in this discussion.\nDecisions The source station retains its source index and\ntransfer receipt from the arrangement scheduled for 2026-09-01\nat 09:40. The receiving station is the destination for\nbinder-access requests after the documented handover. This\ndivision concerns custody of papers, not an aircraft location\nchange.\nA request must say whether the sender needs a source-copy\nlookup or access to the receiving binder. The source clerk\nanswers index-location questions and directs binder requests\nusing the receiving contact recorded on the receipt. Keep the\noriginal request with any redirection note so the requesting\ndesk can follow the route.\nThe records editor will add the source heading and receiving\nindex heading to the transfer reference sheet. Do not create a\nsecond working binder at the source station merely to avoid\nasking the receiving desk.\nAction items\n_ owner: Source clerk. Due: 2026-10-22. Confirm the retained\nDemo Worker 0033, Demo Team 03\nPage 1 of 2",
+      "mean_word_confidence": 94.80158856018518
+    },
+    {
+      "page_number": 2,
+      "scan_sha256": "97be40da9b466481395476f1a1945584d4822639c44a6e8f233a65ae88b0283d",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0048 2026-10-21\nindex location.\n- Owner: Receiving coordinator. Due: 2026-10-22. Confirm the\nbinder-access contact.\n— Owner: PERSON-0033. Due: 2026-10-23. Review the reference\nsheet with the program records editor.\nD. Worker 0033\nDemo Worker 0033, Demo Team 03\nPage 2 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0048 2026-10-21\nindex location.\n- Owner: Receiving coordinator. Due: 2026-10-22. Confirm the\nbinder-access contact.\n— Owner: PERSON-0033. Due: 2026-10-23. Review the reference\nsheet with the program records editor.\nDemo Worker 0033, Demo Team 03\nPage 2 of 2",
+      "mean_word_confidence": 92.15377728888889
+    }
+  ]
+}

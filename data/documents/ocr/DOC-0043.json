@@ -1,0 +1,24 @@
+{
+  "doc_id": "DOC-0043",
+  "kind": "coordination",
+  "renderer_version": "scans-2026-11-09.2",
+  "seed": 20261151,
+  "source_sha256": "9b9227658302ffb097d6f4bc147870f6c3291df81047610a86fb806950983447",
+  "tesseract_version": "tesseract 5.5.0",
+  "pages": [
+    {
+      "page_number": 1,
+      "scan_sha256": "1ba5da6a3b0a793e487b6134f4a1fe4687d58a57315e1df2d5a6cb7edc86e1f9",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0043 2026-10-21\nMEETING NOTES — Preparing the Structures Topics for\nFriday :\nDate: 2026-10-21\nProgram: DEMO-PROGRAM-ALPHA\nAttendees: PERSON-0001 for TEAM-0001; documentation team's\ncoordinator; backlog chair; station records clerk.\nPurpose: Prepare structures topics for the Friday queue sweep\nat 09:10. ISSUE-0001, TASK-0001, and TASK-0002 locate the\ndiscussion folder for DEMO-AIR-0001.\nDecisions The chair will ask each submitting desk for the\ndecision needed, owning team, next action, and next review\ndate. Topic headings are due by 16:00 on 2026-10-22. The\nFriday appointment remains a twenty-minute coordination\nreview, so collecting questions in advance matters.\nUse a question parking margin for background that needs a\nseparate response. Keep an addressee and promised reply date\nbeside each parked question, and carry it forward with the\nmain agenda sheet. A margin label alone is not enough for the\nnext coordinator to resume the discussion.\nThe documentation team's coordinator will identify which\nattachment heading is needed for the review. Keep that\ncollection action separate from the chair's choice of\ndiscussion order. No priority proposal is established by an\nagenda position.\nAction items\n— Owner: PERSON-0001. Due: 2026-10-22 at 16:00. Submit the\nstructures decision question.\n— Owner: Documentation coordinator. Due: 2026-10-22. Supply\nthe collecting role and attachment heading.\nD. Worker 0001\nDemo Worker 0001, Demo Team 01\nPage 1 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0043 2026-10-21\nMEETING NOTES — Preparing the Structures Topics for\nFriday :\nDate: 2026-10-21\nProgram: DEMO-PROGRAM-ALPHA\nAttendees: PERSON-0001 for TEAM-0001; documentation team's\ncoordinator; backlog chair; station records clerk.\nPurpose: Prepare structures topics for the Friday queue sweep\nat 09:10. ISSUE-0001, TASK-0001, and TASK-0002 locate the\ndiscussion folder for DEMO-AIR-0001.\nDecisions The chair will ask each submitting desk for the\ndecision needed, owning team, next action, and next review\ndate. Topic headings are due by 16:00 on 2026-10-22. The\nFriday appointment remains a twenty-minute coordination\nreview, so collecting questions in advance matters.\nUse a question parking margin for background that needs a\nseparate response. Keep an addressee and promised reply date\nbeside each parked question, and carry it forward with the\nmain agenda sheet. A margin label alone is not enough for the\nnext coordinator to resume the discussion.\nThe documentation team's coordinator will identify which\nattachment heading is needed for the review. Keep that\ncollection action separate from the chair's choice of\ndiscussion order. No priority proposal is established by an\nagenda position.\nAction items\n— Owner: PERSON-0001. Due: 2026-10-22 at 16:00. Submit the\nstructures decision question.\n— Owner: Documentation coordinator. Due: 2026-10-22. Supply\nthe collecting role and attachment heading.\nDemo Worker 0001, Demo Team 01\nPage 1 of 2",
+      "mean_word_confidence": 94.8766241843318
+    },
+    {
+      "page_number": 2,
+      "scan_sha256": "96dd1da940e21c72a0705c640e12eeb2c49c3c0d79065518220d529d2d099038",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0043 2026-10-21\n— Owner: Backlog chair. Due: 2026-10-23. Return the dated\ncarry list with owners and next discussion dates to the\nstation desk.\nD. Worker 0007\nDemo Worker 0001, Demo Team 01\nPage 2 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0043 2026-10-21\n— Owner: Backlog chair. Due: 2026-10-23. Return the dated\ncarry list with owners and next discussion dates to the\nstation desk.\nDemo Worker 0001, Demo Team 01\nPage 2 of 2",
+      "mean_word_confidence": 93.19994545
+    }
+  ]
+}

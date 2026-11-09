@@ -1,0 +1,24 @@
+{
+  "doc_id": "DOC-0047",
+  "kind": "coordination",
+  "renderer_version": "scans-2026-11-09.2",
+  "seed": 20261155,
+  "source_sha256": "91b76f396304f82bfd88bf95eca38a69e23eda723f4ebb87526b5102f1d98ed1",
+  "tesseract_version": "tesseract 5.5.0",
+  "pages": [
+    {
+      "page_number": 1,
+      "scan_sha256": "86cf21b742fd62653cb0007502101cc94a3c03c32341fb05b1c65843b0201663",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0047 2026-07-07\nMEETING NOTES — Hydraulics Return Papers Before the\nReview Board\nDate: 2026-07-07\nProgram: DEMO-PROGRAM-BETA\nAttendees: PERSON-0029 for TEAM-0005; originating desk\ncoordinator; review board recorder; station records clerk.\nPurpose: Arrange the review board's discussion of return\nPapers associated with ISSUE-0033. TASK-0088, TASK-0089, and\nTASK-0090 remain separate locating references for attached\ndiscussion papers.\nDecisions PERSON-0029 will be the named reviewer for this\npaperwork discussion. The board appointment is 2026-07-08 at\n11:50. The reviewer will consider whether the return request\nexplains the administrative question being raised again and\nidentifies the earlier closure-note reference.\nApply the return-note rule: retain the earlier question and\nwrite a separate dated reason for bringing it back. Put the\nclosure-note reference on its own line so a reader can find\nthe earlier disposition without mistaking it for the new\nreason.\nThe board recorder will preserve the reviewer name, meeting\ndate, reason, and resulting administrative action together.\nThe board's remit is completeness and traceability of the\npapers. Task kind labels on attachments do not authorize\ntechnical discussion in these notes.\nAction items\n- Owner: Originating desk coordinator. Due: 2026-07-08 at\n09:30. Bring the original question and dated return reason.\n- Owner: Station records clerk. Due: 2026-07-08 at 10:30.\nD. Worker 0029\nDemo Worker 0029, Demo Team 05\nPage 1 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0047 2026-07-07\nMEETING NOTES — Hydraulics Return Papers Before the\nReview Board\nDate: 2026-07-07\nProgram: DEMO-PROGRAM-BETA\nAttendees: PERSON-0029 for TEAM-0005; originating desk\ncoordinator; review board recorder; station records clerk.\nPurpose: Arrange the review board's discussion of return\nPapers associated with ISSUE-0033. TASK-0088, TASK-0089, and\nTASK-0090 remain separate locating references for attached\ndiscussion papers.\nDecisions PERSON-0029 will be the named reviewer for this\npaperwork discussion. The board appointment is 2026-07-08 at\n11:50. The reviewer will consider whether the return request\nexplains the administrative question being raised again and\nidentifies the earlier closure-note reference.\nApply the return-note rule: retain the earlier question and\nwrite a separate dated reason for bringing it back. Put the\nclosure-note reference on its own line so a reader can find\nthe earlier disposition without mistaking it for the new\nreason.\nThe board recorder will preserve the reviewer name, meeting\ndate, reason, and resulting administrative action together.\nThe board's remit is completeness and traceability of the\npapers. Task kind labels on attachments do not authorize\ntechnical discussion in these notes.\nAction items\n- Owner: Originating desk coordinator. Due: 2026-07-08 at\n09:30. Bring the original question and dated return reason.\n- Owner: Station records clerk. Due: 2026-07-08 at 10:30.\nDemo Worker 0029, Demo Team 05\nPage 1 of 2",
+      "mean_word_confidence": 95.19250288940093
+    },
+    {
+      "page_number": 2,
+      "scan_sha256": "b7040f9788e489883a59a3744e6f813d702e3b9d519f9186422a0ffb070aa567",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0047 2026-07-07\nLocate the earlier closure-note reference.\n— Owner: Board recorder. Due: 2026-07-09. File the\nadministrative action beside the reviewed request.\nD. Worker 0029\nDemo Worker 0029, Demo Team 05\nPage 2 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0047 2026-07-07\nLocate the earlier closure-note reference.\n— Owner: Board recorder. Due: 2026-07-09. File the\nadministrative action beside the reviewed request.\nDemo Worker 0029, Demo Team 05\nPage 2 of 2",
+      "mean_word_confidence": 93.326758
+    }
+  ]
+}

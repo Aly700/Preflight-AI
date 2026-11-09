@@ -1,0 +1,24 @@
+{
+  "doc_id": "DOC-0045",
+  "kind": "coordination",
+  "renderer_version": "scans-2026-11-09.2",
+  "seed": 20261153,
+  "source_sha256": "a1df1c78c4e7e6fe860a7f90f545fa62c970a6273c7049c1e5c0e7a4fd9b3fb0",
+  "tesseract_version": "tesseract 5.5.0",
+  "pages": [
+    {
+      "page_number": 1,
+      "scan_sha256": "30df007b29723c6ee51a7b2fa11b3334b4d83092f3db6d97d4b12b9ff5976dab",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0045 2026-09-09\nMEETING NOTES — Preparing the BETA Audit Follow-Up\nFolder\nDate: 2026-09-09\nProgram: DEMO-PROGRAM-BETA\nAttendees: PERSON-0014 for TEAM-0002; audit records clerk;\nprogram queue chair; station calendar coordinator.\nPurpose: Prepare the follow-up folder for the records audit\nweek held from 2026-08-24 through 2026-08-28. ISSUE-0139 and\nTASK-0370 locate the hydraulics example used to explain the\nfolder.\nDecisions Keep the priority-change hold register with its\noriginal submission dates. Add each later review appointment\nbeside the proposal instead of moving the proposal into a new\nsheet without its earlier context. The freeze concerned\nchanges to existing priority fields; initial intake still\nrequired a priority and written reason.\nThe follow-up meeting will take place on 2026-09-14 at 10:50.\nIts folder needs the proposal question, submitting role,\nreview appointment, and any clarification requested by the\nchair. The meeting will examine the paper trail without\npresenting workload figures or record-category snapshots.\nSeparate calendar corrections from the merits of a priority\nproposal. A late appointment requires an explanation of the\nschedule change, while the proposal still needs its own\njustification.\nAction items\n_— owner: Audit records clerk. Due: 2026-09-11. Arrange the\ndated hold-register papers for the meeting.\n_ Owner: PERSON-0014. Due: 2026-09-11. Check that the\nD. Worker 0014\nDemo Worker 0014, Demo Team 02\nPage 1 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0045 2026-09-09\nMEETING NOTES — Preparing the BETA Audit Follow-Up\nFolder\nDate: 2026-09-09\nProgram: DEMO-PROGRAM-BETA\nAttendees: PERSON-0014 for TEAM-0002; audit records clerk;\nprogram queue chair; station calendar coordinator.\nPurpose: Prepare the follow-up folder for the records audit\nweek held from 2026-08-24 through 2026-08-28. ISSUE-0139 and\nTASK-0370 locate the hydraulics example used to explain the\nfolder.\nDecisions Keep the priority-change hold register with its\noriginal submission dates. Add each later review appointment\nbeside the proposal instead of moving the proposal into a new\nsheet without its earlier context. The freeze concerned\nchanges to existing priority fields; initial intake still\nrequired a priority and written reason.\nThe follow-up meeting will take place on 2026-09-14 at 10:50.\nIts folder needs the proposal question, submitting role,\nreview appointment, and any clarification requested by the\nchair. The meeting will examine the paper trail without\npresenting workload figures or record-category snapshots.\nSeparate calendar corrections from the merits of a priority\nproposal. A late appointment requires an explanation of the\nschedule change, while the proposal still needs its own\njustification.\nAction items\n_— owner: Audit records clerk. Due: 2026-09-11. Arrange the\ndated hold-register papers for the meeting.\n_ Owner: PERSON-0014. Due: 2026-09-11. Check that the\nDemo Worker 0014, Demo Team 02\nPage 1 of 2",
+      "mean_word_confidence": 95.28920768837209
+    },
+    {
+      "page_number": 2,
+      "scan_sha256": "f5059da63c55af4518f20ad6c3c32f981fc5fdeae9b17a5e0455c8c8a6b16b22",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\npDOCc-0045 2026-09-09\nhydraulics example preserves its source reference.\n_ Owner: Calendar coordinator. Due: 2026-09-12. Confirm\nattendees and retain the meeting appointment with the audit\nfolder.\nD. Worker 0014\nDemo Worker 0014, Demo Team 02\nPage 2 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\npDOCc-0045 2026-09-09\nhydraulics example preserves its source reference.\n_ Owner: Calendar coordinator. Due: 2026-09-12. Confirm\nattendees and retain the meeting appointment with the audit\nfolder.\nDemo Worker 0014, Demo Team 02\nPage 2 of 2",
+      "mean_word_confidence": 91.83150604761904
+    }
+  ]
+}

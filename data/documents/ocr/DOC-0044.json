@@ -1,0 +1,24 @@
+{
+  "doc_id": "DOC-0044",
+  "kind": "coordination",
+  "renderer_version": "scans-2026-11-09.2",
+  "seed": 20261152,
+  "source_sha256": "a66ace1bac99f94e8c848ad6b124414bfe8e47a75d5e84abd2ea77f3ad0117de",
+  "tesseract_version": "tesseract 5.5.0",
+  "pages": [
+    {
+      "page_number": 1,
+      "scan_sha256": "09aaf50080af57ad3eec24aa824a573f15d3c8e4baae600f661c6590b0667735",
+      "text": "geen\nPreflight Demo Program\nDEMO-STATION-02\nDOC-0044 2026-07-07\nMEETING NOTES — Cabin Attachment Filing Across the\nRecords Desks ;\nDate: 2026-07-07\nProgram: DEMO-PROGRAM-ALPHA\nAttendees: PERSON-0021 for TEAM-0003; partner team's records\nliaison; station filing clerk; cabin desk coordinator.\nPurpose: Agree how cabin attachments will be indexed across\nthe records desks at DEMO-STATION-02. ISSUE-0073, TASK-0192,\nand TASK-0193 locate the discussion material.\nDecisions The shared filing list will retain the source\nheading beside the local filing heading. A document may arrive\nwith a sender's title that differs from the station's index\nlabel; keeping both lets a later clerk retrace the search\nwithout guessing which subject was intended.\nIf a paper is found under a different folder heading, keep a\ndated location-correction note with the source route and the\nreceiving location. Do not silently refile it and discard the\ntrail. The collecting coordinator needs to know where a search\nbegan as well as where the Paper was found.\nThe partner liaison will confirm which attachment heading\nbelongs to each discussion reference. TEAM-0003 will supply\nthe receiving filing contact, while the cabin desk coordinator\nretains the appointment with the requester.\nAction items\n~ Owner: Station filing clerk. Due: 2026-07-08. add source and\nfiling headings to the working index.\n~ Owner: Partner records liaison. Due: 2026-07-09. Resolve\nambiguous attachment headings with the requesting desk.\nD. Worker 0021\nDemo Worker 0021, Demo Team 03\nPage 1 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-02\nDOC-0044 2026-07-07\nMEETING NOTES — Cabin Attachment Filing Across the\nRecords Desks ;\nDate: 2026-07-07\nProgram: DEMO-PROGRAM-ALPHA\nAttendees: PERSON-0021 for TEAM-0003; partner team's records\nliaison; station filing clerk; cabin desk coordinator.\nPurpose: Agree how cabin attachments will be indexed across\nthe records desks at DEMO-STATION-02. ISSUE-0073, TASK-0192,\nand TASK-0193 locate the discussion material.\nDecisions The shared filing list will retain the source\nheading beside the local filing heading. A document may arrive\nwith a sender's title that differs from the station's index\nlabel; keeping both lets a later clerk retrace the search\nwithout guessing which subject was intended.\nIf a paper is found under a different folder heading, keep a\ndated location-correction note with the source route and the\nreceiving location. Do not silently refile it and discard the\ntrail. The collecting coordinator needs to know where a search\nbegan as well as where the Paper was found.\nThe partner liaison will confirm which attachment heading\nbelongs to each discussion reference. TEAM-0003 will supply\nthe receiving filing contact, while the cabin desk coordinator\nretains the appointment with the requester.\nAction items\n~ Owner: Station filing clerk. Due: 2026-07-08. add source and\nfiling headings to the working index.\n~ Owner: Partner records liaison. Due: 2026-07-09. Resolve\nambiguous attachment headings with the requesting desk.\nDemo Worker 0021, Demo Team 03\nPage 1 of 2",
+      "mean_word_confidence": 95.3033841521739
+    },
+    {
+      "page_number": 2,
+      "scan_sha256": "58543e393a2d991d36912544e14adef65834c714a3ace365d95daaf218468d7a",
+      "text": "Preflight Demo Program\nDEMO-STATION-02\nDOC-0044 2026-07-07\n— Owner: PERSON-0021. Due: 2026-07-10. Review the\nlocation-correction note with the cabin coordinator before\nthe next handover.\nD. Worker 0021\nDemo Worker 0021, Demo Team 03\nPage 2 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-02\nDOC-0044 2026-07-07\n— Owner: PERSON-0021. Due: 2026-07-10. Review the\nlocation-correction note with the cabin coordinator before\nthe next handover.\nDemo Worker 0021, Demo Team 03\nPage 2 of 2",
+      "mean_word_confidence": 93.14267358333333
+    }
+  ]
+}

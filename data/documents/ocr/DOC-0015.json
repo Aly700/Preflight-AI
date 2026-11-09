@@ -1,0 +1,24 @@
+{
+  "doc_id": "DOC-0015",
+  "kind": "handover",
+  "renderer_version": "scans-2026-11-09.2",
+  "seed": 20261123,
+  "source_sha256": "fc25abdd8d93d612dd429785bbfffe364daa055579e43ae54a8d57d8c1edeac0",
+  "tesseract_version": "tesseract 5.5.0",
+  "pages": [
+    {
+      "page_number": 1,
+      "scan_sha256": "d503fbddfd6d7c207edcc407f6611b6d7cf4cde7235c5c2024aa388cb5175f30",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\npoc-0015 2026-03-28\nSHIFT NOTES — Reopen Reason Papers for the Controls\nDesk\nDate: 2026-03-28\nStation: DEMO-STATION-01\nProgram: DEMO-PROGRAM-BETA\n08:05 — Heads-up from PERSON-0035, TEAM-0005: bring the return\npapers associated with ISSUE-0149 to the controls desk\ndiscussion. The earlier question and the reason for raising it\nagain must be readable together. Use TASK-0392 to locate the\nreview discussion and TASK-0394 for the documentation\ndiscussion.\n09:15 — Apply the return-note rule when arranging those\npapers. Retain the earlier question and place a separate dated\nreturn reason beneath it. Ask the desk reviewer to identify\nany gap in the reason before the meeting; a shortened heading\nshould not stand in for the explanation.\n41:25 — The station clerk will check reviewer availability and\nwrite the person's name on the appointment sheet. Keep that\nappointment sheet with the controls divider so the afternoon\ncoordinator knows whom to contact.\n13:30 — The daily reply window starts today across\nDEMO-PROGRAM-BETA. Use it for promised correspondence replies\nand write a next contact time when a response must come later.\nThe station clerk holds the window if the usual coordinator is\nabsent.\nNext-shift list\n_ preserve the earlier question beside the dated return\nreason.\n— Confirm the named reviewer on the appointment sheet.\n— Carry any later response appointment from the window into\nD. Worker 0035\nDemo Worker 0035, Demo Team 05\nPage 1 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\npoc-0015 2026-03-28\nSHIFT NOTES — Reopen Reason Papers for the Controls\nDesk\nDate: 2026-03-28\nStation: DEMO-STATION-01\nProgram: DEMO-PROGRAM-BETA\n08:05 — Heads-up from PERSON-0035, TEAM-0005: bring the return\npapers associated with ISSUE-0149 to the controls desk\ndiscussion. The earlier question and the reason for raising it\nagain must be readable together. Use TASK-0392 to locate the\nreview discussion and TASK-0394 for the documentation\ndiscussion.\n09:15 — Apply the return-note rule when arranging those\npapers. Retain the earlier question and place a separate dated\nreturn reason beneath it. Ask the desk reviewer to identify\nany gap in the reason before the meeting; a shortened heading\nshould not stand in for the explanation.\n41:25 — The station clerk will check reviewer availability and\nwrite the person's name on the appointment sheet. Keep that\nappointment sheet with the controls divider so the afternoon\ncoordinator knows whom to contact.\n13:30 — The daily reply window starts today across\nDEMO-PROGRAM-BETA. Use it for promised correspondence replies\nand write a next contact time when a response must come later.\nThe station clerk holds the window if the usual coordinator is\nabsent.\nNext-shift list\n_ preserve the earlier question beside the dated return\nreason.\n— Confirm the named reviewer on the appointment sheet.\n— Carry any later response appointment from the window into\nDemo Worker 0035, Demo Team 05\nPage 1 of 2",
+      "mean_word_confidence": 95.06722340086208
+    },
+    {
+      "page_number": 2,
+      "scan_sha256": "25825a4e4deb24cdb59c85198b71b024749f1923901f758b2234df38f940f51f",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0015 2026-03-28\nthe controls desk diary without rewriting the original\nrequest.\nD. Worker 0035\nDemo Worker 0035, Demo Team 05\nPage 2 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0015 2026-03-28\nthe controls desk diary without rewriting the original\nrequest.\nDemo Worker 0035, Demo Team 05\nPage 2 of 2",
+      "mean_word_confidence": 95.46655021428572
+    }
+  ]
+}

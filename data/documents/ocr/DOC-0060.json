@@ -1,0 +1,24 @@
+{
+  "doc_id": "DOC-0060",
+  "kind": "form",
+  "renderer_version": "scans-2026-11-09.2",
+  "seed": 20261168,
+  "source_sha256": "0a5716fbb82fe0ebed629a46aab65305da58da5bf19555a90b4ac545384aa095",
+  "tesseract_version": "tesseract 5.5.0",
+  "pages": [
+    {
+      "page_number": 1,
+      "scan_sha256": "a5bb89ddfe5bb7d651496c0431440ca8d698e93a7335b074dfbceeb9b0817b6d",
+      "text": "Preflight Demo Program\nDEMO-STATION-03\nDOC-0060 2026-06-23\nRequest to Transfer the Cabin Queue Papers\nForm:\nQueue transfer request\nDate:\n2026-06-23\nRequesting desk:\nPERSON-0030 for TEAM-0006\nProgram:\nDEMO-PROGRAM-ALPHA\nLocating\nDEMO-AIR-0007, ISSUE-0089, TASK-0238\nreferences:\nSending desk:\nDEMO-STATION-03 coordination clerk\nProposed\nDEMO-STATION-02 queue coordinator\nreceiving desk:\nProposed transfer\n2026-06-25 at 07:20\nappointment:\nReason for\ntransfer:\nReceiving\ncoordinator:\nNext\nadministrative\naction:\nTransfer\nCabin discussion papers, attachment indexer f\nVED\ncontents:\nof promised contacts, with the original question oetajned\nae\nbeside ite reference.\nSource retention:\nThe cending clerk keeps the cource-index copy and a dated\nreceipt showing where the working papers were cent.\nD. Worker 0030\nDemo Worker 0030, Demo Team 06\nPage 1 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-03\nDOC-0060 2026-06-23\nRequest to Transfer the Cabin Queue Papers\nForm:\nDate:\nRequesting desk:\nPERSON-0030 for TEAM-0006\nProgram:\nDEMO-PROGRAM-ALPHA\nLocating\nDEMO-AIR-0007, ISSUE-0089, TASK-0238\nreferences:\nSending desk:\nDEMO-STATION-03 coordination clerk\nProposed\nDEMO-STATION-02 queue coordinator\nreceiving desk:\nProposed transfer\nappointment:\nReason for\ntransfer:\nReceiving\ncoordinator:\nNext\nadministrative\naction:\nTransfer\ncontents:\nSource retention:\nDemo Worker 0030, Demo Team 06\nPage 1 of 2",
+      "mean_word_confidence": 90.57095837272726
+    },
+    {
+      "page_number": 2,
+      "scan_sha256": "2414a65faf1626dced96d48ecefd24d9e2baf8b6e63b2da1f5c63ed6bfbf156f",
+      "text": "Preflight Demo Program\nDEMO-STATION-03\nDOC-0060 2026-06-23\nReceipt Identify the receiving role and the next contact time;\nrequirement: acknowledgement of delivery alone doee not ectablich\nresponsibility for the next queue action.\nFallback:\nIf the receiver cannot attend, keep custody at the sending\ndeck and record a revised appointment with the ctation\ncoordinator.\nBoundary: Thig request concerns paper custody only and does not\nalter the aircraft's station field.\nFollow-up\ncontact:\nD. Worker 0030\nDemo Worker 0030, Demo Team 06\nPage 2 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-03\nDOC-0060 2026-06-23\nReceipt\nrequirement:\nFallback:\nBoundary:\nFollow-up\ncontact:\nDemo Worker 0030, Demo Team 06\nPage 2 of 2",
+      "mean_word_confidence": 88.83465861728395
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "doc_id": "DOC-0059",
+  "kind": "form",
+  "renderer_version": "scans-2026-11-09.2",
+  "seed": 20261167,
+  "source_sha256": "fedcad8a6142a51c9a6673ea19cbf76b6800db08515f72927829d41d5d5d90ae",
+  "tesseract_version": "tesseract 5.5.0",
+  "pages": [
+    {
+      "page_number": 1,
+      "scan_sha256": "9a60fa0f969a5664256714abd4a8c8b7215bd8a7b5331e9b5e43ba4e25420797",
+      "text": "Preflight Demo Program\nDEMO-STATION-03\nDOC-0059 2026-07-26\nRequest for a Named Paperwork Reviewer\nForm: Reviewer assignment request\nDate: 2026-07-26\nRequesting desk: PERSON-0002 for TEAM-0002\nScope: Controls paperwork at DEMO-STATION-03,\nDEMO-PROGRAM-BETA\nLocating DEMO-AIR-0008, ISSUE-0140, TASK-0371\nreferences:\nReview question: | (an the receiving reviewer identify the original\nadminictrative question and trace the attachment\nheadings through the deck index?\nProposed reviewer\nConfirmed\navailability:\nRequested 2026-07-25\ndiscussion date:\nPaper-delivery\nappointment:\nRequired reviewer | Record a person's name and the interval that person can\ndetail: cover; a team label alone doee not identify the reviewer.\nCollecting The documentation coordinator arranges the papers\nresponsibility: separately From the receiving reviewer’¢ availability and\n[ retainc the original collecting request.\nD. Worker 0002\nDemo Worker 0002, Demo Team 02\nPage 1 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-03\nDOC-0059 2026-07-26\nRequest for a Named Paperwork Reviewer\nForm:\nDate:\nRequesting desk: PERSON-0002 for TEAM-0002\nScope: Controls paperwork at DEMO-STATION-03,\nDEMO-PROGRAM-BETA\nLocating DEMO-AIR-0008, ISSUE-0140, TASK-0371\nreferences:\nReview question: |\nProposed reviewer\nConfirmed\navailability:\nRequested\ndiscussion date:\nPaper-delivery\nappointment:\nRequired reviewer |\ndetail:\nCollecting\nresponsibility:\n[\nDemo Worker 0002, Demo Team 02\nPage 1 of 2",
+      "mean_word_confidence": 89.90151391056911
+    },
+    {
+      "page_number": 2,
+      "scan_sha256": "64e5444f104243666991c984f1119e574a0719c6bea65b1ddae006bc502ee988",
+      "text": "Preflight Demo Program\nDEMO-STATION-03\nDOC-0059 2026-07-26\nFallback role: Review roster clerk; if the propoced interval cannot be\ncovered, offer a specific alternative and retain the earlier\nrequest.\nReference use: The tack reference locates the paperwork diccusgion and\ndoes not cupply a tack category or completion claim\nFollow-up note: Keep the reviewer recponce with the request ¢o the incoming\ndeck can find both the receiving percon and the next\ncontact time.\nD. Worker 0002\nDemo Worker 0002, Demo Team 02\nPage 2 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-03\nDOC-0059 2026-07-26\nFallback role:\nReference use:\nFollow-up note:\nDemo Worker 0002, Demo Team 02\nPage 2 of 2",
+      "mean_word_confidence": 91.38255887951807
+    }
+  ]
+}

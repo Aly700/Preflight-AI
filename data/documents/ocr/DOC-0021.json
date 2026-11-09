@@ -1,0 +1,24 @@
+{
+  "doc_id": "DOC-0021",
+  "kind": "handover",
+  "renderer_version": "scans-2026-11-09.2",
+  "seed": 20261129,
+  "source_sha256": "4e5c368e3aeaedd84257ebf0241c581ebe8bab4507d009a67f6c44e9d6989ebb",
+  "tesseract_version": "tesseract 5.5.0",
+  "pages": [
+    {
+      "page_number": 1,
+      "scan_sha256": "cf3f5d99dcd55ef2642070c9ef31e114bce80643c45079117c1c0ffa651dc84e",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0021 2026-09-22\nSHIFT NOTES — Documentation Backlog and the\nElectrical Filing List\nDate: 2026-09-22\nStation: DEMO-STATION-01\nProgram: DEMO-PROGRAM-ALPHA\n13:05 — Afternoon note from PERSON-0027 for TEAM-0003. Set\naside the electrical filing list for the documentation backlog\nconversation. ISSUE-0169 and TASK-0451 identify the relevant\nfolder; use those references when requesting a collecting\nappointment.\n13:40 — For each missing paper, distinguish the person\ngathering the attachment from any person assignment in the\ntask records. The documentation coordinator should name a\ncollecting role and a filing date. The next shift needs a\npractical destination even when an assignment question\nrequires a separate discussion.\n14:25 — Keep the question ledger beside the filing list. Enter\nthe exact question, intended addressee, and promised reply\ndate. If the request is about an attachment heading, preserve\nthat heading so the records clerk can search the same index\nused by the sender.\n16:05 — Ask the records clerk to return an attachment-location\nnote with any paper delivered during the afternoon. File that\nnote after the original request, leaving the collecting\nappointment visible. An attachment arriving without a filing\nlocation can disappear again at the next handover.\nNext-shift list\n~- Match the incoming papers to the filing-list headings.\n~ Carry unanswered collecting appointments with their promised\ndates.\nD. Worker 0027\nDemo Worker 0027, Demo Team 03\nPage 1 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0021 2026-09-22\nSHIFT NOTES — Documentation Backlog and the\nElectrical Filing List\nDate: 2026-09-22\nStation: DEMO-STATION-01\nProgram: DEMO-PROGRAM-ALPHA\n13:05 — Afternoon note from PERSON-0027 for TEAM-0003. Set\naside the electrical filing list for the documentation backlog\nconversation. ISSUE-0169 and TASK-0451 identify the relevant\nfolder; use those references when requesting a collecting\nappointment.\n13:40 — For each missing paper, distinguish the person\ngathering the attachment from any person assignment in the\ntask records. The documentation coordinator should name a\ncollecting role and a filing date. The next shift needs a\npractical destination even when an assignment question\nrequires a separate discussion.\n14:25 — Keep the question ledger beside the filing list. Enter\nthe exact question, intended addressee, and promised reply\ndate. If the request is about an attachment heading, preserve\nthat heading so the records clerk can search the same index\nused by the sender.\n16:05 — Ask the records clerk to return an attachment-location\nnote with any paper delivered during the afternoon. File that\nnote after the original request, leaving the collecting\nappointment visible. An attachment arriving without a filing\nlocation can disappear again at the next handover.\nNext-shift list\n~- Match the incoming papers to the filing-list headings.\n~ Carry unanswered collecting appointments with their promised\ndates.\nDemo Worker 0027, Demo Team 03\nPage 1 of 2",
+      "mean_word_confidence": 95.27266724444443
+    },
+    {
+      "page_number": 2,
+      "scan_sha256": "8081fc53f7dfff122ea487fdf18c494312f77185b6b5aed4e69371e21c0d6675",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\nDoc-0021 2026-09-22\n_ Return assignment questions to the owning team's coordinator\nwhile retaining responsibility for the next documentation\ncontact at this desk.\ny\nSs\n=\na:\nPa\ns\n8\n>\n=\nSs\nD. Worker 002?\nDemo Worker 0027, Demo Team 03\nPage 2 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\nDoc-0021 2026-09-22\n_ Return assignment questions to the owning team's coordinator\nwhile retaining responsibility for the next documentation\ncontact at this desk.\nDemo Worker 0027, Demo Team 03\nPage 2 of 2",
+      "mean_word_confidence": 84.143479
+    }
+  ]
+}

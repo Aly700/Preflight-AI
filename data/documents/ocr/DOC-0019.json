@@ -1,0 +1,17 @@
+{
+  "doc_id": "DOC-0019",
+  "kind": "handover",
+  "renderer_version": "scans-2026-11-09.2",
+  "seed": 20261127,
+  "source_sha256": "633e3f5908c17ec5f631227cc7409b7a01f9eb8609c7245c1992e48fc39d1040",
+  "tesseract_version": "tesseract 5.5.0",
+  "pages": [
+    {
+      "page_number": 1,
+      "scan_sha256": "02cec2dc28f21a6b71b21a966a753e3614f6121de2ead9f1e2a643858900abd7",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0019 2026-10-17\nSHIFT NOTES — Weekend Controls Desk Coverage Gap\nDate: 2026-10-17\nStation: DEMO-STATION-01\nProgram: DEMO-PROGRAM-BETA\n07:15 — Weekend desk note from PERSON-0025 for TEAM-0001. The\ncontrols coverage plan needs a confirmed relief role before\nthe morning coordinator leaves. ISSUE-0061, TASK-0159, and\nTASK-0160 are the locating references for papers to include in\nthe coverage conversation.\n08:10 — Ask the station roster clerk to confirm the relief\narrangement by 09:30. If no receiver can be named, put the\nuncovered interval on the striped roster insert and take it to\nthe duty chair. Do not leave a blank interval that looks like\nan intentional pause in service.\n09:45 — Use receiver echo when the relief desk accepts the\nnext coordination action: the receiver repeats that action and\nits due date. Keep the response beside the interval on the\nroster. This confirms desk coverage without inventing a person\nassignment for a task.\n10:00 — Keep the program's weekend contact round on the desk\ndiary, with the later round at 14:00. If relief is still\nunsettled, the duty chair must name who will hold those\ncontact rounds and where the call notes will be filed.\nNext-shift list\n— Carry the striped roster insert until coverage has a named\nreceiver.\nRetain the chair's coverage decision with the original\ninterval.\nCheck the weekend call notes before starting the afternoon\ncontact round.\nD. Worker 0025\nDemo Worker 0025, Demo Team 01\nPage 1 of 1",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0019 2026-10-17\nSHIFT NOTES — Weekend Controls Desk Coverage Gap\nDate: 2026-10-17\nStation: DEMO-STATION-01\nProgram: DEMO-PROGRAM-BETA\n07:15 — Weekend desk note from PERSON-0025 for TEAM-0001. The\ncontrols coverage plan needs a confirmed relief role before\nthe morning coordinator leaves. ISSUE-0061, TASK-0159, and\nTASK-0160 are the locating references for papers to include in\nthe coverage conversation.\n08:10 — Ask the station roster clerk to confirm the relief\narrangement by 09:30. If no receiver can be named, put the\nuncovered interval on the striped roster insert and take it to\nthe duty chair. Do not leave a blank interval that looks like\nan intentional pause in service.\n09:45 — Use receiver echo when the relief desk accepts the\nnext coordination action: the receiver repeats that action and\nits due date. Keep the response beside the interval on the\nroster. This confirms desk coverage without inventing a person\nassignment for a task.\n10:00 — Keep the program's weekend contact round on the desk\ndiary, with the later round at 14:00. If relief is still\nunsettled, the duty chair must name who will hold those\ncontact rounds and where the call notes will be filed.\nNext-shift list\n— Carry the striped roster insert until coverage has a named\nreceiver.\nRetain the chair's coverage decision with the original\ninterval.\nCheck the weekend call notes before starting the afternoon\ncontact round.\nDemo Worker 0025, Demo Team 01\nPage 1 of 1",
+      "mean_word_confidence": 95.35237428099174
+    }
+  ]
+}

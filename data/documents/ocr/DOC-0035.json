@@ -1,0 +1,24 @@
+{
+  "doc_id": "DOC-0035",
+  "kind": "coordination",
+  "renderer_version": "scans-2026-11-09.2",
+  "seed": 20261143,
+  "source_sha256": "52137d6b041b9b06647c7e4d39f2cbfcaeb41941819291d01340873e974e41e7",
+  "tesseract_version": "tesseract 5.5.0",
+  "pages": [
+    {
+      "page_number": 1,
+      "scan_sha256": "a1a80ea3e9846bb0a591a9d4f217680d4ba6e7fbef405bf4def1a1abebf190a1",
+      "text": "Preflight Demo Program\nDEMO-STATION-02\nDOC-0035 2026-10-12\nMEETING NOTES — Electrical and Avionics Desks Divide\nthe Afternoon\nDate: 2026-10-12\nProgram: DEMO-PROGRAM-BETA\nAttendees: PERSON-0028 for TEAM-0004; partner team's desk\ncoordinator; station roster clerk; queue chair.\nPurpose: Agree afternoon desk coverage at DEMO-STATION-02. The\nelectrical discussion folder is located through ISSUE-0082 and\nTASK-0216; TASK-0218 remains a separate attachment reference.\nDecisions\nTEAM-0004 will hold electrical coordination from 14:00 to\n18:00. The partner team's desk will hold avionics during that\ninterval. These are desk coverage responsibilities, with task\nassignments remaining a separate records matter.\nA request spanning both headings goes to the queue chair for a\nprimary contact. Preserve the secondary question on the same\ndated sheet and name the role that will answer it. The primary\ncontact remains responsible for arranging the next\nconversation even when another desk supplies background.\nThe roster will show subsystem, covered interval, receiving\nrole, and fallback contact. The station clerk will keep the\nprevious roster beside any revised copy so an appointment\nchange remains traceable.\nAction items\n_ Owner: PERSON-0028. Due: 2026-10-12 at 13:30. Confirm the\nelectrical receiving role and fallback on the roster.\n_ owner: Partner desk coordinator. Due: 2026-10-12 at 13:30.\nConfirm the avionics interval.\nD. Worker 0028\nDemo Worker 0028, Demo Team 04\nPage 1 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-02\nDOC-0035 2026-10-12\nMEETING NOTES — Electrical and Avionics Desks Divide\nthe Afternoon\nDate: 2026-10-12\nProgram: DEMO-PROGRAM-BETA\nAttendees: PERSON-0028 for TEAM-0004; partner team's desk\ncoordinator; station roster clerk; queue chair.\nPurpose: Agree afternoon desk coverage at DEMO-STATION-02. The\nelectrical discussion folder is located through ISSUE-0082 and\nTASK-0216; TASK-0218 remains a separate attachment reference.\nDecisions\nTEAM-0004 will hold electrical coordination from 14:00 to\n18:00. The partner team's desk will hold avionics during that\ninterval. These are desk coverage responsibilities, with task\nassignments remaining a separate records matter.\nA request spanning both headings goes to the queue chair for a\nprimary contact. Preserve the secondary question on the same\ndated sheet and name the role that will answer it. The primary\ncontact remains responsible for arranging the next\nconversation even when another desk supplies background.\nThe roster will show subsystem, covered interval, receiving\nrole, and fallback contact. The station clerk will keep the\nprevious roster beside any revised copy so an appointment\nchange remains traceable.\nAction items\n_ Owner: PERSON-0028. Due: 2026-10-12 at 13:30. Confirm the\nelectrical receiving role and fallback on the roster.\n_ owner: Partner desk coordinator. Due: 2026-10-12 at 13:30.\nConfirm the avionics interval.\nDemo Worker 0028, Demo Team 04\nPage 1 of 2",
+      "mean_word_confidence": 95.39055896208531
+    },
+    {
+      "page_number": 2,
+      "scan_sha256": "e0fb05dc48f3c30a80f70a2a20f35e3fb0687b83802f81933544dd0c5bb95b84",
+      "text": "Preflight Demo Program\nDEMO-STATION-02\nDOC-0035 2026-10-12\n_ Owner: Station roster clerk. Due: 2026-10-13. Review any\nmixed-subject request with the chair and retain the\nprimary-contact decision beside it.\nD. Worker 0028\nDemo Worker 0028, Demo Team 04\nPage 2 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-02\nDOC-0035 2026-10-12\n_ Owner: Station roster clerk. Due: 2026-10-13. Review any\nmixed-subject request with the chair and retain the\nprimary-contact decision beside it.\nDemo Worker 0028, Demo Team 04\nPage 2 of 2",
+      "mean_word_confidence": 93.3123268
+    }
+  ]
+}

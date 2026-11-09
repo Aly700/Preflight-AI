@@ -1,0 +1,24 @@
+{
+  "doc_id": "DOC-0041",
+  "kind": "coordination",
+  "renderer_version": "scans-2026-11-09.2",
+  "seed": 20261149,
+  "source_sha256": "d51842da11d9494ab6f2f319dff26aaa46af2856b1a9b17285983dec65a7deb6",
+  "tesseract_version": "tesseract 5.5.0",
+  "pages": [
+    {
+      "page_number": 1,
+      "scan_sha256": "8012393abc79f76245e860721cd8267a37561f22ff3c98fea9063845bae8a9fc",
+      "text": "Preflight Demo Program\nDEMO-STATION-02\npoc-0041 2026-08-27\nMEETING NOTES — Who Carries a Cabin Item With No\nPerson Assignment\nDate: 2026-08-27\nProgram: DEMO-PROGRAM-BETA\nAttendees: PERSON-0034 for TEAM-0004; partner team's shift\nlead; documentation coordinator; duty chair.\nPurpose: Agree responsibility when a queue discussion\nencounters a blank person assignment field. The cabin folder\nis located through ISSUE-0032 and TASK-0087.\nDecisions The owning team remains responsible for an\nunresolved issue even when no person assignment is recorded.\nIts shift lead arranges the next administrative contact and\nselects a suitable person through the assignment process. The\nmeeting recorder's name must not fill the blank by default.\nThe documentation coordinator may gather a paper without\nbecoming the task assignee. Put the collecting role and\npromised delivery date on the attachment request, separate\nfrom the ownership fields. This distinction lets the next\nshift continue paper collection without assuming an assignment\ndecision occurred.\nA dispute about which team owns the discussion goes to the\nduty chair before handover. Preserve the competing scope\ndescriptions and write the chair's decision beside them. The\nsending desk carries the next contact until a receiving\narrangement is confirmed.\nAction items\n— Owner: PERSON-0034. Due: 2026-08-28. Add separate ownership\nand collecting-role spaces to the cabin desk sheet.\n_ owner: Partner shift lead. Due: 2026-08-28. Confirm who\nD. Worker 0034\nDemo Worker 0034, Demo Team 04\nPage 1 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-02\npoc-0041 2026-08-27\nMEETING NOTES — Who Carries a Cabin Item With No\nPerson Assignment\nDate: 2026-08-27\nProgram: DEMO-PROGRAM-BETA\nAttendees: PERSON-0034 for TEAM-0004; partner team's shift\nlead; documentation coordinator; duty chair.\nPurpose: Agree responsibility when a queue discussion\nencounters a blank person assignment field. The cabin folder\nis located through ISSUE-0032 and TASK-0087.\nDecisions The owning team remains responsible for an\nunresolved issue even when no person assignment is recorded.\nIts shift lead arranges the next administrative contact and\nselects a suitable person through the assignment process. The\nmeeting recorder's name must not fill the blank by default.\nThe documentation coordinator may gather a paper without\nbecoming the task assignee. Put the collecting role and\npromised delivery date on the attachment request, separate\nfrom the ownership fields. This distinction lets the next\nshift continue paper collection without assuming an assignment\ndecision occurred.\nA dispute about which team owns the discussion goes to the\nduty chair before handover. Preserve the competing scope\ndescriptions and write the chair's decision beside them. The\nsending desk carries the next contact until a receiving\narrangement is confirmed.\nAction items\n— Owner: PERSON-0034. Due: 2026-08-28. Add separate ownership\nand collecting-role spaces to the cabin desk sheet.\n_ owner: Partner shift lead. Due: 2026-08-28. Confirm who\nDemo Worker 0034, Demo Team 04\nPage 1 of 2",
+      "mean_word_confidence": 95.51575587111111
+    },
+    {
+      "page_number": 2,
+      "scan_sha256": "b82f7f64ccb15700406b5a67c462fa514edf025e7a10e2c002aeed77621f855a",
+      "text": "Preflight Demo Program\nDEMO-STATION-02\npDoc-0041 2026-08-27\nreceives assignment questions.\n— Owner: Documentation coordinator. Due: 2026-08-29. Check\nthat the paper requests identify their collecting role and\ndelivery date.\nD. Worker 0034\nDemo Worker 0034, Demo Team 04\nPage 2 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-02\npDoc-0041 2026-08-27\nreceives assignment questions.\n— Owner: Documentation coordinator. Due: 2026-08-29. Check\nthat the paper requests identify their collecting role and\ndelivery date.\nDemo Worker 0034, Demo Team 04\nPage 2 of 2",
+      "mean_word_confidence": 93.46754955
+    }
+  ]
+}

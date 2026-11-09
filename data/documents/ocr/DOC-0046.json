@@ -1,0 +1,24 @@
+{
+  "doc_id": "DOC-0046",
+  "kind": "coordination",
+  "renderer_version": "scans-2026-11-09.2",
+  "seed": 20261154,
+  "source_sha256": "fcf4dba0ea36bc3c272817b302df8136d3f9dc3088d789147124c7a75994d164",
+  "tesseract_version": "tesseract 5.5.0",
+  "pages": [
+    {
+      "page_number": 1,
+      "scan_sha256": "c49671e2169b7dee5267eda17ca1287b7c94bd3bee6b07eaf648db76b26d3eab",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0046 2026-08-19\nMEETING NOTES — Review of the Duplicate-Note Trial\nTabs\nDate: 2026-08-19\nProgram: DEMO-PROGRAM-ALPHA\nAttendees: PERSON-0023 for TEAM-0005; originating desk\nliaison; program filing clerk; queue chair.\nPurpose: Review the keeper and origin tabs trialled by\nDEMO-PROGRAM-ALPHA from 2026-05-25 through 2026-06-12.\nISSUE-0142 and TASK-0376 locate the hydraulics layout example.\nDecisions Retain the tab names. The keeper section holds the\nreason for selecting the continuing entry, and the origin\nsection preserves the received questions. Both issue\nreferences belong on the cover sheet. A merge note that states\nonly similar subject does not explain why the desks considered\nthe scope equivalent.\nThe chair will ask for the participating roles, decision date,\nand destination of any remaining administrative action. A\ndisagreement between source desks stays attached to the note\nwith the chair's resolution. Filing convenience must not erase\nthe distinction between the questions that prompted the\ncomparison.\ncopy to deck lead\nThe program filing clerk will carry these requirements into a\ndraft standard for the later policy edition. The example\nfolder is a layout reference and does not assert a duplicate\nrelationship for its linked issue.\nAction items\n_ Owner: PERSON-0023. Due: 2026-08-20. Annotate the layout\nwith the keeper-selection reason.\n— Owner: Originating desk liaison. Due: 2026-08-21. Check that\nD. Worker 0023\nDemo Worker 0023, Demo Team 05\nPage 1 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0046 2026-08-19\nMEETING NOTES — Review of the Duplicate-Note Trial\nTabs\nDate: 2026-08-19\nProgram: DEMO-PROGRAM-ALPHA\nAttendees: PERSON-0023 for TEAM-0005; originating desk\nliaison; program filing clerk; queue chair.\nPurpose: Review the keeper and origin tabs trialled by\nDEMO-PROGRAM-ALPHA from 2026-05-25 through 2026-06-12.\nISSUE-0142 and TASK-0376 locate the hydraulics layout example.\nDecisions Retain the tab names. The keeper section holds the\nreason for selecting the continuing entry, and the origin\nsection preserves the received questions. Both issue\nreferences belong on the cover sheet. A merge note that states\nonly similar subject does not explain why the desks considered\nthe scope equivalent.\nThe chair will ask for the participating roles, decision date,\nand destination of any remaining administrative action. A\ndisagreement between source desks stays attached to the note\nwith the chair's resolution. Filing convenience must not erase\nthe distinction between the questions that prompted the\ncomparison.\nThe program filing clerk will carry these requirements into a\ndraft standard for the later policy edition. The example\nfolder is a layout reference and does not assert a duplicate\nrelationship for its linked issue.\nAction items\n_ Owner: PERSON-0023. Due: 2026-08-20. Annotate the layout\nwith the keeper-selection reason.\n— Owner: Originating desk liaison. Due: 2026-08-21. Check that\nDemo Worker 0023, Demo Team 05\nPage 1 of 2",
+      "mean_word_confidence": 95.10155463228699
+    },
+    {
+      "page_number": 2,
+      "scan_sha256": "2ece18e969ee351912a1880bd503123adad72cb0eeba9969b1f60279f2f4f381",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0046 2026-08-19\nthe original question remains visible.\n— Owner: Program filing clerk. Due: 2026-08-24. Submit the tab\ninstructions and cover-sheet requirements to the queue\nchair.\ng\n—\nS\nx\n3\n$\n>\nSs\nSy\nD. Worker 0023\nDemo Worker 0023, Demo Team 05\nPage 2 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0046 2026-08-19\nthe original question remains visible.\n— Owner: Program filing clerk. Due: 2026-08-24. Submit the tab\ninstructions and cover-sheet requirements to the queue\nchair.\nDemo Worker 0023, Demo Team 05\nPage 2 of 2",
+      "mean_word_confidence": 84.89675843137255
+    }
+  ]
+}

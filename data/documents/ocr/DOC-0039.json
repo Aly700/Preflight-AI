@@ -1,0 +1,24 @@
+{
+  "doc_id": "DOC-0039",
+  "kind": "coordination",
+  "renderer_version": "scans-2026-11-09.2",
+  "seed": 20261147,
+  "source_sha256": "abab8d2b233f54000fd54b75092b8920153182dfd88b750e6f97dcc6a594ff09",
+  "tesseract_version": "tesseract 5.5.0",
+  "pages": [
+    {
+      "page_number": 1,
+      "scan_sha256": "d50ee4eb1c9a61098ba28097a1afa0a5250e01dfe42881d58e4abd6d4d7f0848",
+      "text": "Preflight Demo Program\nDEMO-STATION-02\nDOC-0039 2026-08-05\nMEETING NOTES — Structures Desk Relief During the\nRoster Gap\nDate: 2026-08-05\nProgram: DEMO-PROGRAM-BETA\nAttendees: PERSON-0028 for TEAM-0004; relief team's\ncoordinator; station roster clerk; duty chair.\nPurpose: Arrange a substitute for the structures coordination\ndesk at DEMO-STATION-02. The working folder uses ISSUE-0076\nand TASK-0199 as locating references.\nDecisions\nThe relief team will provide desk coverage from 12:20 to\n15:10, subject to the receiving coordinator's confirmation.\nThe roster clerk will keep the interval marked as a coverage\nquestion until the substitute accepts it. A proposed name must\nnot make an uncovered interval disappear from the sheet.\nThe substitute receives the appointment diary,\nattachment-location notes, and the next administrative action\nfor each discussion being handed over. The outgoing desk\nretains a dated copy of the coverage arrangement. This meeting\nallocates desk time rather than changing a task's assignee.\nIf the proposed substitute cannot attend, the duty chair names\na fallback role and records the revised contact time. The\nchair's decision goes beside the original interval so the\nreturning coordinator can reconstruct the day's arrangements.\nAction items\n— Owner: Relief team's coordinator. Due: 2026-08-06 at 11:30.\nConfirm the substitute and covered interval.\n_ Owner: PERSON-0028. Due: 2026-08-06 at 12:00. Prepare the\nappointment diary for the substitute.\nD. Worker 0028\nDemo Worker 0028, Demo Team 04\nPage 1 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-02\nDOC-0039 2026-08-05\nMEETING NOTES — Structures Desk Relief During the\nRoster Gap\nDate: 2026-08-05\nProgram: DEMO-PROGRAM-BETA\nAttendees: PERSON-0028 for TEAM-0004; relief team's\ncoordinator; station roster clerk; duty chair.\nPurpose: Arrange a substitute for the structures coordination\ndesk at DEMO-STATION-02. The working folder uses ISSUE-0076\nand TASK-0199 as locating references.\nDecisions\nThe relief team will provide desk coverage from 12:20 to\n15:10, subject to the receiving coordinator's confirmation.\nThe roster clerk will keep the interval marked as a coverage\nquestion until the substitute accepts it. A proposed name must\nnot make an uncovered interval disappear from the sheet.\nThe substitute receives the appointment diary,\nattachment-location notes, and the next administrative action\nfor each discussion being handed over. The outgoing desk\nretains a dated copy of the coverage arrangement. This meeting\nallocates desk time rather than changing a task's assignee.\nIf the proposed substitute cannot attend, the duty chair names\na fallback role and records the revised contact time. The\nchair's decision goes beside the original interval so the\nreturning coordinator can reconstruct the day's arrangements.\nAction items\n— Owner: Relief team's coordinator. Due: 2026-08-06 at 11:30.\nConfirm the substitute and covered interval.\n_ Owner: PERSON-0028. Due: 2026-08-06 at 12:00. Prepare the\nappointment diary for the substitute.\nDemo Worker 0028, Demo Team 04\nPage 1 of 2",
+      "mean_word_confidence": 95.32990912612613
+    },
+    {
+      "page_number": 2,
+      "scan_sha256": "0ad6eb096b34e9b6c0f01730ab1dcc721865fddf0a502ecca5a954cc910c25e7",
+      "text": "Preflight Demo Program\nDEMO-STATION-02\nDOC-0039 2026-08-05\n_— owner: Station roster clerk. Due: 2026-08-07. File the\noriginal coverage question with the final arrangement.\nD. Worker 0028\nDemo Worker 0028, Demo Team 04\nPage 2 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-02\nDOC-0039 2026-08-05\n_— owner: Station roster clerk. Due: 2026-08-07. File the\noriginal coverage question with the final arrangement.\nDemo Worker 0028, Demo Team 04\nPage 2 of 2",
+      "mean_word_confidence": 91.05797131428571
+    }
+  ]
+}

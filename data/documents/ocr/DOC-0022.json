@@ -1,0 +1,24 @@
+{
+  "doc_id": "DOC-0022",
+  "kind": "handover",
+  "renderer_version": "scans-2026-11-09.2",
+  "seed": 20261130,
+  "source_sha256": "8b2e379f492911ceed356c6a5aae1229b9d58abfcf529c478f58982af01b057e",
+  "tesseract_version": "tesseract 5.5.0",
+  "pages": [
+    {
+      "page_number": 1,
+      "scan_sha256": "ece42161bc66662717ce09d9654f9a2d241c43b1867f1f24b35fedf4ce971498",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0022 2026-05-23\nSHIFT NOTES — Hydraulics Folder Without Its Cover\nCopy\nDate: 2026-05-23\nStation: DEMO-STATION-01\nProgram: DEMO-PROGRAM-BETA\n06:50 — PERSON-0030 writes for TEAM-0006. The handover folder\nreached the desk without its cover copy during preparation.\nAsk the outgoing clerk to trace the copy through the station\nindex before assembling a fresh front sheet. Use ISSUE-0090\nand TASK-0240 as locating references.\n07:35 — Keep the loose hydraulics Papers together behind a\ntemporary divider. Add a context strip with the question,\nreply destination, and next contact time. Mark the divider as\ntemporary so it cannot be mistaken for the recovered cover\nsheet.\n08:20 — The records clerk should compare the attachment\nheadings against the index and write any discrepancy on the\nrecovery note. Preserve the sequence of the papers as\nreceived. Rearranging them before checking the index would\nmake the missing-copy search harder to reconstruct.\n09:55 — Ask the review coordinator whether TASK-0241 is the\nintended locating reference for the review appointment. Put\nthe reply beside the appointment request, separate from the\nattachment list. A filing correction and a reviewer booking\nare different desk actions.\nNext-shift list\n- Obtain the outgoing clerk's cover-copy search result.\n- Keep the recovery note and temporary divider with the\nfolder.\n- Confirm the review appointment's reference before moving the\nD. Worker 0030\nDemo Worker 0030, Demo Team 06\nPage 1 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0022 2026-05-23\nSHIFT NOTES — Hydraulics Folder Without Its Cover\nCopy\nDate: 2026-05-23\nStation: DEMO-STATION-01\nProgram: DEMO-PROGRAM-BETA\n06:50 — PERSON-0030 writes for TEAM-0006. The handover folder\nreached the desk without its cover copy during preparation.\nAsk the outgoing clerk to trace the copy through the station\nindex before assembling a fresh front sheet. Use ISSUE-0090\nand TASK-0240 as locating references.\n07:35 — Keep the loose hydraulics Papers together behind a\ntemporary divider. Add a context strip with the question,\nreply destination, and next contact time. Mark the divider as\ntemporary so it cannot be mistaken for the recovered cover\nsheet.\n08:20 — The records clerk should compare the attachment\nheadings against the index and write any discrepancy on the\nrecovery note. Preserve the sequence of the papers as\nreceived. Rearranging them before checking the index would\nmake the missing-copy search harder to reconstruct.\n09:55 — Ask the review coordinator whether TASK-0241 is the\nintended locating reference for the review appointment. Put\nthe reply beside the appointment request, separate from the\nattachment list. A filing correction and a reviewer booking\nare different desk actions.\nNext-shift list\n- Obtain the outgoing clerk's cover-copy search result.\n- Keep the recovery note and temporary divider with the\nfolder.\n- Confirm the review appointment's reference before moving the\nDemo Worker 0030, Demo Team 06\nPage 1 of 2",
+      "mean_word_confidence": 94.58131746956522
+    },
+    {
+      "page_number": 2,
+      "scan_sha256": "aa4876f8bb77ceef74dfbf47ced8dc3f42d6104c7471a26086ef25fc0a2974dc",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0022 2026-05-23\nfolder to the review shelf.\n_ Retain the original attachment order until the index\ncomparison is recorded.\nD. Worker 0030\nDemo Worker 0030, Demo Team 06\nPage 2 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0022 2026-05-23\nfolder to the review shelf.\n_ Retain the original attachment order until the index\ncomparison is recorded.\nDemo Worker 0030, Demo Team 06\nPage 2 of 2",
+      "mean_word_confidence": 93.98604225
+    }
+  ]
+}

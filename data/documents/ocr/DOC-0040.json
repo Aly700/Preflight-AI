@@ -1,0 +1,24 @@
+{
+  "doc_id": "DOC-0040",
+  "kind": "coordination",
+  "renderer_version": "scans-2026-11-09.2",
+  "seed": 20261148,
+  "source_sha256": "b05c09808cfe836b61577c9d00f62ff9894e94c9f0576fa1b4795954ebc43521",
+  "tesseract_version": "tesseract 5.5.0",
+  "pages": [
+    {
+      "page_number": 1,
+      "scan_sha256": "92f442d58841cebb84baeada453ef8ccae78b45df736bdcf4eaa377e28c9893c",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0040 2026-10-14\nMEETING NOTES — Weekend Cabin Coverage and the\nSide-Question Margin\nDate: 2026-10-14\nProgram: DEMO-PROGRAM-ALPHA\nAttendees: PERSON-0001 for TEAM-0001; weekend roster clerk;\ncabin documentation coordinator; program chair.\nPurpose: Plan DEMO-PROGRAM-ALPHA's cabin desk contacts for the\ncoming weekend. ISSUE-0103 and TASK-0274 locate the planning\nfolder.\nDecisions\nReserve cabin contact appointments at 10:40 on 2026-10-17 and\n2026-10-18. The roster clerk will seek a named receiving\ncoordinator for each appointment and return an unresolved\ncoverage question to the program chair. The appointment diary\nmust distinguish a requested interval from confirmed\nattendance.\nUse a question parking margin for background matters that\nwould otherwise interrupt the coverage decision. Every parked\nquestion retains its addressee and promised reply date. The\ncentral paragraph remains the place for the coverage\narrangement and the next action required to secure it.\nThe documentation coordinator will keep the paper-delivery\nappointment separate from the receiving person's availability.\nA delivery plan cannot establish that somebody will be at the\ncabin desk to receive the discussion.\nAction items\n- Owner: Weekend roster clerk. Due: 2026-10-16. Seek the\nreceiving coordinators and report any remaining coverage\nquestion.\nD. Worker 0001\nDemo Worker 0001, Demo Team 01\nPage 1 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0040 2026-10-14\nMEETING NOTES — Weekend Cabin Coverage and the\nSide-Question Margin\nDate: 2026-10-14\nProgram: DEMO-PROGRAM-ALPHA\nAttendees: PERSON-0001 for TEAM-0001; weekend roster clerk;\ncabin documentation coordinator; program chair.\nPurpose: Plan DEMO-PROGRAM-ALPHA's cabin desk contacts for the\ncoming weekend. ISSUE-0103 and TASK-0274 locate the planning\nfolder.\nDecisions\nReserve cabin contact appointments at 10:40 on 2026-10-17 and\n2026-10-18. The roster clerk will seek a named receiving\ncoordinator for each appointment and return an unresolved\ncoverage question to the program chair. The appointment diary\nmust distinguish a requested interval from confirmed\nattendance.\nUse a question parking margin for background matters that\nwould otherwise interrupt the coverage decision. Every parked\nquestion retains its addressee and promised reply date. The\ncentral paragraph remains the place for the coverage\narrangement and the next action required to secure it.\nThe documentation coordinator will keep the paper-delivery\nappointment separate from the receiving person's availability.\nA delivery plan cannot establish that somebody will be at the\ncabin desk to receive the discussion.\nAction items\n- Owner: Weekend roster clerk. Due: 2026-10-16. Seek the\nreceiving coordinators and report any remaining coverage\nquestion.\nDemo Worker 0001, Demo Team 01\nPage 1 of 2",
+      "mean_word_confidence": 95.34934100502512
+    },
+    {
+      "page_number": 2,
+      "scan_sha256": "5dda3e040fb740728292fe9cea5b2fbfea5c86f1c8742b6725fc2ea2e7aadf69",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0040 2026-10-14\n_ Owner: PERSON-0001. Due: 2026-10-16. Put the appointment\ndiary in the cabin handover binder.\n_ owner: Program chair. Due: 2026-10-19. Review whether the\nrequested intervals and the parked background questions\nproduced clear next contacts.\ncopy to deck lead\nD. Worker 0007\nDemo Worker 0001, Demo Team 01\nPage 2 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0040 2026-10-14\n_ Owner: PERSON-0001. Due: 2026-10-16. Put the appointment\ndiary in the cabin handover binder.\n_ owner: Program chair. Due: 2026-10-19. Review whether the\nrequested intervals and the parked background questions\nproduced clear next contacts.\nDemo Worker 0001, Demo Team 01\nPage 2 of 2",
+      "mean_word_confidence": 93.42868131578948
+    }
+  ]
+}

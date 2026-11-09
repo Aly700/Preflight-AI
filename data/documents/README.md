@@ -1,8 +1,8 @@
-# Fictional process document corpus — pass 1
+# Fictional process document corpus
 
-This pass contains a generation plan and validator, **no authored documents**.
-Page-image rendering, OCR, retrieval, and retrieval evaluation belong to later
-passes. Passing this validator is not evidence of any of those capabilities.
+The generation plan and validator define the authored-document contract below.
+Pass 3 adds scanned-page rendering and local OCR. Retrieval and retrieval
+evaluation belong to later passes; validator success is not evidence of them.
 
 ## Provenance and scope
 
@@ -141,6 +141,105 @@ Malformed filenames use `DOC-????`; unreadable or structurally invalid input
 plans use `SPEC`. Repeated violations of the same rule in one document collapse
 to one line. Duplicate-title errors identify every affected document.
 
+## Scans and OCR
+
+From the repository root, with `requirements-ingest.txt` installed in `.venv`
+and Tesseract plus its English language data installed locally:
+
+```sh
+.venv/bin/python -B scripts/render_scans.py --documents data/documents --synthetic data/synthetic --output build/scans
+.venv/bin/python -B scripts/ocr_scans.py --scans build/scans --documents data/documents
+.venv/bin/python -B scripts/ocr_scans.py --scans build/scans --documents data/documents --report
+```
+
+Each command accepts `--only DOC-0001,DOC-0011` for a subset. Rendering reads
+`DOCUMENTS/spec.json`, verifies the vendored font SHA-256 values, and writes
+1275 × 1650 JPEGs at 150 dpi. `--synthetic` defaults to `data/synthetic` under
+the repository: `people.csv` and `teams.csv` are read at runtime for the author's
+display name and team. Missing identities or a mismatched team fail before
+rendering that document. The CSVs are never baked into the ingestion image.
+
+Letterhead documents use Libre Baskerville; notes use Courier Prime. Forms
+have ruled boxes, bold printed labels and Caveat values with seeded baseline
+and size variation (at most 3 pixels vertically and 2 font-size units).
+Any value containing a record ID is printed in type. Empty fields stay empty;
+values are never randomly erased. The signature abbreviates the looked-up
+display name, with the full printed name and team beneath it. Seeded marginalia
+use only `seen`, `file`, `copy to desk lead`, or `ok`. Stamps may cross a form
+box edge. An existing title in the opening paper header is printed once, and
+each sheet includes `Page N of M`. Globally scoped documents omit the scope
+line instead of inventing a station or program.
+
+The document seed is the specification seed plus its numeric document ID.
+Renderer `scans-2026-11-09.2` places a smaller paper silhouette above a dark-grey
+scanner bed with a soft shadow. Rotation magnitude is 0.4–1.2 degrees with a
+random sign, scale is 0.972–0.98, and offsets are capped at 8 pixels at full
+resolution. Edge irregularity is capped at 1.8 pixels. Paper texture and fine
+grain cover the sheet; word-scale toner density can lighten or darken ink.
+Fine grain is capped at ±4 intensity levels, density gain at 0.78–1.24, ink
+bleed blend at 0.16–0.24, Gaussian blur at 0.20–0.34 pixels, and JPEG quality
+at 60–78. Toner specks and small dust marks are seeded; a horizontal streak,
+when selected, is only 1–2 pixels tall and 5–10 intensity levels darker.
+Grayscale copies have slightly crushed blacks and light background noise;
+color copies retain warm paper. Approximately one third use grayscale.
+
+Each effect is a pure RGB-array transformation with a local seeded RNG.
+Byte identity requires the same inputs, CSV identities, fonts, renderer and
+Pillow/NumPy/native-library environment. `build/` is ignored. Each sidecar JSON
+records the renderer version, seeds, source checksum, display names, page
+parameters and image checksums. Its per-page `printed_reference` comes from
+the exact drawing plan: letterhead, scope, document/date line, title and typed
+body, printed author/team, and page-number line. Handwriting and stamps are
+excluded. `excluded_regions` gives annotation rectangles in final scan pixel
+coordinates after the same scale, rotation and offset as the image.
+
+OCR verifies image checksums and writes `data/documents/ocr/DOC-NNNN.json` with
+the actual Tesseract version, full page text, `printed_text`, scan checksum,
+and `mean_word_confidence`. Confidence averages scored level-5 TSV words,
+including zero and decimal scores, ignoring -1; it is `null` only when no
+scored words exist. Printed text omits words whose TSV bounding-box centers
+fall inside annotation regions. This geometric exclusion may also omit an
+OCR word that spans printed and handwritten content; it does not claim to
+separate overlapping ink perfectly.
+
+`--report` reads saved OCR and scan sidecars without invoking Tesseract. It
+compares each page's `printed_text` with that page's `printed_reference`.
+CER is character edit distance after whitespace normalization; case and
+punctuation still count. Page edits and reference lengths are summed for each
+document, then aggregated by kind. Headers, printed names and page numbers
+are part of the reference; handwriting and stamps are excluded from both
+comparison sides. Per-page confidence is retained in `ocr/report.json`.
+Missing OCR is listed; stale sources, changed render versions/checksums and
+legacy results lacking printed references require rendering and OCR again.
+Keep sidecars with their images. The scripts do not validate provenance;
+run the corpus validator separately.
+
+The separate ingestion image uses the root allow-list build context. Building
+requires package access; the runtime commands can run offline with mounted data:
+
+```sh
+docker build -f tools/ingest/Dockerfile -t preflight-oss-ingest .
+mkdir -p build/scans data/documents/ocr
+docker run --rm --network none --user "$(id -u):$(id -g)" \
+  -v "$PWD/data/documents:/app/data/documents:ro" \
+  -v "$PWD/data/synthetic:/app/data/synthetic:ro" -v "$PWD/build:/app/build" \
+  preflight-oss-ingest scripts/render_scans.py --synthetic data/synthetic --output build/scans
+docker run --rm --network none --user "$(id -u):$(id -g)" \
+  -v "$PWD/data/documents:/app/data/documents:ro" \
+  -v "$PWD/data/documents/ocr:/app/data/documents/ocr" -v "$PWD/build:/app/build:ro" \
+  preflight-oss-ingest scripts/ocr_scans.py --scans build/scans --documents data/documents
+docker run --rm --network none --user "$(id -u):$(id -g)" \
+  -v "$PWD/data/documents:/app/data/documents:ro" \
+  -v "$PWD/data/documents/ocr:/app/data/documents/ocr" -v "$PWD/build:/app/build:ro" \
+  preflight-oss-ingest scripts/ocr_scans.py --scans build/scans --documents data/documents --report
+```
+
+The image contains only its dependencies, scripts and fonts, not the fictional
+records. Its default UID is 10001; the examples use the host UID/GID. English
+Tesseract comes from Debian packages; its version is recorded, not pinned by
+the image. Unit tests use fixed TSV fixtures and temporary documents without
+invoking a real OCR binary.
+
 ## Complete banned-pattern list
 
 Each expression below runs with `re.IGNORECASE` against the **entire document**,
@@ -191,3 +290,10 @@ them. Future authors must follow the stricter scope above even when validation
 passes; review provenance, factual consistency, language, and Markdown layout
 before accepting the authored corpus. Do not describe a passing check as proof
 that those reviews, OCR, or retrieval evaluation have happened.
+
+On macOS, Docker Desktop's file sharing can briefly serve an older copy of a document edited just
+before a container run. Each rendered page records the SHA-256 of its source document, and the OCR
+report refuses a page rendered from a different source; re-render and OCR the documents it names.
+
+Sample scans: [handover](../../docs/scans/handover-DOC-0011.jpg),
+[form](../../docs/scans/form-DOC-0057.jpg) and [policy](../../docs/scans/policy-DOC-0004.jpg).

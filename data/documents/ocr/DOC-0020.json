@@ -1,0 +1,24 @@
+{
+  "doc_id": "DOC-0020",
+  "kind": "handover",
+  "renderer_version": "scans-2026-11-09.2",
+  "seed": 20261128,
+  "source_sha256": "22165b650a65c0b7a4e619165e7e33942a7fb18e81e0a3dcf836925b360d3cae",
+  "tesseract_version": "tesseract 5.5.0",
+  "pages": [
+    {
+      "page_number": 1,
+      "scan_sha256": "77325b48e3c4c77800a53354af33cbf7b476dad4dc6a80e3e307633babce8901",
+      "text": "Preflight Demo Program\nDEMO-STATION-03\nDOC-0020 2026-06-20\nSHIFT NOTES — Avionics and Controls Desk Split for\nSaturday\nDate: 2026-06-20\nStation: DEMO-STATION-03\nProgram: DEMO-PROGRAM-BETA\n10:20 — Saturday arrangement from PERSON-0016 for TEAM-0004:\nthis desk holds avionics intake conversations until 14:20. The\nrelief-desk role receives controls questions during the same\ninterval. The split is for queue coordination; it does not\nassign physical work or change task ownership.\n11:00 — Place ISSUE-0070 and TASK-0182 on the avionics desk\nindex for DEMO-AIR-0008. Put the subsystem heading above the\nreference line. A caller should be able to identify the\ncorrect desk without describing the entire contents of a\nfolder.\n12:15 — Send mixed-subject requests to the station coordinator\nfor a primary desk choice. Retain the secondary question on\nthe same dated sheet and identify which role will answer it.\nPassing a folder back and forth without a primary contact only\nhides the scheduling decision.\n14:00 — Brief the relief coordinator before the avionics\ninterval ends. Show the desk index, the promised contact\ntimes, and any mixed-subject request awaiting a destination.\nKeep the original intake question visible during that\nconversation.\nNext-shift list\n— Confirm the next avionics coverage interval at the station\nroster.\n~- Keep controls requests with the relief-desk role unless the\ncoordinator records a different destination.\nD. Worker 0016\nDemo Worker 0016, Demo Team 04\nPage 1 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-03\nDOC-0020 2026-06-20\nSHIFT NOTES — Avionics and Controls Desk Split for\nSaturday\nDate: 2026-06-20\nStation: DEMO-STATION-03\nProgram: DEMO-PROGRAM-BETA\n10:20 — Saturday arrangement from PERSON-0016 for TEAM-0004:\nthis desk holds avionics intake conversations until 14:20. The\nrelief-desk role receives controls questions during the same\ninterval. The split is for queue coordination; it does not\nassign physical work or change task ownership.\n11:00 — Place ISSUE-0070 and TASK-0182 on the avionics desk\nindex for DEMO-AIR-0008. Put the subsystem heading above the\nreference line. A caller should be able to identify the\ncorrect desk without describing the entire contents of a\nfolder.\n12:15 — Send mixed-subject requests to the station coordinator\nfor a primary desk choice. Retain the secondary question on\nthe same dated sheet and identify which role will answer it.\nPassing a folder back and forth without a primary contact only\nhides the scheduling decision.\n14:00 — Brief the relief coordinator before the avionics\ninterval ends. Show the desk index, the promised contact\ntimes, and any mixed-subject request awaiting a destination.\nKeep the original intake question visible during that\nconversation.\nNext-shift list\n— Confirm the next avionics coverage interval at the station\nroster.\n~- Keep controls requests with the relief-desk role unless the\ncoordinator records a different destination.\nDemo Worker 0016, Demo Team 04\nPage 1 of 2",
+      "mean_word_confidence": 95.1594561875
+    },
+    {
+      "page_number": 2,
+      "scan_sha256": "a9559f72eacb001eecab5937b25927e1c0d6ff5151af62b1117c85f401db1294",
+      "text": "Preflight Demo Program\nDEMO-STATION-03\nDOC-0020 2026-06-20\n_ File the primary-desk decision beside any mixed-subject\nrequest so the next caller receives a consistent answer.\nD. Worker 0016\nDemo Worker 0016, Demo Team 04\nPage 2 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-03\nDOC-0020 2026-06-20\n_ File the primary-desk decision beside any mixed-subject\nrequest so the next caller receives a consistent answer.\nDemo Worker 0016, Demo Team 04\nPage 2 of 2",
+      "mean_word_confidence": 93.31522680555555
+    }
+  ]
+}

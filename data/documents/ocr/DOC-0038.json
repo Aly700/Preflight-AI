@@ -1,0 +1,24 @@
+{
+  "doc_id": "DOC-0038",
+  "kind": "coordination",
+  "renderer_version": "scans-2026-11-09.2",
+  "seed": 20261146,
+  "source_sha256": "7ac17084ebaefdfa6101eb697462ca81bf9eab2f494b4f29d49c531320eec22a",
+  "tesseract_version": "tesseract 5.5.0",
+  "pages": [
+    {
+      "page_number": 1,
+      "scan_sha256": "0b7c880e7679547673966ef40562b193229425b3ec32824da813411c3d9a2e90",
+      "text": "Preflight Demo Program\nDEMO-STATION-02\nDOC-0038 2026-09-11\nMEETING NOTES — Cabin Documentation Collection\nAcross Team Desks\nDate: 2026-09-11\nProgram: DEMO-PROGRAM-ALPHA\nAttendees: PERSON-0015 for TEAM-0003; documentation partner\nteam's coordinator; records clerk; station desk lead.\nPurpose: Arrange collection of cabin paperwork at\nDEMO-STATION-02. ISSUE-0092, TASK-0245, and TASK-0246 locate\nthe discussion material.\nDecisions Use an attachment-heading list to assign the next\ncollecting action. Each heading has a collecting role,\nexpected filing location, and promised date. Keep the task\nreference beside the heading, without treating the collecting\nrole as a new person assignment.\nThe question ledger will travel with the cabin filing list.\nPreserve the exact question, addressee, and promised reply\ndate for any missing paper. If the records clerk finds a\ndifferently titled attachment, retain the original request and\nadd the index heading that led to the paper.\nThe station desk lead will arrange a collecting conversation\nbefore the next handover. The partner team supplies its\nexpected paper-delivery appointment; TEAM-0003 supplies the\nreceiving filing contact. The arrangement must remain usable\nif either coordinator changes shift.\nAction items\n— Owner: Documentation partner coordinator. Due: 2026-09-12.\nSupply the paper-delivery appointment and collecting role.\n— Owner: PERSON-0015. Due: 2026-09-12. Name the receiving\nfiling contact on the attachment list.\nD. Worker 0015\nDemo Worker 0015, Demo Team 03\nPage 1 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-02\nDOC-0038 2026-09-11\nMEETING NOTES — Cabin Documentation Collection\nAcross Team Desks\nDate: 2026-09-11\nProgram: DEMO-PROGRAM-ALPHA\nAttendees: PERSON-0015 for TEAM-0003; documentation partner\nteam's coordinator; records clerk; station desk lead.\nPurpose: Arrange collection of cabin paperwork at\nDEMO-STATION-02. ISSUE-0092, TASK-0245, and TASK-0246 locate\nthe discussion material.\nDecisions Use an attachment-heading list to assign the next\ncollecting action. Each heading has a collecting role,\nexpected filing location, and promised date. Keep the task\nreference beside the heading, without treating the collecting\nrole as a new person assignment.\nThe question ledger will travel with the cabin filing list.\nPreserve the exact question, addressee, and promised reply\ndate for any missing paper. If the records clerk finds a\ndifferently titled attachment, retain the original request and\nadd the index heading that led to the paper.\nThe station desk lead will arrange a collecting conversation\nbefore the next handover. The partner team supplies its\nexpected paper-delivery appointment; TEAM-0003 supplies the\nreceiving filing contact. The arrangement must remain usable\nif either coordinator changes shift.\nAction items\n— Owner: Documentation partner coordinator. Due: 2026-09-12.\nSupply the paper-delivery appointment and collecting role.\n— Owner: PERSON-0015. Due: 2026-09-12. Name the receiving\nfiling contact on the attachment list.\nDemo Worker 0015, Demo Team 03\nPage 1 of 2",
+      "mean_word_confidence": 95.1662098224299
+    },
+    {
+      "page_number": 2,
+      "scan_sha256": "f0e906b678a6ad35c77b7c083f9202ebc9bf9e276debaee757af10d9a72c007e",
+      "text": "Preflight Demo Program\nDEMO-STATION-02\nDOC-0038 2026-09-11\n— Owner: Records clerk. Due: 2026-09-14. Return any alternate\nindex headings with the located papers, preserving the\noriginal questions.\nD. Worker 0015\nDemo Worker 0015, Demo Team 03\nPage 2 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-02\nDOC-0038 2026-09-11\n— Owner: Records clerk. Due: 2026-09-14. Return any alternate\nindex headings with the located papers, preserving the\noriginal questions.\nDemo Worker 0015, Demo Team 03\nPage 2 of 2",
+      "mean_word_confidence": 93.70060192105264
+    }
+  ]
+}

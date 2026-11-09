@@ -1,0 +1,1310 @@
+{
+  "document_count": 60,
+  "by_kind": {
+    "coordination": {
+      "count": 14,
+      "cer": 0.004491445837246336,
+      "mean_cer": 0.00448716050860551
+    },
+    "form": {
+      "count": 4,
+      "cer": 0.005321170657544659,
+      "mean_cer": 0.00548237366519548
+    },
+    "glossary": {
+      "count": 2,
+      "cer": 0.0017761989342806395,
+      "mean_cer": 0.0017701987476225613
+    },
+    "handover": {
+      "count": 14,
+      "cer": 0.004582551390040588,
+      "mean_cer": 0.004569996797245785
+    },
+    "memo": {
+      "count": 10,
+      "cer": 0.0028905289052890528,
+      "mean_cer": 0.0028902459670472813
+    },
+    "policy": {
+      "count": 8,
+      "cer": 0.004999615414198908,
+      "mean_cer": 0.005002214986559054
+    },
+    "retrospective": {
+      "count": 8,
+      "cer": 0.0008192448052431667,
+      "mean_cer": 0.0008217246582756882
+    }
+  },
+  "documents": [
+    {
+      "doc_id": "DOC-0001",
+      "kind": "policy",
+      "edits": 3,
+      "reference_characters": 1633,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 3,
+          "reference_characters": 1633,
+          "cer": 0.001837109614206981,
+          "mean_word_confidence": 95.91072764453125
+        }
+      ],
+      "cer": 0.001837109614206981
+    },
+    {
+      "doc_id": "DOC-0002",
+      "kind": "policy",
+      "edits": 8,
+      "reference_characters": 1639,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 8,
+          "reference_characters": 1639,
+          "cer": 0.004881025015253203,
+          "mean_word_confidence": 95.410256703125
+        }
+      ],
+      "cer": 0.004881025015253203
+    },
+    {
+      "doc_id": "DOC-0003",
+      "kind": "policy",
+      "edits": 10,
+      "reference_characters": 1610,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 10,
+          "reference_characters": 1610,
+          "cer": 0.006211180124223602,
+          "mean_word_confidence": 94.43619292031873
+        }
+      ],
+      "cer": 0.006211180124223602
+    },
+    {
+      "doc_id": "DOC-0004",
+      "kind": "policy",
+      "edits": 6,
+      "reference_characters": 1656,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 6,
+          "reference_characters": 1656,
+          "cer": 0.0036231884057971015,
+          "mean_word_confidence": 95.4598596417323
+        }
+      ],
+      "cer": 0.0036231884057971015
+    },
+    {
+      "doc_id": "DOC-0005",
+      "kind": "policy",
+      "edits": 5,
+      "reference_characters": 1628,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 5,
+          "reference_characters": 1628,
+          "cer": 0.003071253071253071,
+          "mean_word_confidence": 95.74295096456693
+        }
+      ],
+      "cer": 0.003071253071253071
+    },
+    {
+      "doc_id": "DOC-0006",
+      "kind": "policy",
+      "edits": 27,
+      "reference_characters": 1621,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 27,
+          "reference_characters": 1621,
+          "cer": 0.016656384947563233,
+          "mean_word_confidence": 95.04019195219124
+        }
+      ],
+      "cer": 0.016656384947563233
+    },
+    {
+      "doc_id": "DOC-0007",
+      "kind": "policy",
+      "edits": 3,
+      "reference_characters": 1555,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 3,
+          "reference_characters": 1555,
+          "cer": 0.0019292604501607716,
+          "mean_word_confidence": 96.19059379352227
+        }
+      ],
+      "cer": 0.0019292604501607716
+    },
+    {
+      "doc_id": "DOC-0008",
+      "kind": "policy",
+      "edits": 3,
+      "reference_characters": 1659,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 3,
+          "reference_characters": 1659,
+          "cer": 0.0018083182640144665,
+          "mean_word_confidence": 95.61703957024793
+        }
+      ],
+      "cer": 0.0018083182640144665
+    },
+    {
+      "doc_id": "DOC-0009",
+      "kind": "glossary",
+      "edits": 2,
+      "reference_characters": 2799,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 0,
+          "reference_characters": 1703,
+          "cer": 0.0,
+          "mean_word_confidence": 96.14347664363636
+        },
+        {
+          "page_number": 2,
+          "edits": 2,
+          "reference_characters": 1096,
+          "cer": 0.0018248175182481751,
+          "mean_word_confidence": 94.92834757763974
+        }
+      ],
+      "cer": 0.0007145409074669524
+    },
+    {
+      "doc_id": "DOC-0010",
+      "kind": "glossary",
+      "edits": 8,
+      "reference_characters": 2831,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 7,
+          "reference_characters": 1681,
+          "cer": 0.004164187983343248,
+          "mean_word_confidence": 95.28495125390624
+        },
+        {
+          "page_number": 2,
+          "edits": 1,
+          "reference_characters": 1150,
+          "cer": 0.0008695652173913044,
+          "mean_word_confidence": 95.28905822651934
+        }
+      ],
+      "cer": 0.00282585658777817
+    },
+    {
+      "doc_id": "DOC-0011",
+      "kind": "handover",
+      "edits": 8,
+      "reference_characters": 1703,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 6,
+          "reference_characters": 1474,
+          "cer": 0.004070556309362279,
+          "mean_word_confidence": 94.53119053363228
+        },
+        {
+          "page_number": 2,
+          "edits": 2,
+          "reference_characters": 229,
+          "cer": 0.008733624454148471,
+          "mean_word_confidence": 94.72048781081081
+        }
+      ],
+      "cer": 0.004697592483852026
+    },
+    {
+      "doc_id": "DOC-0012",
+      "kind": "handover",
+      "edits": 10,
+      "reference_characters": 1519,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 10,
+          "reference_characters": 1519,
+          "cer": 0.0065832784726793945,
+          "mean_word_confidence": 95.15508177642276
+        }
+      ],
+      "cer": 0.0065832784726793945
+    },
+    {
+      "doc_id": "DOC-0013",
+      "kind": "handover",
+      "edits": 7,
+      "reference_characters": 1711,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 7,
+          "reference_characters": 1571,
+          "cer": 0.004455760661998727,
+          "mean_word_confidence": 94.75502198770491
+        },
+        {
+          "page_number": 2,
+          "edits": 0,
+          "reference_characters": 140,
+          "cer": 0.0,
+          "mean_word_confidence": 92.39266784
+        }
+      ],
+      "cer": 0.004091174751607247
+    },
+    {
+      "doc_id": "DOC-0014",
+      "kind": "handover",
+      "edits": 10,
+      "reference_characters": 1622,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 8,
+          "reference_characters": 1401,
+          "cer": 0.005710206995003569,
+          "mean_word_confidence": 94.64161547004608
+        },
+        {
+          "page_number": 2,
+          "edits": 2,
+          "reference_characters": 221,
+          "cer": 0.00904977375565611,
+          "mean_word_confidence": 87.94331539583334
+        }
+      ],
+      "cer": 0.006165228113440197
+    },
+    {
+      "doc_id": "DOC-0015",
+      "kind": "handover",
+      "edits": 11,
+      "reference_characters": 1637,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 11,
+          "reference_characters": 1472,
+          "cer": 0.007472826086956522,
+          "mean_word_confidence": 95.06722340086208
+        },
+        {
+          "page_number": 2,
+          "edits": 0,
+          "reference_characters": 165,
+          "cer": 0.0,
+          "mean_word_confidence": 95.46655021428572
+        }
+      ],
+      "cer": 0.006719609040928528
+    },
+    {
+      "doc_id": "DOC-0016",
+      "kind": "handover",
+      "edits": 6,
+      "reference_characters": 1525,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 6,
+          "reference_characters": 1525,
+          "cer": 0.003934426229508197,
+          "mean_word_confidence": 95.40305654251011
+        }
+      ],
+      "cer": 0.003934426229508197
+    },
+    {
+      "doc_id": "DOC-0017",
+      "kind": "handover",
+      "edits": 4,
+      "reference_characters": 1701,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 4,
+          "reference_characters": 1577,
+          "cer": 0.0025364616360177552,
+          "mean_word_confidence": 94.95097743277312
+        },
+        {
+          "page_number": 2,
+          "edits": 0,
+          "reference_characters": 124,
+          "cer": 0.0,
+          "mean_word_confidence": 95.27690752380951
+        }
+      ],
+      "cer": 0.0023515579071134627
+    },
+    {
+      "doc_id": "DOC-0018",
+      "kind": "handover",
+      "edits": 6,
+      "reference_characters": 1550,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 6,
+          "reference_characters": 1550,
+          "cer": 0.003870967741935484,
+          "mean_word_confidence": 95.03205014225942
+        }
+      ],
+      "cer": 0.003870967741935484
+    },
+    {
+      "doc_id": "DOC-0019",
+      "kind": "handover",
+      "edits": 2,
+      "reference_characters": 1486,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 2,
+          "reference_characters": 1486,
+          "cer": 0.0013458950201884253,
+          "mean_word_confidence": 95.35237428099174
+        }
+      ],
+      "cer": 0.0013458950201884253
+    },
+    {
+      "doc_id": "DOC-0020",
+      "kind": "handover",
+      "edits": 7,
+      "reference_characters": 1686,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 5,
+          "reference_characters": 1472,
+          "cer": 0.0033967391304347825,
+          "mean_word_confidence": 95.1594561875
+        },
+        {
+          "page_number": 2,
+          "edits": 2,
+          "reference_characters": 214,
+          "cer": 0.009345794392523364,
+          "mean_word_confidence": 93.31522680555555
+        }
+      ],
+      "cer": 0.004151838671411625
+    },
+    {
+      "doc_id": "DOC-0021",
+      "kind": "handover",
+      "edits": 9,
+      "reference_characters": 1747,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 5,
+          "reference_characters": 1505,
+          "cer": 0.0033222591362126247,
+          "mean_word_confidence": 95.27266724444443
+        },
+        {
+          "page_number": 2,
+          "edits": 4,
+          "reference_characters": 242,
+          "cer": 0.01652892561983471,
+          "mean_word_confidence": 84.143479
+        }
+      ],
+      "cer": 0.005151688609044075
+    },
+    {
+      "doc_id": "DOC-0022",
+      "kind": "handover",
+      "edits": 9,
+      "reference_characters": 1699,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 7,
+          "reference_characters": 1493,
+          "cer": 0.004688546550569324,
+          "mean_word_confidence": 94.58131746956522
+        },
+        {
+          "page_number": 2,
+          "edits": 2,
+          "reference_characters": 206,
+          "cer": 0.009708737864077669,
+          "mean_word_confidence": 93.98604225
+        }
+      ],
+      "cer": 0.00529723366686286
+    },
+    {
+      "doc_id": "DOC-0023",
+      "kind": "handover",
+      "edits": 8,
+      "reference_characters": 1682,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 6,
+          "reference_characters": 1478,
+          "cer": 0.0040595399188092015,
+          "mean_word_confidence": 95.16788469198312
+        },
+        {
+          "page_number": 2,
+          "edits": 2,
+          "reference_characters": 204,
+          "cer": 0.00980392156862745,
+          "mean_word_confidence": 94.13978693939393
+        }
+      ],
+      "cer": 0.0047562425683709865
+    },
+    {
+      "doc_id": "DOC-0024",
+      "kind": "handover",
+      "edits": 8,
+      "reference_characters": 1645,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 6,
+          "reference_characters": 1462,
+          "cer": 0.004103967168262654,
+          "mean_word_confidence": 95.22158189519651
+        },
+        {
+          "page_number": 2,
+          "edits": 2,
+          "reference_characters": 183,
+          "cer": 0.01092896174863388,
+          "mean_word_confidence": 93.59491515625
+        }
+      ],
+      "cer": 0.004863221884498481
+    },
+    {
+      "doc_id": "DOC-0025",
+      "kind": "memo",
+      "edits": 1,
+      "reference_characters": 1651,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 1,
+          "reference_characters": 1651,
+          "cer": 0.0006056935190793458,
+          "mean_word_confidence": 94.4971957644628
+        }
+      ],
+      "cer": 0.0006056935190793458
+    },
+    {
+      "doc_id": "DOC-0026",
+      "kind": "memo",
+      "edits": 0,
+      "reference_characters": 1622,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 0,
+          "reference_characters": 1622,
+          "cer": 0.0,
+          "mean_word_confidence": 95.66578045228215
+        }
+      ],
+      "cer": 0.0
+    },
+    {
+      "doc_id": "DOC-0027",
+      "kind": "memo",
+      "edits": 1,
+      "reference_characters": 1596,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 1,
+          "reference_characters": 1596,
+          "cer": 0.0006265664160401002,
+          "mean_word_confidence": 95.75001527350426
+        }
+      ],
+      "cer": 0.0006265664160401002
+    },
+    {
+      "doc_id": "DOC-0028",
+      "kind": "memo",
+      "edits": 2,
+      "reference_characters": 1585,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 2,
+          "reference_characters": 1585,
+          "cer": 0.0012618296529968455,
+          "mean_word_confidence": 94.89582716595744
+        }
+      ],
+      "cer": 0.0012618296529968455
+    },
+    {
+      "doc_id": "DOC-0029",
+      "kind": "memo",
+      "edits": 14,
+      "reference_characters": 1578,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 14,
+          "reference_characters": 1578,
+          "cer": 0.008871989860583017,
+          "mean_word_confidence": 95.94359557740586
+        }
+      ],
+      "cer": 0.008871989860583017
+    },
+    {
+      "doc_id": "DOC-0030",
+      "kind": "memo",
+      "edits": 1,
+      "reference_characters": 1670,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 1,
+          "reference_characters": 1670,
+          "cer": 0.0005988023952095808,
+          "mean_word_confidence": 96.12175113414634
+        }
+      ],
+      "cer": 0.0005988023952095808
+    },
+    {
+      "doc_id": "DOC-0031",
+      "kind": "memo",
+      "edits": 2,
+      "reference_characters": 1652,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 2,
+          "reference_characters": 1652,
+          "cer": 0.0012106537530266344,
+          "mean_word_confidence": 95.18046648979592
+        }
+      ],
+      "cer": 0.0012106537530266344
+    },
+    {
+      "doc_id": "DOC-0032",
+      "kind": "memo",
+      "edits": 2,
+      "reference_characters": 1644,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 2,
+          "reference_characters": 1644,
+          "cer": 0.0012165450121654502,
+          "mean_word_confidence": 95.74851946938776
+        }
+      ],
+      "cer": 0.0012165450121654502
+    },
+    {
+      "doc_id": "DOC-0033",
+      "kind": "memo",
+      "edits": 3,
+      "reference_characters": 1600,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 3,
+          "reference_characters": 1600,
+          "cer": 0.001875,
+          "mean_word_confidence": 95.40062113733906
+        }
+      ],
+      "cer": 0.001875
+    },
+    {
+      "doc_id": "DOC-0034",
+      "kind": "memo",
+      "edits": 21,
+      "reference_characters": 1662,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 21,
+          "reference_characters": 1662,
+          "cer": 0.01263537906137184,
+          "mean_word_confidence": 93.81836768650794
+        }
+      ],
+      "cer": 0.01263537906137184
+    },
+    {
+      "doc_id": "DOC-0035",
+      "kind": "coordination",
+      "edits": 7,
+      "reference_characters": 1707,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 5,
+          "reference_characters": 1461,
+          "cer": 0.0034223134839151265,
+          "mean_word_confidence": 95.39055896208531
+        },
+        {
+          "page_number": 2,
+          "edits": 2,
+          "reference_characters": 246,
+          "cer": 0.008130081300813009,
+          "mean_word_confidence": 93.3123268
+        }
+      ],
+      "cer": 0.004100761570005858
+    },
+    {
+      "doc_id": "DOC-0036",
+      "kind": "coordination",
+      "edits": 7,
+      "reference_characters": 1822,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 3,
+          "reference_characters": 1479,
+          "cer": 0.002028397565922921,
+          "mean_word_confidence": 95.36411450980393
+        },
+        {
+          "page_number": 2,
+          "edits": 4,
+          "reference_characters": 343,
+          "cer": 0.011661807580174927,
+          "mean_word_confidence": 92.88261771698114
+        }
+      ],
+      "cer": 0.0038419319429198683
+    },
+    {
+      "doc_id": "DOC-0037",
+      "kind": "coordination",
+      "edits": 6,
+      "reference_characters": 1700,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 4,
+          "reference_characters": 1465,
+          "cer": 0.0027303754266211604,
+          "mean_word_confidence": 95.466067
+        },
+        {
+          "page_number": 2,
+          "edits": 2,
+          "reference_characters": 235,
+          "cer": 0.00851063829787234,
+          "mean_word_confidence": 94.30551832500001
+        }
+      ],
+      "cer": 0.0035294117647058825
+    },
+    {
+      "doc_id": "DOC-0038",
+      "kind": "coordination",
+      "edits": 6,
+      "reference_characters": 1751,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 4,
+          "reference_characters": 1515,
+          "cer": 0.0026402640264026403,
+          "mean_word_confidence": 95.1662098224299
+        },
+        {
+          "page_number": 2,
+          "edits": 2,
+          "reference_characters": 236,
+          "cer": 0.00847457627118644,
+          "mean_word_confidence": 93.70060192105264
+        }
+      ],
+      "cer": 0.0034266133637921186
+    },
+    {
+      "doc_id": "DOC-0039",
+      "kind": "coordination",
+      "edits": 8,
+      "reference_characters": 1728,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 4,
+          "reference_characters": 1517,
+          "cer": 0.0026367831245880024,
+          "mean_word_confidence": 95.32990912612613
+        },
+        {
+          "page_number": 2,
+          "edits": 4,
+          "reference_characters": 211,
+          "cer": 0.018957345971563982,
+          "mean_word_confidence": 91.05797131428571
+        }
+      ],
+      "cer": 0.004629629629629629
+    },
+    {
+      "doc_id": "DOC-0040",
+      "kind": "coordination",
+      "edits": 7,
+      "reference_characters": 1751,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 2,
+          "reference_characters": 1413,
+          "cer": 0.0014154281670205238,
+          "mean_word_confidence": 95.34934100502512
+        },
+        {
+          "page_number": 2,
+          "edits": 5,
+          "reference_characters": 338,
+          "cer": 0.014792899408284023,
+          "mean_word_confidence": 93.42868131578948
+        }
+      ],
+      "cer": 0.003997715591090805
+    },
+    {
+      "doc_id": "DOC-0041",
+      "kind": "coordination",
+      "edits": 13,
+      "reference_characters": 1787,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 8,
+          "reference_characters": 1524,
+          "cer": 0.005249343832020997,
+          "mean_word_confidence": 95.51575587111111
+        },
+        {
+          "page_number": 2,
+          "edits": 5,
+          "reference_characters": 263,
+          "cer": 0.019011406844106463,
+          "mean_word_confidence": 93.46754955
+        }
+      ],
+      "cer": 0.007274762171236709
+    },
+    {
+      "doc_id": "DOC-0042",
+      "kind": "coordination",
+      "edits": 8,
+      "reference_characters": 1765,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 3,
+          "reference_characters": 1419,
+          "cer": 0.0021141649048625794,
+          "mean_word_confidence": 95.27546259134616
+        },
+        {
+          "page_number": 2,
+          "edits": 5,
+          "reference_characters": 346,
+          "cer": 0.014450867052023121,
+          "mean_word_confidence": 89.75571258730159
+        }
+      ],
+      "cer": 0.004532577903682719
+    },
+    {
+      "doc_id": "DOC-0043",
+      "kind": "coordination",
+      "edits": 8,
+      "reference_characters": 1709,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 6,
+          "reference_characters": 1482,
+          "cer": 0.004048582995951417,
+          "mean_word_confidence": 94.8766241843318
+        },
+        {
+          "page_number": 2,
+          "edits": 2,
+          "reference_characters": 227,
+          "cer": 0.00881057268722467,
+          "mean_word_confidence": 93.19994545
+        }
+      ],
+      "cer": 0.004681100058513751
+    },
+    {
+      "doc_id": "DOC-0044",
+      "kind": "coordination",
+      "edits": 10,
+      "reference_characters": 1744,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 8,
+          "reference_characters": 1517,
+          "cer": 0.005273566249176005,
+          "mean_word_confidence": 95.3033841521739
+        },
+        {
+          "page_number": 2,
+          "edits": 2,
+          "reference_characters": 227,
+          "cer": 0.00881057268722467,
+          "mean_word_confidence": 93.14267358333333
+        }
+      ],
+      "cer": 0.005733944954128441
+    },
+    {
+      "doc_id": "DOC-0045",
+      "kind": "coordination",
+      "edits": 10,
+      "reference_characters": 1760,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 6,
+          "reference_characters": 1486,
+          "cer": 0.004037685060565276,
+          "mean_word_confidence": 95.28920768837209
+        },
+        {
+          "page_number": 2,
+          "edits": 4,
+          "reference_characters": 274,
+          "cer": 0.014598540145985401,
+          "mean_word_confidence": 91.83150604761904
+        }
+      ],
+      "cer": 0.005681818181818182
+    },
+    {
+      "doc_id": "DOC-0046",
+      "kind": "coordination",
+      "edits": 6,
+      "reference_characters": 1750,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 4,
+          "reference_characters": 1487,
+          "cer": 0.0026899798251513113,
+          "mean_word_confidence": 95.10155463228699
+        },
+        {
+          "page_number": 2,
+          "edits": 2,
+          "reference_characters": 263,
+          "cer": 0.0076045627376425855,
+          "mean_word_confidence": 84.89675843137255
+        }
+      ],
+      "cer": 0.0034285714285714284
+    },
+    {
+      "doc_id": "DOC-0047",
+      "kind": "coordination",
+      "edits": 7,
+      "reference_characters": 1753,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 5,
+          "reference_characters": 1509,
+          "cer": 0.0033134526176275677,
+          "mean_word_confidence": 95.19250288940093
+        },
+        {
+          "page_number": 2,
+          "edits": 2,
+          "reference_characters": 244,
+          "cer": 0.00819672131147541,
+          "mean_word_confidence": 93.326758
+        }
+      ],
+      "cer": 0.003993154592127781
+    },
+    {
+      "doc_id": "DOC-0048",
+      "kind": "coordination",
+      "edits": 7,
+      "reference_characters": 1764,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 3,
+          "reference_characters": 1468,
+          "cer": 0.0020435967302452314,
+          "mean_word_confidence": 94.80158856018518
+        },
+        {
+          "page_number": 2,
+          "edits": 4,
+          "reference_characters": 296,
+          "cer": 0.013513513513513514,
+          "mean_word_confidence": 92.15377728888889
+        }
+      ],
+      "cer": 0.003968253968253968
+    },
+    {
+      "doc_id": "DOC-0049",
+      "kind": "retrospective",
+      "edits": 1,
+      "reference_characters": 1685,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 1,
+          "reference_characters": 1685,
+          "cer": 0.0005934718100890207,
+          "mean_word_confidence": 95.71654148178138
+        }
+      ],
+      "cer": 0.0005934718100890207
+    },
+    {
+      "doc_id": "DOC-0050",
+      "kind": "retrospective",
+      "edits": 4,
+      "reference_characters": 1643,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 4,
+          "reference_characters": 1643,
+          "cer": 0.002434570906877663,
+          "mean_word_confidence": 95.605980948
+        }
+      ],
+      "cer": 0.002434570906877663
+    },
+    {
+      "doc_id": "DOC-0051",
+      "kind": "retrospective",
+      "edits": 1,
+      "reference_characters": 1648,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 1,
+          "reference_characters": 1648,
+          "cer": 0.0006067961165048543,
+          "mean_word_confidence": 95.8943635873016
+        }
+      ],
+      "cer": 0.0006067961165048543
+    },
+    {
+      "doc_id": "DOC-0052",
+      "kind": "retrospective",
+      "edits": 2,
+      "reference_characters": 1743,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 2,
+          "reference_characters": 1743,
+          "cer": 0.0011474469305794606,
+          "mean_word_confidence": 95.76689742687746
+        }
+      ],
+      "cer": 0.0011474469305794606
+    },
+    {
+      "doc_id": "DOC-0053",
+      "kind": "retrospective",
+      "edits": 0,
+      "reference_characters": 1681,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 0,
+          "reference_characters": 1681,
+          "cer": 0.0,
+          "mean_word_confidence": 95.90270360869565
+        }
+      ],
+      "cer": 0.0
+    },
+    {
+      "doc_id": "DOC-0054",
+      "kind": "retrospective",
+      "edits": 1,
+      "reference_characters": 1659,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 1,
+          "reference_characters": 1659,
+          "cer": 0.0006027727546714888,
+          "mean_word_confidence": 95.98063169498069
+        }
+      ],
+      "cer": 0.0006027727546714888
+    },
+    {
+      "doc_id": "DOC-0055",
+      "kind": "retrospective",
+      "edits": 1,
+      "reference_characters": 1735,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 1,
+          "reference_characters": 1735,
+          "cer": 0.0005763688760806917,
+          "mean_word_confidence": 95.60534837848606
+        }
+      ],
+      "cer": 0.0005763688760806917
+    },
+    {
+      "doc_id": "DOC-0056",
+      "kind": "retrospective",
+      "edits": 1,
+      "reference_characters": 1633,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 1,
+          "reference_characters": 1633,
+          "cer": 0.000612369871402327,
+          "mean_word_confidence": 95.7558651660079
+        }
+      ],
+      "cer": 0.000612369871402327
+    },
+    {
+      "doc_id": "DOC-0057",
+      "kind": "form",
+      "edits": 2,
+      "reference_characters": 647,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 0,
+          "reference_characters": 485,
+          "cer": 0.0,
+          "mean_word_confidence": 85.28798429545455
+        },
+        {
+          "page_number": 2,
+          "edits": 2,
+          "reference_characters": 162,
+          "cer": 0.012345679012345678,
+          "mean_word_confidence": 89.98906084722222
+        }
+      ],
+      "cer": 0.0030911901081916537
+    },
+    {
+      "doc_id": "DOC-0058",
+      "kind": "form",
+      "edits": 0,
+      "reference_characters": 653,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 0,
+          "reference_characters": 492,
+          "cer": 0.0,
+          "mean_word_confidence": 90.35908503448276
+        },
+        {
+          "page_number": 2,
+          "edits": 0,
+          "reference_characters": 161,
+          "cer": 0.0,
+          "mean_word_confidence": 90.76376344
+        }
+      ],
+      "cer": 0.0
+    },
+    {
+      "doc_id": "DOC-0059",
+      "kind": "form",
+      "edits": 12,
+      "reference_characters": 637,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 12,
+          "reference_characters": 490,
+          "cer": 0.024489795918367346,
+          "mean_word_confidence": 89.90151391056911
+        },
+        {
+          "page_number": 2,
+          "edits": 0,
+          "reference_characters": 147,
+          "cer": 0.0,
+          "mean_word_confidence": 91.38255887951807
+        }
+      ],
+      "cer": 0.018838304552590265
+    },
+    {
+      "doc_id": "DOC-0060",
+      "kind": "form",
+      "edits": 0,
+      "reference_characters": 694,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 0,
+          "reference_characters": 533,
+          "cer": 0.0,
+          "mean_word_confidence": 90.57095837272726
+        },
+        {
+          "page_number": 2,
+          "edits": 0,
+          "reference_characters": 161,
+          "cer": 0.0,
+          "mean_word_confidence": 88.83465861728395
+        }
+      ],
+      "cer": 0.0
+    }
+  ],
+  "worst_five": [
+    {
+      "doc_id": "DOC-0059",
+      "kind": "form",
+      "edits": 12,
+      "reference_characters": 637,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 12,
+          "reference_characters": 490,
+          "cer": 0.024489795918367346,
+          "mean_word_confidence": 89.90151391056911
+        },
+        {
+          "page_number": 2,
+          "edits": 0,
+          "reference_characters": 147,
+          "cer": 0.0,
+          "mean_word_confidence": 91.38255887951807
+        }
+      ],
+      "cer": 0.018838304552590265
+    },
+    {
+      "doc_id": "DOC-0006",
+      "kind": "policy",
+      "edits": 27,
+      "reference_characters": 1621,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 27,
+          "reference_characters": 1621,
+          "cer": 0.016656384947563233,
+          "mean_word_confidence": 95.04019195219124
+        }
+      ],
+      "cer": 0.016656384947563233
+    },
+    {
+      "doc_id": "DOC-0034",
+      "kind": "memo",
+      "edits": 21,
+      "reference_characters": 1662,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 21,
+          "reference_characters": 1662,
+          "cer": 0.01263537906137184,
+          "mean_word_confidence": 93.81836768650794
+        }
+      ],
+      "cer": 0.01263537906137184
+    },
+    {
+      "doc_id": "DOC-0029",
+      "kind": "memo",
+      "edits": 14,
+      "reference_characters": 1578,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 14,
+          "reference_characters": 1578,
+          "cer": 0.008871989860583017,
+          "mean_word_confidence": 95.94359557740586
+        }
+      ],
+      "cer": 0.008871989860583017
+    },
+    {
+      "doc_id": "DOC-0041",
+      "kind": "coordination",
+      "edits": 13,
+      "reference_characters": 1787,
+      "pages": [
+        {
+          "page_number": 1,
+          "edits": 8,
+          "reference_characters": 1524,
+          "cer": 0.005249343832020997,
+          "mean_word_confidence": 95.51575587111111
+        },
+        {
+          "page_number": 2,
+          "edits": 5,
+          "reference_characters": 263,
+          "cer": 0.019011406844106463,
+          "mean_word_confidence": 93.46754955
+        }
+      ],
+      "cer": 0.007274762171236709
+    }
+  ],
+  "missing_ocr": [],
+  "comparison": "Per-page typed OCR versus rendered printed reference, including headers and footers. Handwriting and stamps are excluded by scan-coordinate annotation regions; word centers inside those regions are omitted. Confidence is the mean of scored full-page TSV words."
+}

@@ -1,0 +1,24 @@
+{
+  "doc_id": "DOC-0014",
+  "kind": "handover",
+  "renderer_version": "scans-2026-11-09.2",
+  "seed": 20261122,
+  "source_sha256": "a7e9137b8d298c5e6b92148401420c6226b3df8377b5cd058d311aed28e9aa13",
+  "tesseract_version": "tesseract 5.5.0",
+  "pages": [
+    {
+      "page_number": 1,
+      "scan_sha256": "975ac7fbe2f1009e846f53d91073b33d996dd2f41108eb2ac79488aa2b63c4a9",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\npoc-0014 2026-09-09\nSHIFT NOTES — Hydraulics Owner Contacts for the\nEvening Shift\nDate: 2026-09-09\nStation: DEMO-STATION-01\nProgram: DEMO-PROGRAM-BETA\n15:50 — PERSON-0013 takes the evening coordination desk for\nTEAM-0001. Prepare the owner-contact sheet used for\nblocked-item follow-up. ISSUE-0018 is the hydraulics locating\nreference for this sheet; its presence here does not label the\nrecord.\n46:25 — Call the owning-team lead for each dependency selected\nfor the evening round. Ask for the responsible desk, the\nanswer being sought, and the next contact time. Keep task\nassignment questions separate from who will make the next\ncoordination call.\n17:20 — Use TASK-0046, TASK-0047, and TASK-0048 in their\nrespective reference spaces when discussing the hydraulics\npapers. Record the role that promised to obtain an answer. The\nperson taking the call should not become the task's assignee\nby default.\n18:10 — Take unanswered owner questions to the duty chair\nusing question-first escalation. Write the missing answer\nfirst, then the role seeking it and the next contact time. The\nchair needs a specific ownership choice, not a request to make\nthe queue move faster.\nNext-shift list\n— Retain the original owner-contact sheet beside the evening\ncall notes.\n— Carry each unanswered dependency with its promised contact\ntime.\nD. Worker 0013\nDemo Worker 0013, Demo Team 01\nPage 1 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\npoc-0014 2026-09-09\nSHIFT NOTES — Hydraulics Owner Contacts for the\nEvening Shift\nDate: 2026-09-09\nStation: DEMO-STATION-01\nProgram: DEMO-PROGRAM-BETA\n15:50 — PERSON-0013 takes the evening coordination desk for\nTEAM-0001. Prepare the owner-contact sheet used for\nblocked-item follow-up. ISSUE-0018 is the hydraulics locating\nreference for this sheet; its presence here does not label the\nrecord.\n46:25 — Call the owning-team lead for each dependency selected\nfor the evening round. Ask for the responsible desk, the\nanswer being sought, and the next contact time. Keep task\nassignment questions separate from who will make the next\ncoordination call.\n17:20 — Use TASK-0046, TASK-0047, and TASK-0048 in their\nrespective reference spaces when discussing the hydraulics\npapers. Record the role that promised to obtain an answer. The\nperson taking the call should not become the task's assignee\nby default.\n18:10 — Take unanswered owner questions to the duty chair\nusing question-first escalation. Write the missing answer\nfirst, then the role seeking it and the next contact time. The\nchair needs a specific ownership choice, not a request to make\nthe queue move faster.\nNext-shift list\n— Retain the original owner-contact sheet beside the evening\ncall notes.\n— Carry each unanswered dependency with its promised contact\ntime.\nDemo Worker 0013, Demo Team 01\nPage 1 of 2",
+      "mean_word_confidence": 94.64161547004608
+    },
+    {
+      "page_number": 2,
+      "scan_sha256": "d5215999cdcc5a261634efa0a9a2aece69e4d14d5896ffe49a750739feed291c",
+      "text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0014 2026-09-09\n- Ask the receiving desk to read back the next call it will\nmake before the outgoing coordinator leaves the\nconversation.\nx\n§\n8\n3\n=\n8\n=\n°\nD. Worker 0013\nDemo Worker 0013, Demo Team 01\nPage 2 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-01\nDOC-0014 2026-09-09\n- Ask the receiving desk to read back the next call it will\nmake before the outgoing coordinator leaves the\nconversation.\nDemo Worker 0013, Demo Team 01\nPage 2 of 2",
+      "mean_word_confidence": 87.94331539583334
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "doc_id": "DOC-0013",
+  "kind": "handover",
+  "renderer_version": "scans-2026-11-09.2",
+  "seed": 20261121,
+  "source_sha256": "0a2e1845fc7442cc4fd0deb012d7cb62cc13e8d29f4564748312196192df8914",
+  "tesseract_version": "tesseract 5.5.0",
+  "pages": [
+    {
+      "page_number": 1,
+      "scan_sha256": "02bd5456634d94ed41bd48f439dafdfa6b0d531ce06ca1e4072ea7af7b3f2d6b",
+      "text": "Preflight Demo Program\nDEMO-STATION-02\nDOCc-0013 2026-10-17\nSHIFT NOTES — Electrical Documentation Backlog at\nthe Late Desk\nDate: 2026-10-17\nStation: DEMO-STATION-02\nProgram: DEMO-PROGRAM-BETA\n15:35 — Late-desk note from PERSON-0022 for TEAM-0004: use the\nelectrical paperwork folder for the documentation backlog\ndiscussion. ISSUE-0063 and TASK-0166 locate the material to be\ndiscussed with the documentation team's coordinator. This desk\nis collecting filing questions, not taking over that team's\nassignments.\n16:10 — Sort requests by the missing attachment heading:\nsource note, dated cover sheet, or destination index. Put the\nexpected heading on a request even when the attachment itself\ncannot be found. A vague request for more detail usually sends\nthe records clerk back to the same shelf.\n17:45 — Ask the documentation coordinator to give each paper\nrequest a collecting role and a promised filing date. Keep\nrequests for TASK-0164 and TASK-0165 in their own task\nreference spaces if they arise during the discussion. Do not\ncombine differently scoped papers under a shortened subject\nheading.\n19:20 — Send the filing list to the incoming desk. The list\nuses attachment heading, collecting role, and promised date as\nits columns. Leave room beneath each request for the incoming\nclerk to record where the paper was eventually filed.\nNext-shift list\n~ Compare the filing list with the electrical folder index.\n— Carry forward unanswered collecting-role questions.\n— Keep the original request beside any later attachment so the\nD. Worker 0022\nDemo Worker 0022, Demo Team 04\nPage 1 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-02\nDOCc-0013 2026-10-17\nSHIFT NOTES — Electrical Documentation Backlog at\nthe Late Desk\nDate: 2026-10-17\nStation: DEMO-STATION-02\nProgram: DEMO-PROGRAM-BETA\n15:35 — Late-desk note from PERSON-0022 for TEAM-0004: use the\nelectrical paperwork folder for the documentation backlog\ndiscussion. ISSUE-0063 and TASK-0166 locate the material to be\ndiscussed with the documentation team's coordinator. This desk\nis collecting filing questions, not taking over that team's\nassignments.\n16:10 — Sort requests by the missing attachment heading:\nsource note, dated cover sheet, or destination index. Put the\nexpected heading on a request even when the attachment itself\ncannot be found. A vague request for more detail usually sends\nthe records clerk back to the same shelf.\n17:45 — Ask the documentation coordinator to give each paper\nrequest a collecting role and a promised filing date. Keep\nrequests for TASK-0164 and TASK-0165 in their own task\nreference spaces if they arise during the discussion. Do not\ncombine differently scoped papers under a shortened subject\nheading.\n19:20 — Send the filing list to the incoming desk. The list\nuses attachment heading, collecting role, and promised date as\nits columns. Leave room beneath each request for the incoming\nclerk to record where the paper was eventually filed.\nNext-shift list\n~ Compare the filing list with the electrical folder index.\n— Carry forward unanswered collecting-role questions.\n— Keep the original request beside any later attachment so the\nDemo Worker 0022, Demo Team 04\nPage 1 of 2",
+      "mean_word_confidence": 94.75502198770491
+    },
+    {
+      "page_number": 2,
+      "scan_sha256": "22cee71cd76992acddcf8e5ea09a451f193ebd15a0a7b4fab550e1df4ba0f428",
+      "text": "Preflight Demo Program\nDEMO-STATION-02\nDOC-0013 2026-10-17\nreason for gathering it remains clear.\nD. Worker 0022\nDemo Worker 0022, Demo Team 04\nPage 2 of 2",
+      "printed_text": "Preflight Demo Program\nDEMO-STATION-02\nDOC-0013 2026-10-17\nreason for gathering it remains clear.\nDemo Worker 0022, Demo Team 04\nPage 2 of 2",
+      "mean_word_confidence": 92.39266784
+    }
+  ]
+}
