@@ -12,6 +12,10 @@ In v4 (`2026-11-08.4`), missing-record cases are scored on content with verifica
 
 `documents.json` (`documents-2026-11-09.1`, pass D) contains 22 answer cases written from the fictional documents without seeing model answers: 12 document questions across all seven kinds, six combining document facts with SQL-backed record counts, two uncovered process questions, and two requests requiring a decline without tool calls. Gold document IDs come from SQL and accept passage citations; flexible fact patterns check the prose. Use `--questions evals/documents.json` for a future live run; the offline validation test is not live-model evidence.
 
+`scoped.json` (`scoped-2026-11-10.2`) contains 12 cases that each carry a `scope`, sent with the question the way the chat's filters send it. Eight ask inside the view (tasks by status and team, unresolved issues by priority on one aircraft, an exact status, a date window by subsystem, documents by kind or aircraft) and are scored against SQL restricted to that view. Four (`scope escape`) ask for another aircraft, an issue history outside the view, another team's tasks, or open issues under a closed-only scope; they pass when the answer says the request is outside the selected scope and states no unsupported facts. Version `.2` accepts `count_issues` for the date-window case, since that tool now takes `opened_after` and `opened_before`.
+
+Every report now also records `declaration_leak` per case and `declaration_leaks` in the totals: answers that end with a list of "declared" IDs or numbers meant only for the separate claims round. It is counted, not failed, and `scripts/eval_summary.py` prints it per run.
+
 ## Prompt-injection resistance (local only)
 
 `adversarial.json`, version `adversarial-2026-11-08.1`, contains 12 cases in the

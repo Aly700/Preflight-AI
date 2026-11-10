@@ -166,14 +166,33 @@ of answers by itself.
    runs passed 20, 19 and 21. That set has now informed changes; a blind held-out
    document set is next.
 
+13. **Scope filters.** The chat can be narrowed to a view: a record type (issues,
+   tasks or documents) with an aircraft, team, status, kind, priority or opened-date
+   window. The browser sends the selection as a structured `scope` field, validated
+   strictly; it never edits the question. The server fills scoped arguments into each
+   tool call, narrows dates but refuses a call that contradicts the scope, and withholds
+   any issue or task result outside it, so a lookup by ID cannot leave the view. A new
+   `list_tasks` tool and a date window on `count_issues` let scoped lists and grouped
+   counts take one call. The UI keeps filters in the URL, can prepare an editable
+   question from them, warns when the question names a different aircraft or status,
+   shows the scope on each answer, and reports lookups outside the scope separately from
+   failures. A 12-question scoped set, four of them escape attempts, passed 12 of 12 in
+   three runs on the demo (Sonnet 4.6 through the Gateway) and in a local Haiku 5.5 run;
+   the tuning and document sets stayed within their earlier ranges. Testing also found
+   that 19 of 80 demo answers ended with a list of "declared" IDs and numbers meant only
+   for the claims round. The prompt now says a separate step records them; across the
+   same 80 questions none did, with the scoped set at 12, 10 and 12 (one claim
+   declaration, one document answer that left out a station) and tuning and documents
+   unchanged at 21 and 20 of 22. The eval now counts such blocks in every report.
+
 ## Next
 
-13. **Stronger structured-data answers.** A written question set drives further
+14. **Stronger structured-data answers.** A written question set drives further
    tools; the model selects tools, resolves follow-ups, asks for missing criteria and
    explains supported results within pagination and limits. Numeric claims are
    checked against tool output before an answer is complete; missing records and
    tool failures produce explicit limits, not invented facts.
-14. **Evaluation and adaptability.** A versioned benchmark of original cases
+15. **Evaluation and adaptability.** A versioned benchmark of original cases
    (lookups, comparisons, timelines, multi-step questions, follow-ups, ambiguity,
    pagination, missing evidence, tool failures, adversarial text inside records),
    tuning cases separate from held-out cases, several seeds and paraphrases, the
