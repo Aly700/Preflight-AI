@@ -1,6 +1,7 @@
 """Structured scope validation and pure tool argument enforcement; no live services."""
 
 from copy import deepcopy
+import csv
 import json
 from pathlib import Path
 from typing import Any
@@ -47,7 +48,7 @@ INVALID = {
 
 class ScopeValidation(unittest.TestCase):
     def test_each_field_and_every_enum_value_and_shared_json(self):
-        from preflight_core.scope import SCOPE_OPTIONS, validate_scope
+        from preflight_core.scope import SCOPE_OPTIONS, ui_options, validate_scope
 
         self.assertEqual(validate_scope({}), {})
         self.assertEqual(validate_scope(VALID), VALID)
@@ -61,7 +62,24 @@ class ScopeValidation(unittest.TestCase):
             for value in spec.get('enum', []):
                 self.assertEqual(validate_scope({key: value}), {key: value})
         path = Path(__file__).resolve().parents[1] / 'frontend/src/scope-options.json'
-        self.assertEqual(json.loads(path.read_text()), SCOPE_OPTIONS)
+        self.assertEqual(json.loads(path.read_text()), ui_options())
+        self.assertEqual({key: ui_options()[key] for key in SCOPE_OPTIONS}, SCOPE_OPTIONS)
+
+    def test_ui_options_include_sorted_csv_choices_and_are_deterministic(self):
+        from preflight_core.scope import ui_options
+
+        root = Path(__file__).resolve().parents[1]
+        options = ui_options()
+        for filename, key, fields in (
+            ('aircraft.csv', 'aircraft', {'id': 'aircraft_id', 'program': 'program', 'station': 'station'}),
+            ('teams.csv', 'teams', {'id': 'team_id', 'name': 'team_name'}),
+        ):
+            with (root / 'data/synthetic' / filename).open(newline='') as source:
+                expected = [
+                    {target: row[column] for target, column in fields.items()} for row in csv.DictReader(source)
+                ]
+            self.assertEqual(options[key], sorted(expected, key=lambda row: row['id']))
+        self.assertEqual(json.dumps(options), json.dumps(ui_options()))
 
     def test_invalid_fields_types_sizes_unknowns_and_dates_return_422(self):
         cases: list[Any] = [
@@ -142,6 +160,23 @@ class ApplyScope(unittest.TestCase):
             return apply_scope(tool, args, scope, schema)
         finally:
             self.assertEqual((args, scope, schema), before, 'scope enforcement must be pure')
+
+    def test_count_scope_injects_inclusive_days_and_refuses_wider_windows(self):
+        scope = {'opened_after': '2026-01-01', 'opened_before': '2026-01-31', 'issue_status': 'unresolved'}
+        self.assertEqual(
+            self.apply('count_issues', {'group_by': 'subsystem'}, scope),
+            {
+                'group_by': 'subsystem',
+                'unresolved_only': True,
+                'opened_after': '2026-01-01T00:00:00+00:00',
+                'opened_before': '2026-01-31T23:59:59.999999+00:00',
+            },
+        )
+        from backend.scope import ScopeConflict
+
+        for arguments in ({'opened_after': '2025-12-31T23:59:59Z'}, {'opened_before': '2026-02-01T00:00:00Z'}):
+            with self.subTest(arguments=arguments), self.assertRaises(ScopeConflict):
+                self.apply('count_issues', {'group_by': 'status', **arguments}, scope)
 
     def test_mapping_table(self):
         cases = [
@@ -264,3 +299,129 @@ class ApplyScope(unittest.TestCase):
         self.assertEqual(self.apply('search_issues', args, {'opened_after': '2026-01-01'}), args)
         with self.assertRaisesRegex(ValueError, 'Outside the selected scope: status'):
             self.apply('search_issues', {}, {'issue_status': 'unresolved'}, {'properties': {'status': {}}})
+
+    def test_dates_allow_narrowing_and_refuse_widening_or_ambiguous_timestamps(self):
+        scope = {'opened_after': '2026-01-01', 'opened_before': '2026-02-01'}
+        for args in (
+            {'opened_after': '2026-01-10T08:00:00Z', 'opened_before': '2026-01-20T09:00:00Z'},
+            {'opened_after': '2026-01-01T01:00:00+01:00', 'opened_before': '2026-02-01T18:59:59.999999-05:00'},
+        ):
+            self.assertEqual(self.apply('search_issues', args, scope), args)
+        self.assertEqual(
+            self.apply('search_issues', {'opened_after': '2026-01-10'}, {'opened_after': '2026-01-01'}),
+            {'opened_after': '2026-01-10T00:00:00+00:00'},
+        )
+        for field, value in (
+            ('opened_after', '2025-12-31T23:59:59Z'),
+            ('opened_before', '2026-02-02T00:00:00Z'),
+            ('opened_before', '2026-02-02'),
+            ('opened_after', '2026-01-10T00:00:00'),
+            ('opened_after', 'invalid'),
+        ):
+            with self.subTest(field=field, value=value), self.assertRaisesRegex(ValueError, field):
+                self.apply('search_issues', {field: value}, scope)
+
+    def test_enums_canonicalize_case_but_ids_remain_exact(self):
+        for tool, field, source, canonical in (
+            ('search_issues', 'subsystem', 'subsystem', 'cabin'),
+            ('search_issues', 'priority', 'priority', 'high'),
+            ('search_issues', 'status', 'issue_status', 'blocked'),
+            ('list_tasks', 'status', 'task_status', 'awaiting_review'),
+            ('list_tasks', 'task_kind', 'task_kind', 'review'),
+            ('search_documents', 'kind', 'document_kind', 'memo'),
+        ):
+            with self.subTest(field=field):
+                self.assertEqual(self.apply(tool, {field: canonical.upper()}, {source: canonical}), {field: canonical})
+        self.assertEqual(
+            self.apply('search_issues', {'status': 'OPEN'}, {'issue_status': 'unresolved'}),
+            {'status': 'open', 'unresolved_only': True},
+        )
+        for tool, field, source, value in (
+            ('search_issues', 'aircraft_id', 'aircraft_id', 'demo-air-0001'),
+            ('list_tasks', 'assigned_team_id', 'team_id', 'team-0001'),
+            ('search_documents', 'related_id', 'related_id', 'issue-0001'),
+        ):
+            with self.subTest(field=field), self.assertRaisesRegex(ValueError, field):
+                self.apply(tool, {field: value}, {source: value.upper()})
+
+    def test_closed_cannot_reach_unresolved_only_tools(self):
+        for tool, args, scope in (
+            ('list_open_issues', {}, {'issue_status': 'closed'}),
+            ('search_issues', {'status': 'CLOSED'}, {'issue_status': 'unresolved'}),
+        ):
+            with self.subTest(tool=tool), self.assertRaisesRegex(ValueError, '^Outside the selected scope: status$'):
+                self.apply(tool, args, scope)
+
+
+class ResultScope(unittest.TestCase):
+    def check(self, payload, scope):
+        from backend.scope import result_within_scope
+
+        before = deepcopy((payload, scope))
+        result = result_within_scope(payload, scope)
+        self.assertEqual((payload, scope), before)
+        return result
+
+    def test_nested_issue_records_match_all_selected_fields(self):
+        issue = {
+            'issue_id': 'ISSUE-0001',
+            'aircraft_id': 'DEMO-AIR-0001',
+            'subsystem': 'cabin',
+            'priority': 'high',
+            'status': 'blocked',
+        }
+        scope = {'aircraft_id': 'DEMO-AIR-0001', 'subsystem': 'cabin', 'priority': 'high', 'issue_status': 'unresolved'}
+        self.assertTrue(self.check({'issue': issue}, scope))
+        self.assertTrue(self.check({'items': [{**issue, 'status': 'OPEN', 'priority': 'HIGH'}]}, scope))
+        for field, value in (
+            ('aircraft_id', 'demo-air-0001'),
+            ('subsystem', 'avionics'),
+            ('priority', 'low'),
+            ('status', 'closed'),
+            ('status', None),
+        ):
+            with self.subTest(field=field):
+                self.assertFalse(self.check({'nested': [{'items': [issue, {**issue, field: value}]}]}, scope))
+        self.assertFalse(self.check({'issue': issue}, {'issue_status': 'open'}))
+        self.assertFalse(self.check({'issue_id': 'ISSUE-0001'}, scope))
+        self.assertTrue(self.check({'issue': issue}, {}))
+
+    def test_tasks_ignore_issue_fields_and_check_task_fields(self):
+        task = {
+            'task_id': 'TASK-0001',
+            'issue_id': 'ISSUE-0001',
+            'status': 'awaiting_review',
+            'task_kind': 'review',
+            'assigned_team_id': 'TEAM-0001',
+        }
+        scope = {
+            'aircraft_id': 'DEMO-AIR-0001',
+            'task_status': 'awaiting_review',
+            'task_kind': 'review',
+            'team_id': 'TEAM-0001',
+            'issue_status': 'closed',
+            'priority': 'low',
+        }
+        self.assertTrue(self.check({'items': [task]}, scope))
+        self.assertTrue(self.check({**task, 'aircraft_id': 'DEMO-AIR-0001', 'status': 'AWAITING_REVIEW'}, scope))
+        for field, value in (
+            ('aircraft_id', 'DEMO-AIR-0002'),
+            ('status', 'completed'),
+            ('task_kind', 'documentation'),
+            ('assigned_team_id', 'team-0001'),
+        ):
+            with self.subTest(field=field):
+                self.assertFalse(self.check({**task, field: value}, scope))
+        self.assertFalse(self.check({'task_id': 'TASK-0001'}, scope))
+
+    def test_events_documents_aggregates_and_empty_results_are_not_records(self):
+        payloads: tuple[Any, ...] = (
+            {'events': [{'event_id': 'EVT-0001', 'issue_id': 'ISSUE-0001', 'task_id': 'TASK-0001'}]},
+            {'results': [{'passage_id': 'DOC-0001#1', 'doc_id': 'DOC-0001', 'related_ids': ['DEMO-AIR-0002']}]},
+            {'total': 2, 'groups': [{'key': 'low', 'count': 2}]},
+            {'items': []},
+            None,
+        )
+        for payload in payloads:
+            with self.subTest(payload=payload):
+                self.assertTrue(self.check(payload, VALID))

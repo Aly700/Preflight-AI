@@ -21,7 +21,7 @@ from opentelemetry import trace
 
 from backend.mcp_tools import ToolResult, ToolService, anthropic_tools, build_tool_service
 from backend.model_client import USAGE_KEYS, ModelClient, ModelError, ToolCall, Turn, build_model_client
-from backend.scope import ScopeConflict, apply_scope
+from backend.scope import ScopeConflict, apply_scope, result_within_scope
 from backend.settings import ChatSettings
 from backend.telemetry import get_tracer
 from backend.verify import FINAL_ANSWER_TOOL, ID_PATTERN, record_ids, scan_prose, verify_claims
@@ -192,8 +192,8 @@ class Loop:
 
     async def start(self, question: str) -> list[dict[str, Any]]:
         self.tool_defs = anthropic_tools(await self.tools.discover())
-        # IDs the user supplied (question or browser history) are context, not claims to verify.
-        self.question_ids = set(ID_PATTERN.findall(question))
+        # IDs the user supplied (question, browser history or selected scope) are context, not claims to verify.
+        self.question_ids = set(ID_PATTERN.findall(question)) | set(ID_PATTERN.findall(' '.join(self.scope.values())))
         if self.scope:
             return [
                 {
@@ -303,11 +303,17 @@ class Loop:
                     arguments = apply_scope(call.name, call.input, self.scope, schema)
                 except ScopeConflict as error:
                     self.calls_refused += 1
-                    self.emit({'event': 'tool', 'data': {'name': call.name, 'status': 'failed', 'call_id': call.id}})
+                    self.emit(
+                        {
+                            'event': 'tool',
+                            'data': {'name': call.name, 'status': 'refused', 'reason': 'scope', 'call_id': call.id},
+                        }
+                    )
                     blocks[call.id] = result_block(call.id, str(error), error=True)
                     continue
                 runnable.append(ToolCall(call.id, call.name, arguments))
                 self.emit({'event': 'tool', 'data': {'name': call.name, 'status': 'running', 'call_id': call.id}})
+        scope_refusals: set[str] = set()
         semaphore = asyncio.Semaphore(PARALLEL_CALLS)
 
         async def bounded(call: ToolCall) -> ToolResult:
@@ -331,6 +337,11 @@ class Loop:
                         span.set_status(trace.StatusCode.ERROR)
                         raise
                     complete = result.ok and result.payload is not None
+                    if complete and not result_within_scope(result.payload, self.scope):
+                        scope_refusals.add(call.id)
+                        self.calls_refused += 1
+                        result = ToolResult(call.name, call.id, False, error='The result is outside the selected scope')
+                        complete = False
                     span.set_attribute('preflight.tool.outcome', 'complete' if complete else 'failed')
                     if not complete:
                         span.set_attribute('error.type', 'ToolError')
@@ -357,7 +368,10 @@ class Loop:
                 self.emit({'event': 'tool', 'data': {'name': call.name, 'status': 'complete', 'call_id': call.id}})
                 blocks[call.id] = result_block(call.id, json.dumps(result.payload, ensure_ascii=True))
             else:
-                self.emit({'event': 'tool', 'data': {'name': call.name, 'status': 'failed', 'call_id': call.id}})
+                outcome = (
+                    {'status': 'refused', 'reason': 'scope'} if call.id in scope_refusals else {'status': 'failed'}
+                )
+                self.emit({'event': 'tool', 'data': {'name': call.name, 'call_id': call.id, **outcome}})
                 blocks[call.id] = result_block(call.id, result.error or TOOL_UNAVAILABLE, error=True)
         return [blocks[call.id] for call in calls]
 

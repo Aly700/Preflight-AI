@@ -41,7 +41,18 @@ TOOL_CONTRACTS: tuple[ToolContract, ...] = (
     ToolContract('get_issue_history', frozenset({'issue_id', 'limit', 'offset'}), IssueHistory),
     ToolContract(
         'count_issues',
-        frozenset({'group_by', 'aircraft_id', 'status', 'subsystem', 'priority', 'unresolved_only'}),
+        frozenset(
+            {
+                'group_by',
+                'aircraft_id',
+                'status',
+                'subsystem',
+                'priority',
+                'unresolved_only',
+                'opened_after',
+                'opened_before',
+            }
+        ),
         IssueCounts,
     ),
     ToolContract('compare_aircraft', frozenset({'aircraft_ids'}), AircraftComparison),

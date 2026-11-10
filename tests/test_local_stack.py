@@ -300,6 +300,7 @@ FACTS: dict[str, Any] = {
         'task_status_counts': {'todo': 23, 'in_progress': 3, 'awaiting_review': 2, 'completed': 9, 'blocked': 1},
     },
     'issue_0001_events': 7,
+    'dated_unresolved_by_subsystem': {'cabin': 2, 'controls': 1},
     'unresolved_by_subsystem': {
         'avionics': 30,
         'cabin': 25,
@@ -324,6 +325,12 @@ COUNTS: dict[str, Any] = {
     'filters': {'aircraft_id': None, 'status': None, 'subsystem': None, 'priority': None},
     'total': 162,
     'groups': [{'key': k, 'count': c} for k, c in sorted(FACTS['unresolved_by_subsystem'].items())],
+}
+DATED_COUNTS = {
+    **COUNTS,
+    'total': 3,
+    'groups': [{'key': 'cabin', 'count': 2}, {'key': 'controls', 'count': 1}],
+    'filters': {**COUNTS['filters'], 'opened_after': '2026-03-01T00:00:00Z', 'opened_before': '2026-04-01T00:00:00Z'},
 }
 COMPARISON: dict[str, Any] = {
     'summaries': [
@@ -365,6 +372,32 @@ class StackCheck(unittest.TestCase):
     def setUp(self):
         self.check = load_script('compose_check')
 
+    def test_date_scoped_counts_are_checked_against_independent_sql(self):
+        self.assertIn("'count_issues_date_window': call('count_issues'", self.check.TOOL_CLIENT)
+        for field, operator, boundary in (
+            ('opened_after', '>=', '2026-03-01T00:00:00Z'),
+            ('opened_before', '<=', '2026-04-01T00:00:00Z'),
+        ):
+            self.assertIn(f"'{field}': '{boundary}'", self.check.TOOL_CLIENT)
+            self.assertIn(f"opened_at {operator} '{boundary}'", self.check.FACTS_SQL)
+        results = {
+            'get_aircraft_summary': SUMMARY,
+            'list_open_issues': PAGE,
+            'get_issue_history': HISTORY,
+            'count_issues': COUNTS,
+            'count_issues_date_window': DATED_COUNTS,
+            'compare_aircraft': COMPARISON,
+            'search_issues': CLOSED,
+            'search_documents': DOCUMENT_RESULT,
+            'list_tasks': TASK_PAGE,
+        }
+        self.assertEqual(self.check.compare_tools(results, FACTS), [])
+        for changed in ({'total': 99}, {'groups': COUNTS['groups']}):
+            bad = {**results, 'count_issues_date_window': {**DATED_COUNTS, **changed}}
+            self.assertTrue(any('count_issues_date_window' in m for m in self.check.compare_tools(bad, FACTS)))
+        del results['count_issues_date_window']
+        self.assertTrue(any('count_issues_date_window' in m for m in self.check.compare_tools(results, FACTS)))
+
     def test_tasks_are_compared_with_sql_for_status_and_team(self):
         self.assertIn("'list_tasks': call('list_tasks'", self.check.TOOL_CLIENT)
         self.assertIn("'status': 'awaiting_review', 'assigned_team_id': 'TEAM-0001'", self.check.TOOL_CLIENT)
@@ -377,6 +410,7 @@ class StackCheck(unittest.TestCase):
             'list_open_issues': PAGE,
             'get_issue_history': HISTORY,
             'count_issues': COUNTS,
+            'count_issues_date_window': DATED_COUNTS,
             'compare_aircraft': COMPARISON,
             'search_issues': CLOSED,
             'search_documents': DOCUMENT_RESULT,
@@ -409,6 +443,7 @@ class StackCheck(unittest.TestCase):
             'list_open_issues': PAGE,
             'get_issue_history': HISTORY,
             'count_issues': COUNTS,
+            'count_issues_date_window': DATED_COUNTS,
             'compare_aircraft': COMPARISON,
             'search_issues': CLOSED,
             'search_documents': DOCUMENT_RESULT,
@@ -478,6 +513,7 @@ class StackCheck(unittest.TestCase):
             'list_open_issues': PAGE,
             'get_issue_history': HISTORY,
             'count_issues': COUNTS,
+            'count_issues_date_window': DATED_COUNTS,
             'compare_aircraft': COMPARISON,
             'search_issues': CLOSED,
             'search_documents': DOCUMENT_RESULT,
@@ -489,7 +525,7 @@ class StackCheck(unittest.TestCase):
         self.assertEqual(len(mismatches), 1)
         self.assertIn('get_issue_history', mismatches[0])
         missing = self.check.compare_tools({'list_open_issues': PAGE}, FACTS)
-        self.assertEqual(len(missing), 7)
+        self.assertEqual(len(missing), 8)  # eight tools plus the additional date-window count
 
     def test_compare_tools_checks_the_three_new_tools(self):
         results = {
@@ -497,6 +533,7 @@ class StackCheck(unittest.TestCase):
             'list_open_issues': PAGE,
             'get_issue_history': HISTORY,
             'count_issues': COUNTS,
+            'count_issues_date_window': DATED_COUNTS,
             'compare_aircraft': COMPARISON,
             'search_issues': CLOSED,
             'search_documents': DOCUMENT_RESULT,
@@ -522,6 +559,7 @@ class StackCheck(unittest.TestCase):
             'list_open_issues': PAGE,
             'get_issue_history': HISTORY,
             'count_issues': COUNTS,
+            'count_issues_date_window': DATED_COUNTS,
             'compare_aircraft': {**COMPARISON, 'ranked_by_unresolved': []},
             'search_issues': CLOSED,
             'search_documents': DOCUMENT_RESULT,
@@ -541,6 +579,7 @@ class StackCheck(unittest.TestCase):
             'list_open_issues': PAGE,
             'get_issue_history': HISTORY,
             'count_issues': COUNTS,
+            'count_issues_date_window': DATED_COUNTS,
             'compare_aircraft': {**COMPARISON, 'summaries': swapped},
             'search_issues': CLOSED,
             'search_documents': DOCUMENT_RESULT,
@@ -556,6 +595,7 @@ class StackCheck(unittest.TestCase):
             'list_open_issues': PAGE,
             'get_issue_history': HISTORY,
             'count_issues': COUNTS,
+            'count_issues_date_window': DATED_COUNTS,
             'compare_aircraft': COMPARISON,
             'search_issues': {**CLOSED, 'items': []},
             'search_documents': DOCUMENT_RESULT,
@@ -572,6 +612,7 @@ class StackCheck(unittest.TestCase):
             'list_open_issues': PAGE,
             'get_issue_history': HISTORY,
             'count_issues': COUNTS,
+            'count_issues_date_window': DATED_COUNTS,
             'compare_aircraft': COMPARISON,
             'search_issues': {**CLOSED, 'items': wrong_items},
             'search_documents': DOCUMENT_RESULT,

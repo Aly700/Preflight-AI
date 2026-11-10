@@ -152,14 +152,27 @@ def create_server(repository_factory: RepositoryFactory = open_repository) -> MC
         subsystem: Subsystem | None = None,
         priority: Priority | None = None,
         unresolved_only: Flag = False,
+        opened_after: AwareDatetime | None = None,
+        opened_before: AwareDatetime | None = None,
     ) -> IssueCounts:
         """Count fictional issues grouped by subsystem, priority, status or aircraft, with optional filters.
 
+        `opened_after` and `opened_before` are inclusive timestamps with a timezone, as in search_issues.
         SQL does the counting. `unresolved_only` excludes closed issues. Keys with no
         issues are absent; `total` is the sum of the groups. This tool cannot change any records.
         """
         return IssueCounts.model_validate(
-            await read('issue_counts', group_by, aircraft_id, status, subsystem, priority, unresolved_only)
+            await read(
+                'issue_counts',
+                group_by,
+                aircraft_id,
+                status,
+                subsystem,
+                priority,
+                unresolved_only,
+                opened_after,
+                opened_before,
+            )
         )
 
     @server.tool(annotations=READ_ONLY)

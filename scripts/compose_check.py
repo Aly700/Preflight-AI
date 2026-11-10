@@ -67,6 +67,10 @@ SELECT json_build_object(
   'issue_0001_events', (SELECT count(*) FROM preflight.activity_events WHERE issue_id = '{ISSUE}'),
   'unresolved_by_subsystem', (SELECT coalesce(json_object_agg(subsystem, n ORDER BY subsystem), '{{}}'::json) FROM
     (SELECT subsystem, count(*) AS n FROM preflight.issues WHERE status <> 'closed' GROUP BY subsystem) by_subsystem),
+  'dated_unresolved_by_subsystem', (SELECT coalesce(json_object_agg(subsystem, n ORDER BY subsystem), '{{}}'::json) FROM
+    (SELECT subsystem, count(*) AS n FROM preflight.issues WHERE status <> 'closed'
+     AND opened_at >= '2026-03-01T00:00:00Z' AND opened_at <= '2026-04-01T00:00:00Z'
+     GROUP BY subsystem) dated_by_subsystem),
   'aircraft_0002', (SELECT json_build_object(
     'issue_count', count(*),
     'unresolved_issue_count', count(*) FILTER (WHERE status <> 'closed'))
@@ -116,6 +120,8 @@ print(json.dumps({
     'list_open_issues': call('list_open_issues', {'limit': 5}, 2),
     'get_issue_history': call('get_issue_history', {'issue_id': 'ISSUE-0001', 'limit': 1}, 3),
     'count_issues': call('count_issues', {'group_by': 'subsystem', 'unresolved_only': True}, 4),
+    'count_issues_date_window': call('count_issues', {'group_by': 'subsystem', 'unresolved_only': True,
+        'opened_after': '2026-03-01T00:00:00Z', 'opened_before': '2026-04-01T00:00:00Z'}, 9),
     'compare_aircraft': call('compare_aircraft', {'aircraft_ids': ['DEMO-AIR-0001', 'DEMO-AIR-0002']}, 5),
     'search_issues': call('search_issues', {'status': 'closed', 'limit': 5}, 6),
     'search_documents': call('search_documents', {'query': 'When does the Friday queue sweep start?', 'top_k': 3}, 7),
@@ -282,6 +288,7 @@ def compare_tools(results: dict[str, Any], facts: dict[str, Any]) -> list[str]:
         'list_open_issues',
         'get_issue_history',
         'count_issues',
+        'count_issues_date_window',
         'compare_aircraft',
         'search_issues',
         'search_documents',
@@ -300,11 +307,16 @@ def compare_tools(results: dict[str, Any], facts: dict[str, Any]) -> list[str]:
         if history.get('total_events') != facts['issue_0001_events']:
             observed, expected = history.get('total_events'), facts['issue_0001_events']
             mismatches.append(f'get_issue_history: total_events {observed!r} differs from SQL {expected!r}')
-    if 'count_issues' in results:
-        counts = results['count_issues']
-        groups = {g.get('key'): g.get('count') for g in counts.get('groups', [])}
-        if groups != facts['unresolved_by_subsystem'] or counts.get('total') != facts['unresolved_total']:
-            mismatches.append(f'count_issues: {groups!r} (total {counts.get("total")!r}) differs from SQL')
+    for tool, fact in (
+        ('count_issues', 'unresolved_by_subsystem'),
+        ('count_issues_date_window', 'dated_unresolved_by_subsystem'),
+    ):
+        if tool in results:
+            counts = results[tool]
+            groups = {g.get('key'): g.get('count') for g in counts.get('groups', [])}
+            total = facts['unresolved_total'] if tool == 'count_issues' else sum(facts[fact].values())
+            if groups != facts[fact] or counts.get('total') != total:
+                mismatches.append(f'{tool}: {groups!r} (total {counts.get("total")!r}) differs from SQL')
     if 'compare_aircraft' in results:
         comparison = results['compare_aircraft']
         summaries = comparison.get('summaries', [])

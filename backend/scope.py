@@ -2,9 +2,12 @@
 
 from collections.abc import Mapping
 from datetime import UTC, date, datetime, time
-from typing import Any
+from typing import Any, get_args
+
+from preflight_core.scope import IssueStatus
 
 ISSUE_TOOLS = frozenset({'list_open_issues', 'search_issues', 'count_issues'})
+ENUM_ARGUMENTS = frozenset({'subsystem', 'priority', 'status', 'task_kind', 'kind'})
 
 
 class ScopeConflict(ValueError):
@@ -37,9 +40,16 @@ def apply_scope(
             mapped[field] = date_boundary(scope[field], field) if field.startswith('opened_') else scope[field]
     if tool_name in ISSUE_TOOLS and 'issue_status' in scope:
         status = scope['issue_status']
+        if status == 'closed' and tool_name == 'list_open_issues':
+            raise ScopeConflict('status')
         if status == 'unresolved':
-            if 'status' in properties and result.get('status') == 'closed':
-                raise ScopeConflict('status')
+            if 'status' in properties and 'status' in result:
+                actual_status = result['status']
+                if not isinstance(actual_status, str) or actual_status.casefold() not in get_args(IssueStatus):
+                    raise ScopeConflict('status')
+                if actual_status.casefold() == 'closed':
+                    raise ScopeConflict('status')
+                result['status'] = actual_status.casefold()
             if 'unresolved_only' in properties:
                 mapped['unresolved_only'] = True
             elif tool_name != 'list_open_issues' and 'status' in properties:
@@ -72,17 +82,68 @@ def apply_scope(
         if field in result:
             actual = result[field]
             if field in ('opened_after', 'opened_before') and isinstance(actual, str):
-                # Accept equivalent ISO timestamps (including Z) and the selected calendar date.
-                if actual == scope[field]:
-                    result[field] = expected
-                    continue
                 try:
-                    if datetime.fromisoformat(actual) == datetime.fromisoformat(expected):
+                    # Calendar dates use inclusive UTC boundaries; timestamps must be timezone-aware.
+                    candidate = date_boundary(actual, field) if len(actual) == 10 else actual
+                    parsed = datetime.fromisoformat(candidate)
+                    boundary = datetime.fromisoformat(expected)
+                    inside = parsed >= boundary if field == 'opened_after' else parsed <= boundary
+                    if inside:
+                        result[field] = candidate
                         continue
-                except ValueError:
+                except ValueError, TypeError:
                     pass
+                raise ScopeConflict(field)
+            if field in ENUM_ARGUMENTS and isinstance(actual, str) and actual.casefold() == expected:
+                result[field] = expected
+                continue
             if type(actual) is not type(expected) or actual != expected:
                 raise ScopeConflict(field)
         else:
             result[field] = expected
     return result
+
+
+def result_within_scope(payload: Any, scope: Mapping[str, str]) -> bool:
+    """Check nested issue/task records without mutating or partially filtering a result.
+
+    Events and document passages are not issue/task records. Tasks from older
+    tools may omit aircraft_id; other selected record fields must be present.
+    Aggregate objects are enforced through their arguments, not inferred here.
+    """
+    if not scope:
+        return True
+    if isinstance(payload, list):
+        return all(result_within_scope(item, scope) for item in payload)
+    if not isinstance(payload, Mapping):
+        return True
+    if 'passage_id' in payload and 'doc_id' in payload:
+        return True
+    fields = []
+    if 'event_id' not in payload:
+        if 'task_id' in payload:
+            fields = [('task_status', 'status'), ('task_kind', 'task_kind'), ('team_id', 'assigned_team_id')]
+            if 'aircraft_id' in payload:
+                fields.append(('aircraft_id', 'aircraft_id'))
+        elif 'issue_id' in payload:
+            fields = [
+                ('aircraft_id', 'aircraft_id'),
+                ('subsystem', 'subsystem'),
+                ('priority', 'priority'),
+                ('issue_status', 'status'),
+            ]
+    for source, target in fields:
+        if source not in scope:
+            continue
+        actual = payload.get(target)
+        expected = scope[source]
+        if not isinstance(actual, str):
+            return False
+        if target in ENUM_ARGUMENTS:
+            actual = actual.casefold()
+        if source == 'issue_status' and expected == 'unresolved':
+            if actual == 'closed':
+                return False
+        elif actual != expected:
+            return False
+    return all(result_within_scope(value, scope) for value in payload.values())

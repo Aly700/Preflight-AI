@@ -4,6 +4,7 @@ Regenerate the UI options with `python -B -m preflight_core.scope` from the repo
 Dates select inclusive UTC calendar days; null/blank values must be omitted from request scope.
 """
 
+import csv
 from datetime import date
 import json
 from pathlib import Path
@@ -78,6 +79,20 @@ def scope_note(scope: dict[str, str]) -> str:
     return 'Selected scope: ' + json.dumps(scope, sort_keys=True, ensure_ascii=True)
 
 
+def ui_options() -> dict[str, Any]:
+    """Generate UI vocabulary and fictional choices from the seed-driven CSVs."""
+    root = Path(__file__).resolve().parents[1]
+    options: dict[str, Any] = dict(SCOPE_OPTIONS)
+    for filename, key, fields in (
+        ('aircraft.csv', 'aircraft', {'id': 'aircraft_id', 'program': 'program', 'station': 'station'}),
+        ('teams.csv', 'teams', {'id': 'team_id', 'name': 'team_name'}),
+    ):
+        with (root / 'data/synthetic' / filename).open(newline='', encoding='utf-8') as source:
+            rows = [{target: row[column] for target, column in fields.items()} for row in csv.DictReader(source)]
+        options[key] = sorted(rows, key=lambda row: row['id'])
+    return options
+
+
 if __name__ == '__main__':
     destination = Path(__file__).resolve().parents[1] / 'frontend/src/scope-options.json'
-    destination.write_text(json.dumps(SCOPE_OPTIONS, indent=2) + '\n', encoding='utf-8')
+    destination.write_text(json.dumps(ui_options(), indent=2) + '\n', encoding='utf-8')

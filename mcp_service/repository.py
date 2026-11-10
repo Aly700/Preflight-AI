@@ -206,9 +206,18 @@ class Repository:
         subsystem: str | None,
         priority: str | None,
         unresolved_only: bool,
+        opened_after: Any = None,
+        opened_before: Any = None,
     ) -> Row:
         column = GROUP_COLUMNS[group_by]
-        filters = {'aircraft_id': aircraft_id, 'status': status, 'subsystem': subsystem, 'priority': priority}
+        filters = {
+            'aircraft_id': aircraft_id,
+            'status': status,
+            'subsystem': subsystem,
+            'priority': priority,
+            'opened_after': opened_after,
+            'opened_before': opened_before,
+        }
         where, values = issue_filters(filters, unresolved_only=unresolved_only)
         groups = self.connection.execute(
             'SELECT '

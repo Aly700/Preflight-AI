@@ -3,6 +3,7 @@
 import asyncio
 from contextlib import contextmanager
 from dataclasses import replace
+from datetime import datetime
 import importlib
 import json
 from typing import Any
@@ -50,6 +51,8 @@ DEFAULTS: dict[str, dict[str, Any]] = {
         'subsystem': None,
         'priority': None,
         'unresolved_only': False,
+        'opened_after': None,
+        'opened_before': None,
     },
 }
 
@@ -121,6 +124,9 @@ class FakeTools:
             if name in self.fail or name not in TOOLS:
                 return ToolResult(name, call_id, False, error='Tool unavailable')
             merged = {**DEFAULTS.get(name, {}), **arguments}
+            for field in ('opened_after', 'opened_before'):
+                if isinstance(merged.get(field), str):
+                    merged[field] = datetime.fromisoformat(merged[field])
             method = getattr(self.repo, METHODS[name])
             payload = method(*[merged[a] for a in ARGUMENT_ORDER[name]])
             return ToolResult(
@@ -135,7 +141,16 @@ ARGUMENT_ORDER = {
     'get_aircraft_summary': ['aircraft_id'],
     'list_open_issues': ['aircraft_id', 'priority', 'limit', 'offset'],
     'get_issue_history': ['issue_id', 'limit', 'offset'],
-    'count_issues': ['group_by', 'aircraft_id', 'status', 'subsystem', 'priority', 'unresolved_only'],
+    'count_issues': [
+        'group_by',
+        'aircraft_id',
+        'status',
+        'subsystem',
+        'priority',
+        'unresolved_only',
+        'opened_after',
+        'opened_before',
+    ],
 }
 
 
@@ -297,6 +312,49 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(events[-1]['data']['tool_calls'], 1)
         self.assertIn('selected scope', SYSTEM)
         self.assertIn('outside it', SYSTEM)
+        self.assertEqual(
+            next(e['data'] for e in events if e['event'] == 'tool'),
+            {'name': 'list_open_issues', 'status': 'refused', 'reason': 'scope', 'call_id': 'bad'},
+        )
+
+    async def test_date_scoped_count_uses_one_grouped_call(self):
+        tools = FakeTools()
+        scope = {
+            'entity': 'issues',
+            'opened_after': '2026-03-01',
+            'opened_before': '2026-03-31',
+            'issue_status': 'unresolved',
+        }
+        model = FakeModel(
+            [Turn('', [ToolCall('counts', 'count_issues', {'group_by': 'subsystem'})]), Turn('Here is the breakdown.')]
+        )
+        events = [
+            event
+            async for event in self.runtime.stream_answer(
+                'Break down the selected issues', self.settings, scope=scope, model_client=model, tools=tools
+            )
+        ]
+        self.assertEqual(
+            tools.calls,
+            [
+                (
+                    'counts',
+                    'count_issues',
+                    {
+                        'group_by': 'subsystem',
+                        'unresolved_only': True,
+                        'opened_after': '2026-03-01T00:00:00+00:00',
+                        'opened_before': '2026-03-31T23:59:59.999999+00:00',
+                    },
+                )
+            ],
+        )
+        result = events[-2]['data']['results'][0]['result']
+        expected = sum(
+            i['status'] != 'closed' and i['opened_at'].startswith('2026-03') for i in tools.repo.rows['issues']
+        )
+        self.assertEqual(result['total'], expected)
+        self.assertEqual(events[-1]['data']['tool_calls'], 1)
 
     async def test_scope_refusals_consume_the_call_budget(self):
         tools = FakeTools()
@@ -326,7 +384,97 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
         results = model.calls[1]['messages'][-1]['content']
         self.assertEqual(results[0]['content'], 'Outside the selected scope: priority')
         self.assertEqual(results[1]['content'], 'Tool call limit reached')
+        self.assertEqual(
+            [e['data'] for e in events if e['event'] == 'tool'],
+            [
+                {'name': 'list_open_issues', 'status': 'refused', 'reason': 'scope', 'call_id': 'bad'},
+                {'name': 'list_open_issues', 'status': 'failed', 'call_id': 'limited'},
+            ],
+        )
         self.assertEqual(events[-1]['data']['scope'], {'priority': 'high'})
+
+    async def test_outside_history_result_is_withheld_from_model_evidence_and_verifier(self):
+        tools = FakeTools()
+        issue = tools.repo.issue_history('ISSUE-0001', 100, 0)['issue']
+        other_aircraft = 'DEMO-AIR-0002' if issue['aircraft_id'] != 'DEMO-AIR-0002' else 'DEMO-AIR-0003'
+        model = FakeModel(
+            [
+                Turn('', [ToolCall('history', 'get_issue_history', {'issue_id': 'ISSUE-0001'})]),
+                Turn('The record ISSUE-0001 is outside the filters.'),
+                claims(['ISSUE-0001']),
+            ]
+        )
+        with self.tracing() as exporter:
+            events = [
+                event
+                async for event in self.runtime.stream_answer(
+                    'Show history',
+                    self.settings,
+                    scope={'aircraft_id': other_aircraft},
+                    model_client=model,
+                    tools=tools,
+                )
+            ]
+            self.assertEqual(exporter.get_finished_spans()[-1].attributes['preflight.tool_calls_refused'], 1)
+        self.assertEqual(len(tools.calls), 1)
+        block = model.calls[1]['messages'][-1]['content'][0]
+        self.assertEqual(
+            block,
+            {
+                'type': 'tool_result',
+                'tool_use_id': 'history',
+                'is_error': True,
+                'content': 'The result is outside the selected scope',
+            },
+        )
+        self.assertEqual(next(e['data']['results'] for e in events if e['event'] == 'evidence'), [])
+        self.assertEqual(next(e['data']['records'] for e in events if e['event'] == 'sources'), [])
+        self.assertEqual(events[-1]['data']['tool_calls'], 0)
+        self.assertFalse(events[-1]['data']['verified'])
+        self.assertEqual(
+            [e['data'] for e in events if e['event'] == 'tool'],
+            [
+                {'name': 'get_issue_history', 'status': 'running', 'call_id': 'history'},
+                {'name': 'get_issue_history', 'status': 'refused', 'reason': 'scope', 'call_id': 'history'},
+            ],
+        )
+
+    async def test_ids_from_the_selected_scope_are_context_not_claims(self):
+        tools = FakeTools()
+        aircraft = tools.repo.issue_history('ISSUE-0001', 100, 0)['issue']['aircraft_id']
+        model = FakeModel(
+            [
+                Turn('', [ToolCall('history', 'get_issue_history', {'issue_id': 'ISSUE-0001'})]),
+                Turn(f'ISSUE-0001 belongs to the selected aircraft, {aircraft}.'),
+                claims(['ISSUE-0001']),
+            ]
+        )
+        events = [
+            event
+            async for event in self.runtime.stream_answer(
+                'Show history', self.settings, scope={'aircraft_id': aircraft}, model_client=model, tools=tools
+            )
+        ]
+        self.assertTrue(events[-1]['data']['verified'], events[-2]['data'])
+        self.assertEqual(events[-1]['data']['unverified'], 0)
+
+    async def test_matching_history_result_remains_available(self):
+        tools = FakeTools()
+        aircraft = tools.repo.issue_history('ISSUE-0001', 100, 0)['issue']['aircraft_id']
+        model = FakeModel(
+            [
+                Turn('', [ToolCall('history', 'get_issue_history', {'issue_id': 'ISSUE-0001'})]),
+                Turn('Here is the selected history.'),
+            ]
+        )
+        events = [
+            event
+            async for event in self.runtime.stream_answer(
+                'Show history', self.settings, scope={'aircraft_id': aircraft}, model_client=model, tools=tools
+            )
+        ]
+        self.assertEqual(events[-1]['data']['tool_calls'], 1)
+        self.assertNotIn('is_error', model.calls[1]['messages'][-1]['content'][0])
 
     async def test_document_passages_are_evidence_and_unreturned_citations_fail(self):
         for cited, verified in (('DOC-0008#2', True), ('DOC-0008#9', False)):

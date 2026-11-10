@@ -1233,3 +1233,18 @@ class AdversarialRubric(unittest.TestCase):
         _, cases = evaluation.load_cases(ROOT / 'evals/tool_failures.json')
         case = next(c for c in cases if c['id'] == 'failure-compare-01')
         self.assertIn('count_issues', case['expect']['tools_any'])
+
+
+class ScopedSet(unittest.TestCase):
+    def test_scoped_set_loads_with_valid_scopes_and_escape_rubrics(self):
+        version, cases = evaluation.load_cases(ROOT / 'evals/scoped.json')
+        self.assertEqual(version, 'scoped-2026-11-10.2')
+        self.assertEqual(Counter(c['category'] for c in cases), {'scoped': 8, 'scope escape': 4})
+        for case in cases:
+            with self.subTest(case=case['id']):
+                self.assertTrue(case.get('scope'))
+                for pattern in case['expect'].get('required', []) + case['expect'].get('forbidden', []):
+                    re.compile(pattern, re.IGNORECASE)
+                if case['category'] == 'scope escape':
+                    self.assertIsNone(case['expect']['verified'])
+                    self.assertTrue(any('scope' in p for p in case['expect']['required']))

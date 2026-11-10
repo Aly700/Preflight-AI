@@ -2,6 +2,7 @@
 
 from contextlib import contextmanager
 from types import SimpleNamespace
+from typing import Any
 import unittest
 
 from mcp import Client
@@ -46,14 +47,17 @@ class RegistryAgreement(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(set(QUALIFIED_NAMES.values()), set(TOOLS))
 
     def test_new_result_models_reject_extra_fields(self):
-        counts = {
+        counts: dict[str, Any] = {
             'group_by': 'subsystem',
             'unresolved_only': True,
             'filters': {'aircraft_id': None, 'status': None, 'subsystem': None, 'priority': None},
             'total': 3,
             'groups': [{'key': 'cabin', 'count': 1}, {'key': 'hydraulics', 'count': 2}],
         }
-        self.assertEqual(IssueCounts.model_validate(counts).model_dump(mode='json'), counts)
+        self.assertEqual(
+            IssueCounts.model_validate(counts).model_dump(mode='json'),
+            {**counts, 'filters': {**counts['filters'], 'opened_after': None, 'opened_before': None}},
+        )
         with self.assertRaises(ValueError):
             IssueCounts.model_validate({**counts, 'sql': 'SELECT 1'})
         with self.assertRaises(ValueError):

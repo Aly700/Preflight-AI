@@ -133,6 +133,8 @@ class CountGroup(ResultModel):
 
 
 class CountFilters(ResultModel):
+    opened_after: AwareDatetime | None = None
+    opened_before: AwareDatetime | None = None
     aircraft_id: AircraftId | None
     status: IssueStatus | None
     subsystem: Subsystem | None

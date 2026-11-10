@@ -39,6 +39,8 @@ CATEGORIES = {
     'out-of-scope requests',
     'injection',
     'tool failures',
+    'scoped',
+    'scope escape',
     'documents',
     'documents and records',
 }

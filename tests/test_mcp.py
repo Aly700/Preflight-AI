@@ -69,7 +69,9 @@ class FixtureRepository:
         ]
         return {'total': len(rows), 'limit': limit, 'offset': offset, 'items': rows[offset : offset + limit]}
 
-    def issue_counts(self, group_by, aircraft_id, status, subsystem, priority, unresolved_only):
+    def issue_counts(
+        self, group_by, aircraft_id, status, subsystem, priority, unresolved_only, opened_after=None, opened_before=None
+    ):
         self.calls += 1
         column = {'subsystem': 'subsystem', 'priority': 'priority', 'status': 'status', 'aircraft': 'aircraft_id'}[
             group_by
@@ -82,12 +84,21 @@ class FixtureRepository:
             and (subsystem is None or i['subsystem'] == subsystem)
             and (priority is None or i['priority'] == priority)
             and (not unresolved_only or i['status'] != 'closed')
+            and (opened_after is None or datetime.fromisoformat(i['opened_at']) >= opened_after)
+            and (opened_before is None or datetime.fromisoformat(i['opened_at']) <= opened_before)
         ]
         counts = Counter(r[column] for r in rows)
         return {
             'group_by': group_by,
             'unresolved_only': unresolved_only,
-            'filters': {'aircraft_id': aircraft_id, 'status': status, 'subsystem': subsystem, 'priority': priority},
+            'filters': {
+                'aircraft_id': aircraft_id,
+                'status': status,
+                'subsystem': subsystem,
+                'priority': priority,
+                'opened_after': opened_after.isoformat().replace('+00:00', 'Z') if opened_after else None,
+                'opened_before': opened_before.isoformat().replace('+00:00', 'Z') if opened_before else None,
+            },
             'total': len(rows),
             'groups': [{'key': key, 'count': count} for key, count in sorted(counts.items())],
         }
@@ -259,8 +270,62 @@ class McpContract(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(result.is_error)
         self.assertEqual(
             result.structured_content.get('filters'),
-            {'aircraft_id': 'DEMO-AIR-0008', 'status': None, 'subsystem': None, 'priority': None},
+            {
+                'aircraft_id': 'DEMO-AIR-0008',
+                'status': None,
+                'subsystem': None,
+                'priority': None,
+                'opened_after': None,
+                'opened_before': None,
+            },
         )
+
+    async def test_count_dates_are_discovered_inclusive_and_match_search(self):
+        boundary = self.repo.rows['issues'][0]['opened_at']
+        windows = [
+            {'opened_after': boundary},
+            {'opened_before': boundary},
+            {'opened_after': boundary, 'opened_before': boundary},
+            {'opened_after': '2026-09-01T00:00:00Z', 'opened_before': '2026-02-01T00:00:00Z'},
+        ]
+        async with Client(self.server) as client:
+            tool = next(t for t in (await client.list_tools()).tools if t.name == 'count_issues')
+            assert tool.description is not None
+            for field in ('opened_after', 'opened_before'):
+                self.assertIn(field, tool.input_schema['properties'])
+                self.assertIn(field, tool.description)
+            for window in windows:
+                for group in ('subsystem', 'priority', 'status', 'aircraft'):
+                    with self.subTest(window=window, group=group):
+                        filters = {**window, 'aircraft_id': 'DEMO-AIR-0001', 'unresolved_only': True}
+                        count = await client.call_tool('count_issues', {'group_by': group, **filters})
+                        page = await client.call_tool('search_issues', {**filters, 'limit': 100})
+                        self.assertFalse(count.is_error)
+                        self.assertFalse(page.is_error)
+                        payload = count.structured_content
+                        self.assertEqual(payload['total'], page.structured_content['total'])
+                        column = 'aircraft_id' if group == 'aircraft' else group
+                        expected = Counter(i[column] for i in page.structured_content['items'])
+                        self.assertEqual({g['key']: g['count'] for g in payload['groups']}, expected)
+                        for key, value in window.items():
+                            self.assertEqual(
+                                datetime.fromisoformat(payload['filters'][key]), datetime.fromisoformat(value)
+                            )
+            exact = await client.call_tool('count_issues', {'group_by': 'status', **windows[2]})
+            self.assertGreater(exact.structured_content['total'], 0)
+
+    async def test_count_rejects_invalid_or_naive_dates_before_repository(self):
+        async with Client(self.server) as client:
+            for field in ('opened_after', 'opened_before'):
+                for value in ('yesterday', '2026-02-30T00:00:00Z', '2026-01-01T00:00:00', '2026-01-01'):
+                    with self.subTest(field=field, value=value):
+                        try:
+                            result = await client.call_tool('count_issues', {'group_by': 'status', field: value})
+                        except MCPError as exc:
+                            self.assertEqual(exc.code, -32602)
+                        else:
+                            self.assertTrue(result.is_error)
+        self.assertEqual(self.repo.calls, 0)
 
     async def test_count_groups_omit_empty_keys(self):
         closed_only = next(
