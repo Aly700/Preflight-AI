@@ -1,4 +1,4 @@
-"""The single declaration of the seven read-only tools: names, argument sets and result schemas.
+"""The single declaration of the eight read-only tools: names, argument sets and result schemas.
 
 The MCP service uses this to reject unknown tools and unexpected arguments
 before any handler runs. The Copilot adapter uses it to recognise permitted
@@ -17,6 +17,7 @@ from preflight_core.models import (
     IssueHistory,
     IssuePage,
     ResultModel,
+    TaskPage,
 )
 
 MCP_SERVER_NAME = 'preflight'
@@ -47,11 +48,37 @@ TOOL_CONTRACTS: tuple[ToolContract, ...] = (
     ToolContract(
         'search_issues',
         frozenset(
-            {'status', 'subsystem', 'priority', 'aircraft_id', 'opened_after', 'opened_before', 'limit', 'offset'}
+            {
+                'status',
+                'subsystem',
+                'priority',
+                'aircraft_id',
+                'opened_after',
+                'opened_before',
+                'limit',
+                'offset',
+                'unresolved_only',
+            }
         ),
         IssuePage,
     ),
     ToolContract('search_documents', frozenset({'query', 'top_k', 'kind', 'related_id'}), DocumentSearchResult),
+    ToolContract(
+        'list_tasks',
+        frozenset(
+            {
+                'status',
+                'task_kind',
+                'assigned_team_id',
+                'assigned_person_id',
+                'aircraft_id',
+                'issue_id',
+                'limit',
+                'offset',
+            }
+        ),
+        TaskPage,
+    ),
 )
 TOOLS: Mapping[str, ToolContract] = {contract.name: contract for contract in TOOL_CONTRACTS}
 QUALIFIED_NAMES: Mapping[str, str] = {contract.qualified_name: contract.name for contract in TOOL_CONTRACTS}

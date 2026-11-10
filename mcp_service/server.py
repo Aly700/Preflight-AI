@@ -1,10 +1,10 @@
-"""Seven read-only MCP tools, authenticated HTTP, and database-backed health."""
+"""Eight read-only MCP tools, authenticated HTTP, and database-backed health."""
 
 from collections.abc import Awaitable, Callable, Iterator
 from contextlib import AbstractContextManager, contextmanager
 from functools import partial
 import os
-from typing import Any
+from typing import Annotated, Any
 
 import anyio
 from mcp import MCPError
@@ -14,7 +14,7 @@ from mcp.server.mcpserver.exceptions import ToolError
 from mcp.server.transport_security import TransportSecuritySettings
 from mcp_types import ToolAnnotations
 import psycopg
-from pydantic import AwareDatetime, BaseModel
+from pydantic import AwareDatetime, BaseModel, BeforeValidator
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import JSONResponse
@@ -39,9 +39,15 @@ from preflight_core.models import (
     IssueStatus,
     PageLimit,
     PageOffset,
+    PersonId,
     Priority,
     RecordId,
     Subsystem,
+    TaskKind,
+    TaskPage,
+    TaskPageLimit,
+    TaskStatus,
+    TeamId,
 )
 from preflight_core.settings import mcp_hosts_from_environment
 from preflight_core.tools import TOOLS
@@ -86,6 +92,14 @@ def query(repository_factory: RepositoryFactory, method: str, *arguments: Any) -
         raise ToolError('Database unavailable') from None
     except LookupError:
         raise ToolError('Record not found') from None
+
+
+def blank_filter(value: Any) -> Any:
+    """Optional task filters treat blank strings like omitted values, before typed validation."""
+    return None if isinstance(value, str) and not value.strip() else value
+
+
+type OptionalTaskFilter[T] = Annotated[T | None, BeforeValidator(blank_filter)]
 
 
 def create_server(repository_factory: RepositoryFactory = open_repository) -> MCPServer:
@@ -170,16 +184,26 @@ def create_server(repository_factory: RepositoryFactory = open_repository) -> MC
         opened_before: AwareDatetime | None = None,
         limit: PageLimit = 50,
         offset: PageOffset = 0,
+        unresolved_only: Flag = False,
     ) -> IssuePage:
         """Search fictional issues of any status with optional filters; paginated, ordered by issue ID.
 
         Unlike list_open_issues this includes closed issues unless a status filter says otherwise.
         `opened_after` and `opened_before` are inclusive timestamps with a timezone. The total counts
-        all matches. This tool cannot change any records.
+        all matches. `unresolved_only` excludes closed issues. This tool cannot change any records.
         """
         return IssuePage.model_validate(
             await read(
-                'search_issues', status, subsystem, priority, aircraft_id, opened_after, opened_before, limit, offset
+                'search_issues',
+                status,
+                subsystem,
+                priority,
+                aircraft_id,
+                opened_after,
+                opened_before,
+                limit,
+                offset,
+                unresolved_only,
             )
         )
 
@@ -198,6 +222,36 @@ def create_server(repository_factory: RepositoryFactory = open_repository) -> MC
         This tool cannot change any records.
         """
         return DocumentSearchResult.model_validate(await read('search_documents', query, top_k, kind, related_id))
+
+    @server.tool(annotations=READ_ONLY)
+    async def list_tasks(
+        status: OptionalTaskFilter[TaskStatus] = None,
+        task_kind: OptionalTaskFilter[TaskKind] = None,
+        assigned_team_id: OptionalTaskFilter[TeamId] = None,
+        assigned_person_id: OptionalTaskFilter[PersonId] = None,
+        aircraft_id: OptionalTaskFilter[AircraftId] = None,
+        issue_id: OptionalTaskFilter[IssueId] = None,
+        limit: TaskPageLimit = 20,
+        offset: PageOffset = 0,
+    ) -> TaskPage:
+        """List fictional tasks joined to their issue for aircraft ID, with optional AND-combined filters.
+
+        Blank filters are ignored. Pages are ordered by task ID; total counts all matches.
+        Completed tasks do not imply closed issues. This tool cannot change records.
+        """
+        return TaskPage.model_validate(
+            await read(
+                'list_tasks',
+                status,
+                task_kind,
+                assigned_team_id,
+                assigned_person_id,
+                aircraft_id,
+                issue_id,
+                limit,
+                offset,
+            )
+        )
 
     @server.custom_route('/health', methods=['GET'])
     async def health(request: Request) -> JSONResponse:

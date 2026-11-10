@@ -252,6 +252,7 @@ class Repository:
         opened_before: Any,
         limit: int,
         offset: int,
+        unresolved_only: bool = False,
     ) -> Row:
         where, values = issue_filters(
             {
@@ -261,11 +262,47 @@ class Repository:
                 'aircraft_id': aircraft_id,
                 'opened_after': opened_after,
                 'opened_before': opened_before,
-            }
+            },
+            unresolved_only=unresolved_only,
         )
         counted = self.connection.execute('SELECT count(*) AS count FROM preflight.issues' + where, values).fetchone()
         items = self.connection.execute(
             'SELECT ' + ISSUE_FIELDS + ' FROM preflight.issues' + where + ' ORDER BY issue_id LIMIT %s OFFSET %s',
+            [*values, limit, offset],
+        ).fetchall()
+        return {'total': counted['count'] if counted else 0, 'limit': limit, 'offset': offset, 'items': items}
+
+    def list_tasks(
+        self,
+        status: str | None = None,
+        task_kind: str | None = None,
+        assigned_team_id: str | None = None,
+        assigned_person_id: str | None = None,
+        aircraft_id: str | None = None,
+        issue_id: str | None = None,
+        limit: int = 20,
+        offset: int = 0,
+    ) -> Row:
+        clauses: list[str] = []
+        values: list[Any] = []
+        for column, value in (
+            ('t.status', status),
+            ('t.task_kind', task_kind),
+            ('t.assigned_team_id', assigned_team_id),
+            ('t.assigned_person_id', assigned_person_id),
+            ('i.aircraft_id', aircraft_id),
+            ('t.issue_id', issue_id),
+        ):
+            if value is not None and value.strip():
+                clauses.append(column + ' = %s')
+                values.append(value)
+        source = ' FROM preflight.tasks t JOIN preflight.issues i ON i.issue_id = t.issue_id'
+        if clauses:
+            source += ' WHERE ' + ' AND '.join(clauses)
+        counted = self.connection.execute('SELECT count(*) AS count' + source, values).fetchone()
+        items = self.connection.execute(
+            'SELECT t.task_id, t.issue_id, i.aircraft_id, t.task_kind, t.status, t.assigned_team_id, '
+            't.assigned_person_id, t.created_at, t.completed_at' + source + ' ORDER BY t.task_id LIMIT %s OFFSET %s',
             [*values, limit, offset],
         ).fetchall()
         return {'total': counted['count'] if counted else 0, 'limit': limit, 'offset': offset, 'items': items}

@@ -2,6 +2,7 @@
 
 import asyncio
 import dataclasses
+import json
 import time
 from types import SimpleNamespace
 from typing import Any
@@ -82,6 +83,7 @@ class FakeSession:
             raise RuntimeError('Failed to detach session')
 
     async def send_and_wait(self, prompt, **options):
+        self.prompt = prompt
         for item in self.script:
             if item is HANG:
                 await asyncio.Future()
@@ -142,6 +144,16 @@ async def collect(factory, **kwargs):
 
 
 class AdapterOrchestration(unittest.IsolatedAsyncioTestCase):
+    async def test_scope_is_a_prompt_note_and_done_metadata(self):
+        scope = {'entity': 'issues', 'priority': 'high'}
+        factory, seen = fake_runtime(tool_call() + ANSWER)
+        events = await collect(factory, scope=scope)
+        self.assertEqual(
+            seen['session'].prompt,
+            'Selected scope: ' + json.dumps(scope, sort_keys=True) + '\nCurrent question:\nSummary',
+        )
+        self.assertEqual(events[-1]['data']['scope'], scope)
+
     async def test_document_passages_validate_and_supply_sources_and_evidence(self):
         script = [
             event(
@@ -176,7 +188,7 @@ class AdapterOrchestration(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(events[0]['data'], {'name': 'list_open_issues', 'status': 'running', 'call_id': 'call-1'})
         self.assertEqual(events[3]['data'], {'records': ['DEMO-AIR-0001', 'ISSUE-0001'], 'tools': ['list_open_issues']})
         self.assertEqual(events[4]['data']['results'][0]['tool'], 'list_open_issues')
-        self.assertEqual(events[5]['data'], {'tool_calls': 1})
+        self.assertEqual(events[5]['data'], {'tool_calls': 1, 'scope': {}})
         self.assertTrue(seen['session'].aborted and seen['session'].detached and seen['stopped'])
 
     async def test_runtime_receives_only_the_copilot_token_and_a_throwaway_home(self):

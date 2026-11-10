@@ -6,22 +6,27 @@ a real aircraft, person or organization identifier.
 """
 
 from datetime import date as Date
-import re
 from typing import Annotated, Literal
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
-RECORD_ID = re.compile(r'^(?:(?:DEMO-AIR|ISSUE|TASK|EVT|TEAM|PERSON|SHIFT)-[0-9]+|DOC-[0-9]{4}(?:#[0-9]+)?)$')
+# Explicit re-exports retain the existing model imports while scope and tools share one vocabulary.
+from preflight_core.scope import RECORD_ID as RECORD_ID
+from preflight_core.scope import DocumentKind as DocumentKind
+from preflight_core.scope import IssueStatus as IssueStatus
+from preflight_core.scope import Priority as Priority
+from preflight_core.scope import Subsystem as Subsystem
+from preflight_core.scope import TaskKind as TaskKind
+from preflight_core.scope import TaskStatus as TaskStatus
 
 AircraftId = Annotated[str, Field(pattern=r'^DEMO-AIR-[0-9]+$', max_length=64, strict=True)]
 IssueId = Annotated[str, Field(pattern=r'^ISSUE-[0-9]+$', max_length=64, strict=True)]
+TeamId = Annotated[str, Field(pattern=r'^TEAM-[0-9]+$', max_length=64, strict=True)]
+PersonId = Annotated[str, Field(pattern=r'^PERSON-[0-9]+$', max_length=64, strict=True)]
+TaskPageLimit = Annotated[int, Field(ge=1, le=50, strict=True)]
 PageLimit = Annotated[int, Field(ge=1, le=100, strict=True)]
 PageOffset = Annotated[int, Field(ge=0, le=10000, strict=True)]
-Priority = Literal['low', 'medium', 'high']
-Subsystem = Literal['hydraulics', 'avionics', 'electrical', 'cabin', 'structures', 'controls']
 GroupBy = Literal['subsystem', 'priority', 'status', 'aircraft']
-IssueStatus = Literal['open', 'in_progress', 'blocked', 'reopened', 'closed']
-TaskStatus = Literal['todo', 'in_progress', 'awaiting_review', 'completed', 'blocked']
 EventType = Literal[
     'issue_opened',
     'issue_closed',
@@ -40,7 +45,6 @@ Flag = Annotated[bool, Field(strict=True)]
 RecordId = Annotated[str, Field(pattern=RECORD_ID.pattern, max_length=64, strict=True)]
 DocumentQuery = Annotated[str, Field(min_length=3, max_length=300, strict=True)]
 DocumentTopK = Annotated[int, Field(ge=1, le=8, strict=True)]
-DocumentKind = Literal['policy', 'glossary', 'handover', 'memo', 'coordination', 'retrospective', 'form']
 CandidateRank = Annotated[int, Field(ge=1, le=20, strict=True)]
 
 
@@ -84,6 +88,25 @@ class IssuePage(ResultModel):
     limit: PageLimit
     offset: PageOffset
     items: list[Issue]
+
+
+class Task(ResultModel):
+    task_id: str = Field(pattern=r'^TASK-[0-9]+$', max_length=64, strict=True)
+    issue_id: IssueId
+    aircraft_id: AircraftId
+    task_kind: TaskKind
+    status: TaskStatus
+    assigned_team_id: TeamId
+    assigned_person_id: PersonId | None
+    created_at: AwareDatetime
+    completed_at: AwareDatetime | None
+
+
+class TaskPage(ResultModel):
+    total: Count
+    limit: TaskPageLimit
+    offset: PageOffset
+    items: list[Task]
 
 
 class ActivityEvent(ResultModel):

@@ -22,7 +22,10 @@ from urllib.error import HTTPError
 ROOT = Path(__file__).resolve().parents[1]
 # Support both direct execution and importlib-based tests without making scripts a package.
 sys.path.insert(0, str(ROOT / 'scripts'))
+sys.path.insert(0, str(ROOT))
 import compose_check  # noqa: E402
+
+from preflight_core.scope import unique_object, validate_scope  # noqa: E402
 
 CATEGORIES = {
     'lookups',
@@ -47,6 +50,7 @@ TOOLS = {
     'compare_aircraft',
     'search_issues',
     'search_documents',
+    'list_tasks',
 }
 USAGE_KEYS = ('input_tokens', 'output_tokens', 'cache_creation_input_tokens', 'cache_read_input_tokens')
 Events = list[tuple[str, dict[str, Any]]]
@@ -64,7 +68,7 @@ def check_keys(value: Any, required: set[str], optional: set[str], location: str
 
 
 def load_cases(path: Path) -> tuple[str, list[dict[str, Any]]]:
-    document = json.loads(path.read_text(encoding='utf-8'))
+    document = json.loads(path.read_text(encoding='utf-8'), object_pairs_hook=unique_object)
     check_keys(document, {'version', 'cases'}, set(), 'question file')
     version, cases = document['version'], document['cases']
     if not isinstance(version, str) or not version.strip():
@@ -73,7 +77,7 @@ def load_cases(path: Path) -> tuple[str, list[dict[str, Any]]]:
         raise ValueError('question file must contain 8, 12, or 22 cases')
     seen: set[str] = set()
     for case in cases:
-        check_keys(case, {'id', 'category', 'question', 'expect'}, {'history'}, 'case')
+        check_keys(case, {'id', 'category', 'question', 'expect'}, {'history', 'scope'}, 'case')
         for field in ('id', 'category', 'question'):
             if not isinstance(case[field], str) or not case[field].strip():
                 raise ValueError(f'case {field} must be a nonempty string')
@@ -83,6 +87,8 @@ def load_cases(path: Path) -> tuple[str, list[dict[str, Any]]]:
         seen.add(ident)
         if case['category'] not in CATEGORIES:
             raise ValueError(f'{ident}: invalid category {case["category"]!r}')
+        if 'scope' in case:
+            case['scope'] = validate_scope(case['scope'])
         history = case.get('history', [])
         if not isinstance(history, list):
             raise ValueError(f'{ident}: history must be a list')
@@ -303,7 +309,13 @@ def run(
         result: dict[str, Any]
         for attempt in range(4):
             try:
-                events = ask_fn(base, case['question'], history=case.get('history', []), on_event=observe)
+                events = ask_fn(
+                    base,
+                    case['question'],
+                    history=case.get('history', []),
+                    on_event=observe,
+                    **({'scope': validate_scope(case['scope'])} if 'scope' in case else {}),
+                )
                 result = score(case, events, truth, runtime=report['runtime'])
                 break
             except (OSError, RuntimeError, ValueError, HTTPException) as error:

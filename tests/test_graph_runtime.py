@@ -97,9 +97,10 @@ class GraphRuntime(unittest.IsolatedAsyncioTestCase):
         settings = replace(SETTINGS, runtime='langgraph')
         expected = [{'event': 'delta', 'data': {'text': 'Answer.'}}, {'event': 'done', 'data': {}}]
 
-        async def answer(question, actual_settings):
+        async def answer(question, actual_settings, *, scope=None):
             self.assertEqual(question, 'Question')
             self.assertIs(actual_settings, settings)
+            self.assertEqual(scope, {'priority': 'high'})
             for event in expected:
                 yield event
 
@@ -108,8 +109,11 @@ class GraphRuntime(unittest.IsolatedAsyncioTestCase):
             patch('backend.copilot_chat.stream_answer', side_effect=AssertionError('wrong runtime')),
             patch('backend.agent_runtime.stream_answer', side_effect=AssertionError('wrong runtime')),
         ):
-            self.assertEqual([event async for event in runtime.stream_answer('Question', settings)], expected)
-            selected.assert_called_once_with('Question', settings)
+            self.assertEqual(
+                [event async for event in runtime.stream_answer('Question', settings, scope={'priority': 'high'})],
+                expected,
+            )
+            selected.assert_called_once_with('Question', settings, scope={'priority': 'high'})
 
     async def test_graph_invocation_explicitly_disables_tracing(self):
         from langsmith.run_helpers import get_tracing_context

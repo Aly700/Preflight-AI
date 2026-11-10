@@ -74,7 +74,7 @@ class ChatContract(unittest.TestCase):
 
         headers = self.configured()
 
-        async def inference(question, settings):
+        async def inference(question, settings, *, scope=None):
             yield {'event': 'done', 'data': {'tool_calls': 0}}
 
         for limit in (1, 3):
@@ -156,7 +156,7 @@ class ChatContract(unittest.TestCase):
     def test_stream_orders_text_sources_and_completion(self):
         headers = self.configured()
 
-        async def inference(question, settings):
+        async def inference(question, settings, *, scope=None):
             self.assertEqual(question, 'Summary')
             yield {'event': 'delta', 'data': {'text': '12 aircraft'}}
             yield {'event': 'sources', 'data': {'records': ['DEMO-AIR-0001'], 'tools': ['get_aircraft_summary']}}
@@ -197,7 +197,7 @@ class ChatContract(unittest.TestCase):
     def test_inference_error_is_sanitized_and_request_slot_released(self):
         headers = self.configured()
 
-        async def failure(*args):
+        async def failure(*args, **kwargs):
             raise RuntimeError('secret upstream token and host')
             yield  # type: ignore[unreachable]  # unreachable on purpose: makes this an async generator
 
@@ -289,11 +289,11 @@ class ChatContract(unittest.TestCase):
     def test_slot_is_released_when_the_client_disconnects_early(self):
         headers = self.configured()
 
-        async def never_answers(question, settings):
+        async def never_answers(question, settings, *, scope=None):
             await asyncio.sleep(30)  # Cancelled by the disconnect; a leak would hang or 429 the next request.
             yield {'event': 'done', 'data': {'tool_calls': 0}}
 
-        async def quick(question, settings):
+        async def quick(question, settings, *, scope=None):
             yield {'event': 'done', 'data': {'tool_calls': 0}}
 
         cases: list[dict[str, Any]] = [
@@ -328,7 +328,7 @@ class ChatContract(unittest.TestCase):
     def test_followup_context_is_bounded_and_cannot_supply_system_messages(self):
         headers = self.configured()
 
-        async def inference(question, settings):
+        async def inference(question, settings, *, scope=None):
             self.assertIn('DEMO-AIR-0001', question)
             self.assertIn('What about its issues?', question)
             yield {'event': 'done', 'data': {'tool_calls': 1}}

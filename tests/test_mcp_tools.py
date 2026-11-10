@@ -169,7 +169,7 @@ class McpToolsContract(unittest.IsolatedAsyncioTestCase):
             build.assert_called_once_with(settings)
             self.assertIs(loop.call_args.args[2], build.return_value)
 
-    async def test_discover_returns_the_seven_registry_tools_with_schemas(self):
+    async def test_discover_returns_the_eight_registry_tools_with_schemas(self):
         async with self.running():
             specs = await self.tools().discover()
             self.assertEqual(
@@ -182,6 +182,7 @@ class McpToolsContract(unittest.IsolatedAsyncioTestCase):
                     'compare_aircraft',
                     'search_issues',
                     'search_documents',
+                    'list_tasks',
                 ],
             )
             page = next(s for s in specs if s.name == 'list_open_issues')
@@ -290,7 +291,7 @@ class McpToolsContract(unittest.IsolatedAsyncioTestCase):
         tools = anthropic_tools(specs)
         self.assertNotIn('final_answer', [t['name'] for t in tools])
         self.assertEqual([t['name'] for t in tools], [s.name for s in specs])
-        self.assertEqual(len(tools), 7)
+        self.assertEqual(len(tools), 8)
         self.assertEqual(set(tools[0]), {'name', 'description', 'input_schema'})
 
 

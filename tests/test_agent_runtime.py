@@ -4,6 +4,7 @@ import asyncio
 from contextlib import contextmanager
 from dataclasses import replace
 import importlib
+import json
 from typing import Any
 import unittest
 from unittest.mock import patch
@@ -249,6 +250,84 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
             )
         ]
 
+    async def test_scope_fills_arguments_refuses_conflicts_and_recovers_with_private_trace(self):
+        scope = {'entity': 'issues', 'aircraft_id': 'DEMO-AIR-0001', 'priority': 'high'}
+        model = FakeModel(
+            [
+                Turn('', [ToolCall('bad', 'list_open_issues', {'aircraft_id': 'DEMO-AIR-0002'})]),
+                Turn('', [ToolCall('good', 'list_open_issues', {'limit': 1})]),
+                Turn('Here are the selected records.'),
+            ]
+        )
+        tools = FakeTools()
+        with self.tracing() as exporter:
+            events = [
+                event
+                async for event in self.runtime.stream_answer(
+                    'Show records', self.settings, scope=scope, model_client=model, tools=tools
+                )
+            ]
+            spans = exporter.get_finished_spans()
+            answer = spans[-1]
+            self.assertEqual(answer.attributes['preflight.scope_fields'], tuple(sorted(scope)))
+            self.assertEqual(answer.attributes['preflight.tool_calls_refused'], 1)
+            self.assertEqual([s.name for s in spans], ['execute_tool list_open_issues', 'invoke_agent preflight'])
+            for value in ('DEMO-AIR-0001', 'DEMO-AIR-0002', 'high', 'Show records'):
+                self.assertNotIn(value, str([dict(s.attributes) for s in spans]))
+        self.assertEqual(
+            tools.calls,
+            [('good', 'list_open_issues', {'limit': 1, 'aircraft_id': 'DEMO-AIR-0001', 'priority': 'high'})],
+        )
+        self.assertEqual(
+            model.calls[1]['messages'][-1]['content'],
+            [
+                {
+                    'type': 'tool_result',
+                    'tool_use_id': 'bad',
+                    'is_error': True,
+                    'content': 'Outside the selected scope: aircraft_id',
+                }
+            ],
+        )
+        content = model.calls[0]['messages'][0]['content']
+        self.assertEqual(content[0], {'type': 'text', 'text': 'Selected scope: ' + json.dumps(scope, sort_keys=True)})
+        self.assertEqual(content[1], {'type': 'text', 'text': 'Show records'})
+        self.assertEqual(events[-1]['event'], 'done')
+        self.assertEqual(events[-1]['data']['scope'], scope)
+        self.assertEqual(events[-1]['data']['tool_calls'], 1)
+        self.assertIn('selected scope', SYSTEM)
+        self.assertIn('outside it', SYSTEM)
+
+    async def test_scope_refusals_consume_the_call_budget(self):
+        tools = FakeTools()
+        model = FakeModel(
+            [
+                Turn(
+                    '',
+                    [
+                        ToolCall('bad', 'list_open_issues', {'priority': 'low'}),
+                        ToolCall('limited', 'list_open_issues', {}),
+                    ],
+                ),
+                Turn('The request exceeds the selected scope.'),
+            ]
+        )
+        events = [
+            event
+            async for event in self.runtime.stream_answer(
+                'Show records',
+                replace(self.settings, max_tool_calls=1),
+                scope={'priority': 'high'},
+                model_client=model,
+                tools=tools,
+            )
+        ]
+        self.assertEqual(tools.calls, [])
+        results = model.calls[1]['messages'][-1]['content']
+        self.assertEqual(results[0]['content'], 'Outside the selected scope: priority')
+        self.assertEqual(results[1]['content'], 'Tool call limit reached')
+        self.assertEqual(events[-1]['data']['scope'], {'priority': 'high'})
+
     async def test_document_passages_are_evidence_and_unreturned_citations_fail(self):
         for cited, verified in (('DOC-0008#2', True), ('DOC-0008#9', False)):
             with self.subTest(cited=cited):
@@ -341,6 +420,7 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
                     'gen_ai.provider.name': 'aws.bedrock' if provider == 'bedrock' else 'anthropic',
                     'gen_ai.request.model': model.model,
                     'preflight.runtime': self.runtime_name,
+                    'preflight.scope_fields': (),
                     # As in the SDK's model spans, input tokens include the cached ones.
                     'gen_ai.usage.input_tokens': 9 + 11 + 5,
                     'gen_ai.usage.output_tokens': done['usage']['output_tokens'],

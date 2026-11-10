@@ -21,6 +21,7 @@ from fastapi.responses import StreamingResponse
 from starlette.types import Receive, Scope, Send
 
 from backend.settings import ChatSettings, SettingsError
+from preflight_core.scope import unique_object, validate_scope
 
 logger = logging.getLogger('preflight.chat')
 
@@ -124,16 +125,16 @@ async def read_body(request: Request, limit: int) -> bytes:
     return bytes(body)
 
 
-def parse_payload(body: bytes, limits: Limits = LIMITS) -> tuple[str, list[dict[str, str]]]:
-    """Validate the browser payload and return (question, history), or raise HTTP 422."""
+def parse_payload(body: bytes, limits: Limits = LIMITS) -> tuple[str, list[dict[str, str]], dict[str, str]]:
+    """Validate the browser payload and return (question, history, scope), or raise HTTP 422."""
     try:
-        payload = json.loads(body)
+        payload = json.loads(body, object_pairs_hook=unique_object)
     except ValueError, UnicodeError:
         raise HTTPException(422, INVALID_QUESTION) from None
     if (
         not isinstance(payload, dict)
         or 'question' not in payload
-        or set(payload) - {'question', 'history'}
+        or set(payload) - {'question', 'history', 'scope'}
         or not isinstance(payload['question'], str)
         or not 1 <= len(payload['question'].strip()) <= limits.question_chars
     ):
@@ -153,7 +154,11 @@ def parse_payload(body: bytes, limits: Limits = LIMITS) -> tuple[str, list[dict[
         or sum(len(item['content']) for item in history) > limits.history_chars
     ):
         raise HTTPException(422, INVALID_HISTORY)
-    return payload['question'].strip(), history
+    try:
+        scope = validate_scope(payload.get('scope', {}))
+    except ValueError:
+        raise HTTPException(422, 'Scope filters are invalid') from None
+    return payload['question'].strip(), history, scope
 
 
 def compose_question(question: str, history: list[dict[str, str]]) -> str:
@@ -169,11 +174,13 @@ def compose_question(question: str, history: list[dict[str, str]]) -> str:
     )
 
 
-async def stream_answer(question: str, settings: ChatSettings) -> AsyncGenerator[dict[str, Any]]:
+async def stream_answer(
+    question: str, settings: ChatSettings, *, scope: dict[str, str] | None = None
+) -> AsyncGenerator[dict[str, Any]]:
     # The runtime selector loads SDKs lazily so a missing chat dependency cannot break the SQL API.
     from backend.runtime import stream_answer as selected
 
-    async for event in selected(question, settings):
+    async for event in selected(question, settings, scope=scope):
         yield event
 
 
@@ -213,7 +220,7 @@ def create_router(limits: Limits = LIMITS, admission: Admission | None = None) -
         origin = request.headers.get('origin')
         if origin and origin != str(request.base_url).rstrip('/'):
             raise HTTPException(403, 'Origin not allowed')
-        question, history = parse_payload(await read_body(request, limits.body_bytes), limits)
+        question, history, scope = parse_payload(await read_body(request, limits.body_bytes), limits)
         prompt = compose_question(question, history)
         refused = gate.admit()
         if refused is not None:
@@ -223,7 +230,7 @@ def create_router(limits: Limits = LIMITS, admission: Admission | None = None) -
             try:
                 yield sse('status', {'message': 'Checking synthetic records'})
                 async with asyncio.timeout(limits.answer_seconds):
-                    async for event in stream_answer(prompt, settings):
+                    async for event in stream_answer(prompt, settings, scope=scope):
                         yield sse(event['event'], event['data'])
             except TimeoutError:
                 yield sse('error', {'message': 'The answer timed out. Try a more specific question.'})

@@ -120,12 +120,13 @@ async def stream_answer(
     question: str,
     settings: ChatSettings,
     *,
+    scope: dict[str, str] | None = None,
     model_client: ModelClient | None = None,
     tools: ToolService | None = None,
 ) -> AsyncGenerator[Event]:
     model = model_client if model_client is not None else build_model_client(settings)
     service = tools if tools is not None else build_tool_service(settings)
-    loop = Loop(settings, model, service)
+    loop = Loop(settings, model, service, scope=scope)
     async with aclosing(
         stream_loop(loop, run(loop, question), owned_model=model if model_client is None else None)
     ) as stream:

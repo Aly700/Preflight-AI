@@ -85,6 +85,55 @@ class EvalRunner(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.path = Path(self.temp.name) / 'questions.json'
 
+    def test_scope_validation_and_passthrough(self):
+        scope = {'entity': 'tasks', 'task_status': 'awaiting_review', 'team_id': 'TEAM-0001'}
+        document = question_document()
+        document['cases'][0]['scope'] = scope
+        document['cases'][0]['expect']['tools_any'] = ['list_tasks']
+        self.path.write_text(json.dumps(document))
+        _, cases = evaluation.load_cases(self.path)
+        self.assertEqual(cases[0]['scope'], scope)
+        with (
+            patch.object(evaluation, 'runtime_configuration', return_value=CONFIG),
+            patch.object(evaluation, 'sql_values', return_value=TRUTH),
+        ):
+            ask = Mock(return_value=EVENTS)
+            evaluation.run(
+                cases[:1], base='http://127.0.0.1', container='fixture', database='fixture', gap=0, ask_fn=ask
+            )
+        self.assertEqual(ask.call_args.kwargs['scope'], scope)
+        invalid_scopes: list[Any] = [
+            None,
+            [],
+            {'status': 'open'},
+            {'task_status': 'open'},
+            {'team_id': ['TEAM-0001']},
+            {'opened_after': '2026-02-30'},
+            {'opened_after': '2026-02-01', 'opened_before': '2026-01-01'},
+        ]
+        for invalid in invalid_scopes:
+            document['cases'][0]['scope'] = invalid
+            self.path.write_text(json.dumps(document))
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                evaluation.load_cases(self.path)
+
+    def test_duplicate_scope_fields_in_cases_are_rejected(self):
+        document = question_document()
+        document['cases'][0]['scope'] = {'priority': 'high'}
+        self.path.write_text(
+            json.dumps(document).replace('"priority": "high"', '"priority": "high", "priority": "low"')
+        )
+        with self.assertRaises(ValueError):
+            evaluation.load_cases(self.path)
+
+    def test_ask_sends_structured_scope_with_unmodified_question(self):
+        with patch.object(evaluation.compose_check.http.client, 'HTTPConnection') as connection:
+            connection.return_value.getresponse.return_value.status = 200
+            connection.return_value.getresponse.return_value.__iter__.return_value = iter([])
+            evaluation.compose_check.ask('http://127.0.0.1', 'Question', scope={'priority': 'high'})
+            body = json.loads(connection.return_value.request.call_args.kwargs['body'])
+            self.assertEqual(body, {'question': 'Question', 'history': [], 'scope': {'priority': 'high'}})
+
     def test_document_set_has_grounded_facts_and_complete_tool_alternatives(self):
         path = ROOT / 'evals/documents.json'
         self.assertTrue(path.is_file(), 'Missing document answer evaluation set')

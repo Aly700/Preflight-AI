@@ -1,0 +1,87 @@
+{
+  "entity": {
+    "enum": [
+      "issues",
+      "tasks",
+      "documents"
+    ]
+  },
+  "aircraft_id": {
+    "pattern": "^DEMO-AIR-[0-9]{4}$",
+    "maxLength": 13
+  },
+  "subsystem": {
+    "enum": [
+      "hydraulics",
+      "avionics",
+      "electrical",
+      "cabin",
+      "structures",
+      "controls"
+    ]
+  },
+  "priority": {
+    "enum": [
+      "low",
+      "medium",
+      "high"
+    ]
+  },
+  "issue_status": {
+    "enum": [
+      "open",
+      "in_progress",
+      "blocked",
+      "reopened",
+      "closed",
+      "unresolved"
+    ]
+  },
+  "opened_after": {
+    "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+    "format": "date",
+    "maxLength": 10
+  },
+  "opened_before": {
+    "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+    "format": "date",
+    "maxLength": 10
+  },
+  "task_status": {
+    "enum": [
+      "todo",
+      "in_progress",
+      "awaiting_review",
+      "completed",
+      "blocked"
+    ]
+  },
+  "task_kind": {
+    "enum": [
+      "review",
+      "investigation",
+      "documentation",
+      "inspection",
+      "rectification"
+    ]
+  },
+  "team_id": {
+    "pattern": "^TEAM-[0-9]{4}$",
+    "maxLength": 9
+  },
+  "document_kind": {
+    "enum": [
+      "policy",
+      "glossary",
+      "handover",
+      "memo",
+      "coordination",
+      "retrospective",
+      "form"
+    ]
+  },
+  "related_id": {
+    "pattern": "^(?:(?:DEMO-AIR|ISSUE|TASK|EVT|TEAM|PERSON|SHIFT)-[0-9]+|DOC-[0-9]{4}(?:#[0-9]+)?)$",
+    "maxLength": 64
+  }
+}

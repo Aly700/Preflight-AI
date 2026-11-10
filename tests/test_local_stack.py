@@ -279,6 +279,8 @@ class ComposeConfiguration(unittest.TestCase):
 
 FACTS: dict[str, Any] = {
     'passage_ids': ['DOC-0008#2', 'DOC-0001#1'],
+    'review_tasks_total': 7,
+    'first_review_tasks': ['TASK-0001', 'TASK-0003'],
     'counts': {
         'aircraft': 12,
         'issues': 180,
@@ -346,6 +348,15 @@ PAGE = {
     'offset': 0,
     'items': [{'issue_id': i, 'status': 'open'} for i in FACTS['first_unresolved']],
 }
+TASK_PAGE: dict[str, Any] = {
+    'total': 7,
+    'limit': 5,
+    'offset': 0,
+    'items': [
+        {'task_id': ident, 'status': 'awaiting_review', 'assigned_team_id': 'TEAM-0001'}
+        for ident in FACTS['first_review_tasks']
+    ],
+}
 SUMMARY = {'aircraft': {'aircraft_id': 'DEMO-AIR-0001'}, **FACTS['aircraft_0001']}
 HISTORY = {'issue': {'issue_id': 'ISSUE-0001'}, 'total_events': 7, 'limit': 1, 'offset': 0, 'events': []}
 
@@ -353,6 +364,35 @@ HISTORY = {'issue': {'issue_id': 'ISSUE-0001'}, 'total_events': 7, 'limit': 1, '
 class StackCheck(unittest.TestCase):
     def setUp(self):
         self.check = load_script('compose_check')
+
+    def test_tasks_are_compared_with_sql_for_status_and_team(self):
+        self.assertIn("'list_tasks': call('list_tasks'", self.check.TOOL_CLIENT)
+        self.assertIn("'status': 'awaiting_review', 'assigned_team_id': 'TEAM-0001'", self.check.TOOL_CLIENT)
+        sql = ' '.join(self.check.FACTS_SQL.split())
+        self.assertIn("status = 'awaiting_review' AND assigned_team_id = 'TEAM-0001'", sql)
+        self.assertIn('json_agg(task_id ORDER BY task_id)', sql)
+        self.assertIn('ORDER BY task_id LIMIT 5', sql)
+        results = {
+            'get_aircraft_summary': SUMMARY,
+            'list_open_issues': PAGE,
+            'get_issue_history': HISTORY,
+            'count_issues': COUNTS,
+            'compare_aircraft': COMPARISON,
+            'search_issues': CLOSED,
+            'search_documents': DOCUMENT_RESULT,
+            'list_tasks': TASK_PAGE,
+        }
+        self.assertEqual(self.check.compare_tools(results, FACTS), [])
+        changes: list[dict[str, Any]] = [
+            {'total': 2},
+            {'items': []},
+            {'limit': 20},
+            {'offset': 1},
+            {'items': [{**TASK_PAGE['items'][0], 'status': 'completed'}]},
+        ]
+        for change in changes:
+            bad = {**results, 'list_tasks': {**TASK_PAGE, **change}}
+            self.assertTrue(any('list_tasks' in message for message in self.check.compare_tools(bad, FACTS)))
 
     def test_document_search_is_called_with_known_query_and_ids_come_from_sql(self):
         self.assertIn("'search_documents': call('search_documents'", self.check.TOOL_CLIENT)
@@ -372,6 +412,7 @@ class StackCheck(unittest.TestCase):
             'compare_aircraft': COMPARISON,
             'search_issues': CLOSED,
             'search_documents': DOCUMENT_RESULT,
+            'list_tasks': TASK_PAGE,
         }
         self.assertEqual(self.check.compare_tools(results, FACTS), [])
         first = DOCUMENT_RESULT['results'][0]
@@ -431,7 +472,7 @@ class StackCheck(unittest.TestCase):
         events = [('status', {'message': 'Checking'}), ('error', {'message': 'x'})]
         self.assertEqual(self.check.compare_evidence(events, FACTS), ['answer ended with error: x'])
 
-    def test_compare_tools_checks_all_three_tools(self):
+    def test_compare_tools_checks_all_eight_tools(self):
         results = {
             'get_aircraft_summary': SUMMARY,
             'list_open_issues': PAGE,
@@ -440,6 +481,7 @@ class StackCheck(unittest.TestCase):
             'compare_aircraft': COMPARISON,
             'search_issues': CLOSED,
             'search_documents': DOCUMENT_RESULT,
+            'list_tasks': TASK_PAGE,
         }
         self.assertEqual(self.check.compare_tools(results, FACTS), [])
         wrong = {**results, 'get_issue_history': {**HISTORY, 'total_events': 6}}
@@ -447,7 +489,7 @@ class StackCheck(unittest.TestCase):
         self.assertEqual(len(mismatches), 1)
         self.assertIn('get_issue_history', mismatches[0])
         missing = self.check.compare_tools({'list_open_issues': PAGE}, FACTS)
-        self.assertEqual(len(missing), 6)
+        self.assertEqual(len(missing), 7)
 
     def test_compare_tools_checks_the_three_new_tools(self):
         results = {
@@ -458,6 +500,7 @@ class StackCheck(unittest.TestCase):
             'compare_aircraft': COMPARISON,
             'search_issues': CLOSED,
             'search_documents': DOCUMENT_RESULT,
+            'list_tasks': TASK_PAGE,
         }
         self.assertEqual(self.check.compare_tools(results, FACTS), [])
         wrong_count = {**COUNTS, 'groups': [{'key': 'avionics', 'count': 1}, *COUNTS['groups'][1:]]}
@@ -482,6 +525,7 @@ class StackCheck(unittest.TestCase):
             'compare_aircraft': {**COMPARISON, 'ranked_by_unresolved': []},
             'search_issues': CLOSED,
             'search_documents': DOCUMENT_RESULT,
+            'list_tasks': TASK_PAGE,
         }
         mismatches = self.check.compare_tools(results, FACTS)
         self.assertEqual(len(mismatches), 1)
@@ -500,6 +544,7 @@ class StackCheck(unittest.TestCase):
             'compare_aircraft': {**COMPARISON, 'summaries': swapped},
             'search_issues': CLOSED,
             'search_documents': DOCUMENT_RESULT,
+            'list_tasks': TASK_PAGE,
         }
         mismatches = self.check.compare_tools(results, FACTS)
         self.assertEqual(len(mismatches), 1)
@@ -514,6 +559,7 @@ class StackCheck(unittest.TestCase):
             'compare_aircraft': COMPARISON,
             'search_issues': {**CLOSED, 'items': []},
             'search_documents': DOCUMENT_RESULT,
+            'list_tasks': TASK_PAGE,
         }
         mismatches = self.check.compare_tools(results, FACTS)
         self.assertEqual(len(mismatches), 1)
@@ -529,6 +575,7 @@ class StackCheck(unittest.TestCase):
             'compare_aircraft': COMPARISON,
             'search_issues': {**CLOSED, 'items': wrong_items},
             'search_documents': DOCUMENT_RESULT,
+            'list_tasks': TASK_PAGE,
         }
         mismatches = self.check.compare_tools(results, FACTS)
         self.assertEqual(len(mismatches), 1)

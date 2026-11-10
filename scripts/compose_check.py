@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Check the running local stack: health, loaded rows, seven tools against SQL, and optionally one answer.
+"""Check the running local stack: health, loaded rows, eight tools against SQL, and optionally one answer.
 
 Standard library only. Without `--ask` no chat model is called: the checks are
 container health, row counts from an independent SQL query, the chat status
-route, and the seven MCP tools called through their real HTTP transport and
+route, and the eight MCP tools called through their real HTTP transport and
 authentication, compared with SQL. `--ask` sends one fixed question through the
 web entry point and compares the answer's tool evidence with the same SQL facts.
 """
@@ -71,6 +71,11 @@ SELECT json_build_object(
     'issue_count', count(*),
     'unresolved_issue_count', count(*) FILTER (WHERE status <> 'closed'))
     FROM preflight.issues WHERE aircraft_id = 'DEMO-AIR-0002'),
+  'review_tasks_total', (SELECT count(*) FROM preflight.tasks
+    WHERE status = 'awaiting_review' AND assigned_team_id = 'TEAM-0001'),
+  'first_review_tasks', (SELECT coalesce(json_agg(task_id ORDER BY task_id), '[]'::json) FROM
+    (SELECT task_id FROM preflight.tasks WHERE status = 'awaiting_review' AND assigned_team_id = 'TEAM-0001'
+     ORDER BY task_id LIMIT 5) first_five_tasks),
   'closed_total', (SELECT count(*) FROM preflight.issues WHERE status = 'closed'),
   'first_closed', (SELECT coalesce(json_agg(issue_id ORDER BY issue_id), '[]'::json) FROM
     (SELECT issue_id FROM preflight.issues WHERE status = 'closed' ORDER BY issue_id LIMIT 5) first_five)
@@ -114,6 +119,7 @@ print(json.dumps({
     'compare_aircraft': call('compare_aircraft', {'aircraft_ids': ['DEMO-AIR-0001', 'DEMO-AIR-0002']}, 5),
     'search_issues': call('search_issues', {'status': 'closed', 'limit': 5}, 6),
     'search_documents': call('search_documents', {'query': 'When does the Friday queue sweep start?', 'top_k': 3}, 7),
+    'list_tasks': call('list_tasks', {'status': 'awaiting_review', 'assigned_team_id': 'TEAM-0001', 'limit': 5}, 8),
 }))
 """
 
@@ -200,6 +206,7 @@ def ask(
     *,
     timeout: float = 150,
     history: list[dict[str, str]] | None = None,
+    scope: dict[str, str] | None = None,
     on_event: Callable[[str, dict[str, Any]], None] | None = None,
     token: str | None = None,
 ) -> list[tuple[str, dict[str, Any]]]:
@@ -210,7 +217,9 @@ def ask(
     """
     parts = urlsplit(base)
     connection = http.client.HTTPConnection(parts.hostname or '127.0.0.1', parts.port or 80, timeout=timeout)
-    body = json.dumps({'question': question, 'history': history or []})
+    body = json.dumps(
+        {'question': question, 'history': history or [], **({'scope': scope} if scope is not None else {})}
+    )
     try:
         headers = {'Content-Type': 'application/json'}
         if token:
@@ -276,6 +285,7 @@ def compare_tools(results: dict[str, Any], facts: dict[str, Any]) -> list[str]:
         'compare_aircraft',
         'search_issues',
         'search_documents',
+        'list_tasks',
     ):
         if tool not in results:
             mismatches.append(f'{tool}: no result')
@@ -336,6 +346,19 @@ def compare_tools(results: dict[str, Any], facts: dict[str, Any]) -> list[str]:
             or any(i.get('status') != 'closed' for i in items)
         ):
             mismatches.append('search_issues: page differs from SQL or an item is not closed')
+    if 'list_tasks' in results:
+        tasks = results['list_tasks']
+        items = tasks.get('items', [])
+        if (
+            tasks.get('limit') != 5
+            or tasks.get('offset') != 0
+            or tasks.get('total') != facts['review_tasks_total']
+            or [item.get('task_id') for item in items] != facts['first_review_tasks']
+            or any(
+                item.get('status') != 'awaiting_review' or item.get('assigned_team_id') != 'TEAM-0001' for item in items
+            )
+        ):
+            mismatches.append('list_tasks: page differs from SQL or status/team filters')
     if 'search_documents' in results:
         passages = results['search_documents'].get('results', [])
         if not any(p.get('doc_id') == 'DOC-0008' for p in passages[:3]):

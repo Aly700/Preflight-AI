@@ -109,7 +109,18 @@ class FixtureRepository:
         spread = ranked[0]['unresolved_issue_count'] - ranked[-1]['unresolved_issue_count']
         return {'summaries': summaries, 'ranked_by_unresolved': ranked, 'unresolved_spread': spread}
 
-    def search_issues(self, status, subsystem, priority, aircraft_id, opened_after, opened_before, limit, offset):
+    def search_issues(
+        self,
+        status,
+        subsystem,
+        priority,
+        aircraft_id,
+        opened_after,
+        opened_before,
+        limit,
+        offset,
+        unresolved_only=False,
+    ):
         self.calls += 1
         rows = [
             i
@@ -118,6 +129,7 @@ class FixtureRepository:
             and (subsystem is None or i['subsystem'] == subsystem)
             and (priority is None or i['priority'] == priority)
             and (aircraft_id is None or i['aircraft_id'] == aircraft_id)
+            and (not unresolved_only or i['status'] != 'closed')
             and (opened_after is None or datetime.fromisoformat(i['opened_at']) >= opened_after)
             and (opened_before is None or datetime.fromisoformat(i['opened_at']) <= opened_before)
         ]
@@ -155,7 +167,7 @@ class McpContract(unittest.IsolatedAsyncioTestCase):
         self.factory = factory
         self.server = create_server(repository_factory=factory)
 
-    async def test_only_the_seven_read_only_tools_are_discoverable(self):
+    async def test_only_the_eight_read_only_tools_are_discoverable(self):
         async with Client(self.server) as client:
             listing = await client.list_tools()
         self.assertEqual(
@@ -168,6 +180,7 @@ class McpContract(unittest.IsolatedAsyncioTestCase):
                 'compare_aircraft',
                 'search_issues',
                 'search_documents',
+                'list_tasks',
             },
         )
         for tool in listing.tools:
