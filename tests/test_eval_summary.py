@@ -95,6 +95,13 @@ class Summarise(unittest.TestCase):
         runs = [report([case('a', [], total_s=2.0), case('b', [], total_s=6.0), case('c', [], total_s=4.0)])]
         self.assertEqual(summary.summarise(runs)['per_run'][0]['median_s'], 4.0)
 
+    def test_declaration_leaks_are_counted_per_run_and_absent_in_older_reports(self):
+        leaked = {**case('a', []), 'declaration_leak': True}
+        runs = [report([leaked, case('b', [])]), report([case('a', []), case('b', [])])]
+        result = summary.summarise(runs)
+        self.assertEqual([run['declaration_leaks'] for run in result['per_run']], [1, 0])
+        self.assertIn('declaration blocks in answers 1, 0', summary.table(result))
+
     def test_reports_must_share_a_version_and_case_set(self):
         with self.assertRaisesRegex(ValueError, 'version'):
             summary.summarise([report([case('a', [])]), report([case('a', [])], version='v2')])

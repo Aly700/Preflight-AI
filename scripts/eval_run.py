@@ -192,6 +192,12 @@ def number_tokens(text: str) -> set[str]:
     }
 
 
+# A visible list of the claims the separate claims round collects ("Declared record IDs: ...").
+DECLARATION_BLOCK = re.compile(
+    r'^\W*declared\b[^\n]{0,40}\b(?:ids?|numbers|claims|values)\b', re.IGNORECASE | re.MULTILINE
+)
+
+
 def score(case: dict[str, Any], events: Events, truth: dict[str, Any], *, runtime: str) -> dict[str, Any]:
     expect = case['expect']
     text = ''.join(str(data.get('text', '')) for name, data in events if name == 'delta')
@@ -246,6 +252,7 @@ def score(case: dict[str, Any], events: Events, truth: dict[str, Any], *, runtim
         'undeclared': (done or {}).get('undeclared'),
         'attempted_tool_calls': attempted,
         'efficiency': attempted - expect['min_tool_calls'] if 'min_tool_calls' in expect else None,
+        'declaration_leak': bool(DECLARATION_BLOCK.search(text)),
         'answer': ''.join(str(data.get('text', '')) for name, data in events if name == 'delta'),
         'first_delta_s': None,
         'total_s': None,
@@ -274,6 +281,7 @@ def empty_totals() -> dict[str, Any]:
         'skipped': 0,
         'extra_tool_calls': 0,
         'minimal_cases': 0,
+        'declaration_leaks': 0,
         'usage': dict.fromkeys(USAGE_KEYS, 0),
         'model_calls': 0,
     }
@@ -350,6 +358,7 @@ def run(
             if result['usage'] is not None:
                 for key in USAGE_KEYS:
                     bucket['usage'][key] += result['usage'].get(key, 0)
+            bucket['declaration_leaks'] += bool(result.get('declaration_leak'))
             if result['efficiency'] is not None:
                 bucket['extra_tool_calls'] += max(result['efficiency'], 0)
                 bucket['minimal_cases'] += result['efficiency'] == 0

@@ -168,6 +168,11 @@ class NativePrompts(unittest.TestCase):
             self.assertIn(rule, system)
         self.assertIn('passage IDs (DOC-NNNN#N)', claims_prompt([]))
 
+    def test_system_prompt_keeps_claim_declarations_out_of_the_answer(self):
+        system = ' '.join(SYSTEM.split())
+        self.assertIn('do not list or declare them in the answer', system)
+        self.assertNotIn('you will be asked to declare', system)
+
     def test_claims_prompt_names_items_by_field_value(self):
         prompt = claims_prompt([])
         self.assertIn('Name list items by a field value instead of a position', prompt)

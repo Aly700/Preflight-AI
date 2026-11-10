@@ -64,7 +64,7 @@ def summarise(reports: Sequence[dict[str, Any]]) -> dict[str, Any]:
     }
     per_run: list[dict[str, Any]] = []
     for report in reports:
-        strict = content = scored = 0
+        strict = content = scored = leaks = 0
         latencies: list[float] = []
         for result in report['cases']:
             entry = per_case[result['id']]
@@ -73,6 +73,7 @@ def summarise(reports: Sequence[dict[str, Any]]) -> dict[str, Any]:
                 continue
             scored += 1
             entry['runs'] += 1
+            leaks += bool(result.get('declaration_leak'))
             failures = list(result.get('failures') or [])
             kinds = {failure_kind(label) for label in failures}
             entry['failures'].update(failures)
@@ -91,6 +92,7 @@ def summarise(reports: Sequence[dict[str, Any]]) -> dict[str, Any]:
                 'strict': strict,
                 'content': content,
                 'median_s': statistics.median(latencies) if latencies else None,
+                'declaration_leaks': leaks,
             }
         )
     cases = [
@@ -121,6 +123,7 @@ def table(result: dict[str, Any]) -> str:
         'strict ' + ', '.join(f'{run["strict"]}/{run["scored"]}' for run in runs),
         'content ' + ', '.join(f'{run["content"]}/{run["scored"]}' for run in runs),
         'median s ' + ', '.join('-' if run['median_s'] is None else f'{run["median_s"]:.1f}' for run in runs),
+        'declaration blocks in answers ' + ', '.join(str(run['declaration_leaks']) for run in runs),
         'failure kinds over all case runs: ' + (json.dumps(result['failure_counts']) or '{}'),
     ]
     for entry in result['cases']:

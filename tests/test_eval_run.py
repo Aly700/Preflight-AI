@@ -832,6 +832,31 @@ class EvalRunner(unittest.TestCase):
         self.assertTrue(copilot['passed'], copilot)
         self.assertEqual(copilot['verified'], 'n/a')
 
+    def test_a_declaration_block_in_the_answer_is_counted_not_failed(self) -> None:
+        leaked = [
+            ('delta', {'text': 'There are 3 tasks.\n\n---\n**Declared record IDs and numbers:**\n- TASK-0001'}),
+            ('done', {'verified': True}),
+        ]
+        clean = [('delta', {'text': 'The declared policy says reviews close weekly.'}), ('done', {'verified': True})]
+        case = {**CASE, 'expect': {'max_tool_calls': 3}}
+        self.assertTrue(evaluation.score(case, leaked, {}, runtime='native')['declaration_leak'])
+        self.assertFalse(evaluation.score(case, clean, {}, runtime='native')['declaration_leak'])
+        self.assertTrue(evaluation.score(case, leaked, {}, runtime='native')['passed'])
+        with (
+            patch.object(evaluation, 'runtime_configuration', return_value=CONFIG),
+            patch.object(evaluation, 'sql_values', return_value={}),
+            patch.object(evaluation.time, 'sleep'),
+        ):
+            report = evaluation.run(
+                [{**case, 'id': 'leak-1'}, {**case, 'id': 'leak-2'}],
+                base='http://test',
+                container='db',
+                database='db',
+                gap=0,
+                ask_fn=Mock(side_effect=[leaked, clean]),
+            )
+        self.assertEqual(report['overall']['declaration_leaks'], 1)
+
     def test_efficiency_is_reported_not_failed(self) -> None:
         attempts = [
             ('tool', {'name': 'search_issues', 'status': 'running', 'call_id': 'bad'}),
@@ -875,6 +900,7 @@ class EvalRunner(unittest.TestCase):
             'skipped': 0,
             'extra_tool_calls': 4,
             'minimal_cases': 2,
+            'declaration_leaks': 0,
             'usage': ZERO_USAGE,
             'model_calls': 0,
         }
@@ -959,6 +985,7 @@ class EvalRunner(unittest.TestCase):
                 'skipped': 1,
                 'extra_tool_calls': 0,
                 'minimal_cases': 0,
+                'declaration_leaks': 0,
                 'usage': ZERO_USAGE,
                 'model_calls': 0,
             },
@@ -1040,6 +1067,7 @@ class EvalRunner(unittest.TestCase):
                 'skipped': 0,
                 'extra_tool_calls': 0,
                 'minimal_cases': 0,
+                'declaration_leaks': 0,
                 'usage': ZERO_USAGE,
                 'model_calls': 0,
             },
