@@ -83,5 +83,93 @@
   "related_id": {
     "pattern": "^(?:(?:DEMO-AIR|ISSUE|TASK|EVT|TEAM|PERSON|SHIFT)-[0-9]+|DOC-[0-9]{4}(?:#[0-9]+)?)$",
     "maxLength": 64
-  }
+  },
+  "aircraft": [
+    {
+      "id": "DEMO-AIR-0001",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "station": "DEMO-STATION-01"
+    },
+    {
+      "id": "DEMO-AIR-0002",
+      "program": "DEMO-PROGRAM-BETA",
+      "station": "DEMO-STATION-01"
+    },
+    {
+      "id": "DEMO-AIR-0003",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "station": "DEMO-STATION-01"
+    },
+    {
+      "id": "DEMO-AIR-0004",
+      "program": "DEMO-PROGRAM-BETA",
+      "station": "DEMO-STATION-02"
+    },
+    {
+      "id": "DEMO-AIR-0005",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "station": "DEMO-STATION-02"
+    },
+    {
+      "id": "DEMO-AIR-0006",
+      "program": "DEMO-PROGRAM-BETA",
+      "station": "DEMO-STATION-02"
+    },
+    {
+      "id": "DEMO-AIR-0007",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "station": "DEMO-STATION-03"
+    },
+    {
+      "id": "DEMO-AIR-0008",
+      "program": "DEMO-PROGRAM-BETA",
+      "station": "DEMO-STATION-03"
+    },
+    {
+      "id": "DEMO-AIR-0009",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "station": "DEMO-STATION-03"
+    },
+    {
+      "id": "DEMO-AIR-0010",
+      "program": "DEMO-PROGRAM-BETA",
+      "station": "DEMO-STATION-01"
+    },
+    {
+      "id": "DEMO-AIR-0011",
+      "program": "DEMO-PROGRAM-ALPHA",
+      "station": "DEMO-STATION-01"
+    },
+    {
+      "id": "DEMO-AIR-0012",
+      "program": "DEMO-PROGRAM-BETA",
+      "station": "DEMO-STATION-01"
+    }
+  ],
+  "teams": [
+    {
+      "id": "TEAM-0001",
+      "name": "Demo Team 01"
+    },
+    {
+      "id": "TEAM-0002",
+      "name": "Demo Team 02"
+    },
+    {
+      "id": "TEAM-0003",
+      "name": "Demo Team 03"
+    },
+    {
+      "id": "TEAM-0004",
+      "name": "Demo Team 04"
+    },
+    {
+      "id": "TEAM-0005",
+      "name": "Demo Team 05"
+    },
+    {
+      "id": "TEAM-0006",
+      "name": "Demo Team 06"
+    }
+  ]
 }
