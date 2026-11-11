@@ -185,14 +185,29 @@ of answers by itself.
    declaration, one document answer that left out a station) and tuning and documents
    unchanged at 21 and 20 of 22. The eval now counts such blocks in every report.
 
+14. **Zero-count groups and short claim references.** `count_issues` now lists every
+   value of the grouped field that the filters allow, with 0 where nothing matches, so
+   a zero is a tool result the verifier can check; held-out questions asking for empty
+   statuses or subsystems had made one call per value and failed the call budget in
+   every run. The `list_tasks` description now points whole-aircraft status counts to
+   the summaries, after the new tool drew task questions into one call per status. The
+   claims round names tool calls `c1`, `c2` and so on instead of long random IDs, names
+   an unresolved reference in the note, and shows each reason once (one answer had
+   repeated the same reason 1,962 times). On the demo the held-out set went from 17 and
+   16 of 22 strict to 21, 21 and 19, with no tool-choice or call-budget failures and
+   about 580 output tokens an answer instead of 690; tuning passed 21 and 20, documents
+   20 and scoped 11 of 12. No answer cited a missing call, but none had since November
+   9 either, so the cause of the earlier misses is unconfirmed. The held-out set has now
+   informed changes; a fresh one is next.
+
 ## Next
 
-14. **Stronger structured-data answers.** A written question set drives further
+15. **Stronger structured-data answers.** A written question set drives further
    tools; the model selects tools, resolves follow-ups, asks for missing criteria and
    explains supported results within pagination and limits. Numeric claims are
    checked against tool output before an answer is complete; missing records and
    tool failures produce explicit limits, not invented facts.
-15. **Evaluation and adaptability.** A versioned benchmark of original cases
+16. **Evaluation and adaptability.** A versioned benchmark of original cases
    (lookups, comparisons, timelines, multi-step questions, follow-ups, ambiguity,
    pagination, missing evidence, tool failures, adversarial text inside records),
    tuning cases separate from held-out cases, several seeds and paraphrases, the
