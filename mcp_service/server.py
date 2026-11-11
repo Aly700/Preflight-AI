@@ -251,7 +251,9 @@ def create_server(repository_factory: RepositoryFactory = open_repository) -> MC
         """List fictional tasks joined to their issue for aircraft ID, with optional AND-combined filters.
 
         Blank filters are ignored. Pages are ordered by task ID; total counts all matches.
-        Completed tasks do not imply closed issues. This tool cannot change records.
+        For task counts by status on whole aircraft, get_aircraft_summary or compare_aircraft gives
+        every status in one call; use this tool to list tasks or to count with a kind, team, person
+        or issue filter. Completed tasks do not imply closed issues. This tool cannot change records.
         """
         return TaskPage.model_validate(
             await read(

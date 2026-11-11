@@ -292,6 +292,14 @@ class McpContract(unittest.IsolatedAsyncioTestCase):
             },
         )
 
+    async def test_list_tasks_points_whole_aircraft_status_counts_to_the_summaries(self):
+        # One summary call has every task status; listing per status took four calls on held-out questions.
+        async with Client(self.server) as client:
+            tool = next(t for t in (await client.list_tools()).tools if t.name == 'list_tasks')
+        assert tool.description is not None
+        for name in ('get_aircraft_summary', 'compare_aircraft'):
+            self.assertIn(name, tool.description)
+
     async def test_count_dates_are_discovered_inclusive_and_match_search(self):
         boundary = self.repo.rows['issues'][0]['opened_at']
         windows = [
