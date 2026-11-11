@@ -1,13 +1,14 @@
 """Allowlisted SELECTs with bound values; no caller-supplied SQL or CSV reads."""
 
 import json
-from typing import Any
+from typing import Any, get_args
 
 import numpy as np
 from numpy.typing import NDArray
 import psycopg
 
 from mcp_service.embeddings import get_embedder
+from preflight_core.scope import IssueStatus, Priority, Subsystem
 
 Row = dict[str, Any]
 ISSUE_FIELDS = 'issue_id, aircraft_id, title, description, subsystem, priority, status, opened_at, closed_at'
@@ -227,12 +228,29 @@ class Repository:
             + ' GROUP BY key ORDER BY key',
             values,
         ).fetchall()
+        domain = list(get_args({'status': IssueStatus, 'priority': Priority, 'subsystem': Subsystem}.get(group_by)))
+        if filters[column] is not None:
+            domain = [filters[column]]
+        if group_by == 'status' and unresolved_only:
+            domain = [key for key in domain if key != 'closed']
+        if group_by == 'aircraft' or aircraft_id is not None:
+            aircraft = self.connection.execute(
+                'SELECT aircraft_id FROM preflight.aircraft'
+                + (' WHERE aircraft_id = %s' if aircraft_id is not None else '')
+                + ' ORDER BY aircraft_id',
+                [aircraft_id] if aircraft_id is not None else [],
+            ).fetchall()
+            if group_by == 'aircraft' or not aircraft:
+                domain = [row['aircraft_id'] for row in aircraft]
+        counts = {g['key']: g['count'] for g in groups}
+        # A key the database returned always stays, so the total never silently drops a group.
+        filled = [{'key': key, 'count': counts.get(key, 0)} for key in sorted(set(domain) | counts.keys())]
         return {
             'group_by': group_by,
             'unresolved_only': unresolved_only,
             'filters': filters,
-            'total': sum(g['count'] for g in groups),
-            'groups': [{'key': g['key'], 'count': g['count']} for g in groups],
+            'total': sum(g['count'] for g in filled),
+            'groups': filled,
         }
 
     def compare_aircraft(self, aircraft_ids: list[str]) -> Row:

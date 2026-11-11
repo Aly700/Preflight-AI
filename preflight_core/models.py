@@ -142,7 +142,10 @@ class CountFilters(ResultModel):
 
 
 class IssueCounts(ResultModel):
-    """Issue counts grouped by one column; SQL does the counting, keys with no issues are absent."""
+    """Every group value allowed by the filters, with count 0 when no issue matches.
+
+    A zero can be cited as groups[key=blocked].count; total is the sum of the groups.
+    """
 
     group_by: GroupBy
     unresolved_only: bool

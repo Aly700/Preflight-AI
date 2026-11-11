@@ -1,5 +1,5 @@
 {
-  "version": "heldout-2026-11-08.3",
+  "version": "heldout-2026-11-08.4",
   "cases": [
     {
       "id": "heldout-lookup-01",
@@ -330,6 +330,7 @@
           }
         ],
         "tools_any": [
+          "count_issues",
           "search_issues"
         ],
         "min_tool_calls": 1,

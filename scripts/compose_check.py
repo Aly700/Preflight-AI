@@ -29,6 +29,9 @@ AIRCRAFT = 'DEMO-AIR-0001'
 ISSUE = 'ISSUE-0001'
 
 FACTS_SQL = f"""
+WITH subsystems(subsystem) AS (
+  VALUES ('avionics'), ('cabin'), ('controls'), ('electrical'), ('hydraulics'), ('structures')
+)
 SELECT json_build_object(
   'counts', json_build_object(
     'aircraft', (SELECT count(*) FROM preflight.aircraft),
@@ -66,11 +69,14 @@ SELECT json_build_object(
     FROM preflight.issues WHERE aircraft_id = '{AIRCRAFT}'),
   'issue_0001_events', (SELECT count(*) FROM preflight.activity_events WHERE issue_id = '{ISSUE}'),
   'unresolved_by_subsystem', (SELECT coalesce(json_object_agg(subsystem, n ORDER BY subsystem), '{{}}'::json) FROM
-    (SELECT subsystem, count(*) AS n FROM preflight.issues WHERE status <> 'closed' GROUP BY subsystem) by_subsystem),
+    (SELECT s.subsystem, count(i.subsystem) AS n FROM subsystems s
+     LEFT JOIN preflight.issues i ON i.subsystem = s.subsystem AND i.status <> 'closed'
+     GROUP BY s.subsystem) by_subsystem),
   'dated_unresolved_by_subsystem', (SELECT coalesce(json_object_agg(subsystem, n ORDER BY subsystem), '{{}}'::json) FROM
-    (SELECT subsystem, count(*) AS n FROM preflight.issues WHERE status <> 'closed'
+    (SELECT s.subsystem, count(i.subsystem) AS n FROM subsystems s
+     LEFT JOIN preflight.issues i ON i.subsystem = s.subsystem AND i.status <> 'closed'
      AND opened_at >= '2026-03-01T00:00:00Z' AND opened_at <= '2026-04-01T00:00:00Z'
-     GROUP BY subsystem) dated_by_subsystem),
+     GROUP BY s.subsystem) dated_by_subsystem),
   'aircraft_0002', (SELECT json_build_object(
     'issue_count', count(*),
     'unresolved_issue_count', count(*) FILTER (WHERE status <> 'closed'))

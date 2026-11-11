@@ -88,6 +88,18 @@ class FixtureRepository:
             and (opened_before is None or datetime.fromisoformat(i['opened_at']) <= opened_before)
         ]
         counts = Counter(r[column] for r in rows)
+        domains = {
+            'status': ['open', 'in_progress', 'blocked', 'reopened', 'closed'],
+            'priority': ['low', 'medium', 'high'],
+            'subsystem': ['hydraulics', 'avionics', 'electrical', 'cabin', 'structures', 'controls'],
+            'aircraft': [a['aircraft_id'] for a in self.rows['aircraft']],
+        }
+        selected = {'status': status, 'priority': priority, 'subsystem': subsystem, 'aircraft': aircraft_id}[group_by]
+        keys = [key for key in domains[group_by] if selected is None or key == selected]
+        if group_by == 'status' and unresolved_only:
+            keys = [key for key in keys if key != 'closed']
+        if aircraft_id is not None and aircraft_id not in domains['aircraft']:
+            keys = []
         return {
             'group_by': group_by,
             'unresolved_only': unresolved_only,
@@ -100,7 +112,7 @@ class FixtureRepository:
                 'opened_before': opened_before.isoformat().replace('+00:00', 'Z') if opened_before else None,
             },
             'total': len(rows),
-            'groups': [{'key': key, 'count': count} for key, count in sorted(counts.items())],
+            'groups': [{'key': key, 'count': counts[key]} for key in sorted(keys)],
         }
 
     def compare_aircraft(self, aircraft_ids):
@@ -306,7 +318,7 @@ class McpContract(unittest.IsolatedAsyncioTestCase):
                         self.assertEqual(payload['total'], page.structured_content['total'])
                         column = 'aircraft_id' if group == 'aircraft' else group
                         expected = Counter(i[column] for i in page.structured_content['items'])
-                        self.assertEqual({g['key']: g['count'] for g in payload['groups']}, expected)
+                        self.assertEqual(Counter({g['key']: g['count'] for g in payload['groups']}), expected)
                         for key, value in window.items():
                             self.assertEqual(
                                 datetime.fromisoformat(payload['filters'][key]), datetime.fromisoformat(value)
@@ -327,34 +339,42 @@ class McpContract(unittest.IsolatedAsyncioTestCase):
                             self.assertTrue(result.is_error)
         self.assertEqual(self.repo.calls, 0)
 
-    async def test_count_groups_omit_empty_keys(self):
-        closed_only = next(
-            (
-                a
-                for a in self.repo.rows['aircraft']
-                if all(i['status'] == 'closed' for i in self.repo.rows_for(a['aircraft_id']))
-            ),
-            None,
-        )
+    async def test_count_groups_include_empty_keys(self):
+        # Empty issues leave every allowed domain value available to cite.
+        self.repo.rows['issues'] = []
+        domains = {
+            'status': ['blocked', 'closed', 'in_progress', 'open', 'reopened'],
+            'priority': ['high', 'low', 'medium'],
+            'subsystem': ['avionics', 'cabin', 'controls', 'electrical', 'hydraulics', 'structures'],
+            'aircraft': sorted(a['aircraft_id'] for a in self.repo.rows['aircraft']),
+        }
         async with Client(self.server) as client:
-            none = await client.call_tool(
-                'count_issues',
-                {
-                    'group_by': 'subsystem',
-                    'aircraft_id': 'DEMO-AIR-0001',
-                    'subsystem': 'avionics',
-                    'status': 'closed',
-                    'priority': 'low',
-                },
-            )
-            by_aircraft = await client.call_tool('count_issues', {'group_by': 'aircraft', 'unresolved_only': True})
-        keys = [g['key'] for g in by_aircraft.structured_content['groups']]
-        self.assertTrue(all(g['count'] > 0 for g in by_aircraft.structured_content['groups']))
-        self.assertEqual(keys, sorted(keys))
-        if closed_only is not None:
-            self.assertNotIn(closed_only['aircraft_id'], keys)
-        self.assertLessEqual(none.structured_content['total'], 1)
-        self.assertEqual(len(none.structured_content['groups']), none.structured_content['total'])
+            for group, keys in domains.items():
+                with self.subTest(group=group):
+                    result = await client.call_tool('count_issues', {'group_by': group})
+                    self.assertEqual(result.structured_content['total'], 0)
+                    self.assertEqual(result.structured_content['groups'], [{'key': k, 'count': 0} for k in keys])
+                    missing = await client.call_tool(
+                        'count_issues', {'group_by': group, 'aircraft_id': 'DEMO-AIR-9999'}
+                    )
+                    self.assertEqual(missing.structured_content['groups'], [])
+                    self.assertEqual(missing.structured_content['total'], 0)
+            for filters, keys in (
+                ({'unresolved_only': True}, ['blocked', 'in_progress', 'open', 'reopened']),
+                ({'status': 'blocked'}, ['blocked']),
+                ({'status': 'closed', 'unresolved_only': True}, []),
+            ):
+                with self.subTest(filters=filters):
+                    result = await client.call_tool('count_issues', {'group_by': 'status', **filters})
+                    self.assertEqual(result.structured_content['groups'], [{'key': k, 'count': 0} for k in keys])
+            for group, filters, key in (
+                ('priority', {'priority': 'low'}, 'low'),
+                ('subsystem', {'subsystem': 'cabin'}, 'cabin'),
+                ('aircraft', {'aircraft_id': 'DEMO-AIR-0001'}, 'DEMO-AIR-0001'),
+            ):
+                with self.subTest(group=group, filters=filters):
+                    result = await client.call_tool('count_issues', {'group_by': group, **filters})
+                    self.assertEqual(result.structured_content['groups'], [{'key': key, 'count': 0}])
 
     async def test_compare_ranks_by_unresolved_and_reports_the_spread(self):
         ids = ['DEMO-AIR-0003', 'DEMO-AIR-0001', 'DEMO-AIR-0002']

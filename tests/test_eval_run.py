@@ -470,7 +470,7 @@ class EvalRunner(unittest.TestCase):
             _, earlier_cases = evaluation.load_cases(ROOT / f'evals/seen/{seen_version}.json')
             seen_cases.extend(earlier_cases)
         earlier_questions = {' '.join(case['question'].casefold().split()) for case in [*tuning_cases, *seen_cases]}
-        self.assertEqual(version, 'heldout-2026-11-08.3')
+        self.assertEqual(version, 'heldout-2026-11-08.4')
         self.assertEqual(len(cases), 22)
         self.assertEqual(Counter(case['category'] for case in cases), CATEGORIES)
         self.assertEqual(len({case['question'] for case in cases}), 22)

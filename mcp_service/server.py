@@ -158,8 +158,9 @@ def create_server(repository_factory: RepositoryFactory = open_repository) -> MC
         """Count fictional issues grouped by subsystem, priority, status or aircraft, with optional filters.
 
         `opened_after` and `opened_before` are inclusive timestamps with a timezone, as in search_issues.
-        SQL does the counting. `unresolved_only` excludes closed issues. Keys with no
-        issues are absent; `total` is the sum of the groups. This tool cannot change any records.
+        SQL does the counting. `unresolved_only` excludes closed issues. Every value of the grouped
+        field that the filters allow is listed, with count 0 when no issue matches, so a zero can be
+        cited as groups[key=blocked].count. `total` is the sum of the groups. This tool cannot change any records.
         """
         return IssueCounts.model_validate(
             await read(

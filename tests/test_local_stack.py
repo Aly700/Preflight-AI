@@ -300,7 +300,14 @@ FACTS: dict[str, Any] = {
         'task_status_counts': {'todo': 23, 'in_progress': 3, 'awaiting_review': 2, 'completed': 9, 'blocked': 1},
     },
     'issue_0001_events': 7,
-    'dated_unresolved_by_subsystem': {'cabin': 2, 'controls': 1},
+    'dated_unresolved_by_subsystem': {
+        'avionics': 0,
+        'cabin': 2,
+        'controls': 1,
+        'electrical': 0,
+        'hydraulics': 0,
+        'structures': 0,
+    },
     'unresolved_by_subsystem': {
         'avionics': 30,
         'cabin': 25,
@@ -329,7 +336,7 @@ COUNTS: dict[str, Any] = {
 DATED_COUNTS = {
     **COUNTS,
     'total': 3,
-    'groups': [{'key': 'cabin', 'count': 2}, {'key': 'controls', 'count': 1}],
+    'groups': [{'key': k, 'count': c} for k, c in sorted(FACTS['dated_unresolved_by_subsystem'].items())],
     'filters': {**COUNTS['filters'], 'opened_after': '2026-03-01T00:00:00Z', 'opened_before': '2026-04-01T00:00:00Z'},
 }
 COMPARISON: dict[str, Any] = {
