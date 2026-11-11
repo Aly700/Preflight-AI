@@ -1385,5 +1385,14 @@ class LangGraphLoop(NativeLoop):
     module_name = 'backend.graph_runtime'
 
 
+class Prompts(unittest.TestCase):
+    def test_both_runtimes_read_their_model_text_from_one_module(self):
+        from backend import agent_runtime, copilot_chat, prompts
+
+        self.assertIs(agent_runtime.SYSTEM, prompts.NATIVE_SYSTEM)
+        self.assertIs(copilot_chat.SYSTEM, prompts.COPILOT_SYSTEM)
+        self.assertTrue(claims_prompt([]).startswith(prompts.CLAIMS_INSTRUCTIONS + '\n'))
+
+
 if __name__ == '__main__':
     unittest.main()

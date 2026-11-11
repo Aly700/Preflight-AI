@@ -14,7 +14,7 @@ Nothing in the architecture is tied to aircraft. The chat UI, the model loop, th
 
 1. **Data.** Replace the tables in `sql/schema.sql` and the CSVs that `scripts/load_postgres.py` loads. Documents for search load through `scripts/load_documents.py`.
 2. **Tools.** Write each query in `mcp_service/repository.py` and expose it as a tool in `mcp_service/server.py`. Give it a typed result in `preflight_core/models.py` and an entry in `preflight_core/tools.py`. The model can see only what these tools return.
-3. **Prompt and checks.** Rewrite the system prompt for your subject (`backend/agent_runtime.py`, and `backend/copilot_chat.py` for the Copilot runtime), and change the record ID pattern in `backend/verify.py` so the checks recognize your IDs.
+3. **Prompt and checks.** Rewrite what the model is told about your subject in `backend/prompts.py`, and change `ID_FORMAT` in `preflight_core/scope.py` to match your record IDs, so the tool schemas and the answer checks recognize them.
 4. **Filters and evaluation** (optional). The scope filters live in `preflight_core/scope.py` and `frontend/src/scope-options.json`. Questions scored against your own SQL go in `evals/`.
 
 Keep the tools read-only and the database private, so the chat endpoint stays the only public entry.

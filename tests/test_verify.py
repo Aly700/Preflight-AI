@@ -1036,3 +1036,13 @@ class QuestionIdsAndNestedSelectors(unittest.TestCase):
         ambiguous = {'items': [{'a': {'x_id': 'X'}, 'b': {'x_id': 'X'}}]}
         with self.assertRaises(LookupError):
             resolve_path(ambiguous, 'items[x_id=X]')
+
+
+class IdFormat(unittest.TestCase):
+    def test_prose_and_record_id_patterns_share_one_format(self):
+        from backend.verify import ID_PATTERN
+        from preflight_core.scope import ID_FORMAT, RECORD_ID
+
+        self.assertEqual(RECORD_ID.pattern, f'^{ID_FORMAT}$')
+        self.assertEqual(ID_PATTERN.pattern, rf'\b{ID_FORMAT}\b')
+        self.assertEqual(ID_PATTERN.findall('See DEMO-AIR-0001 and DOC-0011#2.'), ['DEMO-AIR-0001', 'DOC-0011#2'])

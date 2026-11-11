@@ -17,7 +17,10 @@ IssueStatus = Literal['open', 'in_progress', 'blocked', 'reopened', 'closed']
 TaskStatus = Literal['todo', 'in_progress', 'awaiting_review', 'completed', 'blocked']
 TaskKind = Literal['review', 'investigation', 'documentation', 'inspection', 'rectification']
 DocumentKind = Literal['policy', 'glossary', 'handover', 'memo', 'coordination', 'retrospective', 'form']
-RECORD_ID = re.compile(r'^(?:(?:DEMO-AIR|ISSUE|TASK|EVT|TEAM|PERSON|SHIFT)-[0-9]+|DOC-[0-9]{4}(?:#[0-9]+)?)$')
+# Every record ID format the tools return. Tool result schemas and the answer checks both
+# use this one definition; change it when you bring your own data.
+ID_FORMAT = r'(?:(?:DEMO-AIR|ISSUE|TASK|EVT|TEAM|PERSON|SHIFT)-[0-9]+|DOC-[0-9]{4}(?:#[0-9]+)?)'
+RECORD_ID = re.compile(f'^{ID_FORMAT}$')
 
 SCOPE_OPTIONS: dict[str, dict[str, Any]] = {
     'entity': {'enum': ['issues', 'tasks', 'documents']},

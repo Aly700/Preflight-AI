@@ -8,6 +8,7 @@ import re
 from typing import Any
 
 from preflight_core.models import RECORD_ID
+from preflight_core.scope import ID_FORMAT
 
 FINAL_ANSWER_TOOL: dict[str, Any] = {
     'name': 'final_answer',
@@ -132,7 +133,7 @@ class Verification:
     note: str = ''
 
 
-ID_PATTERN = re.compile(r'\b(?:(?:DEMO-AIR|ISSUE|TASK|EVT|TEAM|PERSON|SHIFT)-[0-9]+|DOC-[0-9]{4}(?:#[0-9]+)?)\b')
+ID_PATTERN = re.compile(rf'\b{ID_FORMAT}\b')
 DATE = re.compile(r'\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2})?(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?)?')
 TIME = re.compile(r'\b\d{1,2}:\d{2}(?::\d{2})?\b')
 THOUSANDS = re.compile(r'\b\d{1,3}(?:,\d{3})+\b')
