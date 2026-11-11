@@ -1,6 +1,7 @@
 """The claims contract: the `final_answer` tool the model calls last, and the check of what it declares."""
 
-from collections.abc import Callable, Collection
+from collections import Counter
+from collections.abc import Callable, Collection, Mapping
 from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation
 import re
@@ -37,7 +38,10 @@ FINAL_ANSWER_TOOL: dict[str, Any] = {
                     'properties': {
                         'label': {'type': 'string', 'description': 'What the number is, in a few words'},
                         'value': {'type': 'number'},
-                        'call_id': {'type': 'string', 'description': 'The id of the tool call the number came from'},
+                        'call_id': {
+                            'type': 'string',
+                            'description': 'The short id of the tool call, e.g. c1, as listed after the answer',
+                        },
                         'path': {
                             'type': 'string',
                             'description': "JSON path inside that result, e.g. 'total' or 'items[0].issue_id'",
@@ -54,7 +58,14 @@ FINAL_ANSWER_TOOL: dict[str, Any] = {
                                     ),
                                     'items': {
                                         'type': 'object',
-                                        'properties': {'call_id': {'type': 'string'}, 'path': {'type': 'string'}},
+                                        'properties': {
+                                            'call_id': {
+                                                'type': 'string',
+                                                'description': 'The short id of the tool call, e.g. c1, '
+                                                'as listed after the answer',
+                                            },
+                                            'path': {'type': 'string'},
+                                        },
                                         'required': ['call_id', 'path'],
                                     },
                                 },
@@ -219,17 +230,27 @@ def number_token(value: float) -> str:
 PATH_CHARS = 80
 
 
-def candidates(reference: str, results: dict[str, dict[str, Any]], names: dict[str, str]) -> list[dict[str, Any]] | str:
-    """The result a declared number refers to: the exact call id, or the tool's name when it was called once.
+def candidates(
+    reference: str, results: dict[str, dict[str, Any]], names: dict[str, str], aliases: Mapping[str, str]
+) -> list[dict[str, Any]] | str:
+    """Resolve a short alias, then an exact call id, then a tool name used once.
 
     Returns a reason string instead when the reference is ambiguous.
     """
+    if reference in aliases:
+        call_id = aliases[reference]
+        return [results[call_id]] if call_id in results else []
     if reference in results:
         return [results[reference]]
     matches = [results[call_id] for call_id, name in names.items() if name == reference and call_id in results]
     if len(matches) > 1:
         return 'names a tool that was called more than once; use the call id'
     return matches
+
+
+def missing_call_reason(reference: str) -> str:
+    suffix = f' ({reference})' if re.fullmatch(r'[A-Za-z0-9_.:-]{1,40}', reference) else ''
+    return 'refers to a tool call that returned nothing' + suffix
 
 
 def short(path: str) -> str:
@@ -267,7 +288,9 @@ def count_filter(where: Any) -> Callable[[dict[str, Any]], bool] | None:
     return lambda item: field_matches(item.get(name), equals)
 
 
-def derived_value(derived: Any, results: dict[str, dict[str, Any]], names: dict[str, str]) -> float | str:
+def derived_value(
+    derived: Any, results: dict[str, dict[str, Any]], names: dict[str, str], aliases: Mapping[str, str]
+) -> float | str:
     """Compute a declaration, or return a short reason that never includes record text."""
     if not isinstance(derived, dict):
         return 'the derivation is malformed'
@@ -305,11 +328,11 @@ def derived_value(derived: Any, results: dict[str, dict[str, Any]], names: dict[
         call_id, path = operand.get('call_id'), operand.get('path')
         if not isinstance(call_id, str) or not isinstance(path, str):
             return 'a derivation operand needs call_id and path'
-        options = candidates(call_id, results, names)
+        options = candidates(call_id, results, names, aliases)
         if isinstance(options, str):
             return options
         if not options:
-            return 'refers to a tool call that returned nothing'
+            return missing_call_reason(call_id)
         try:
             actual = resolve_path(options[0], path)
         except LookupError:
@@ -339,13 +362,14 @@ def verify_claims(
     results: dict[str, dict[str, Any]],
     seen_ids: set[str],
     names: dict[str, str] | None = None,
+    aliases: Mapping[str, str] = {},
     question_ids: Collection[str] = frozenset(),
 ) -> Verification:
     """Check declared numbers against the results they name and prose IDs against what tools returned.
 
     Declared mismatches are reported to the reader. Undeclared bare integers are
     only counted (dates, times and years excluded), for evaluation. A number may
-    name its tool call by id or, failing that, by tool name, or declare a
+    name its tool call by short alias, real id or tool name, or declare a
     derivation whose operands reference tool results in the same way. IDs the
     user supplied (`question_ids`) are not claims: they need no citation or tool
     evidence, though numbers stated about them still do.
@@ -382,7 +406,7 @@ def verify_claims(
             unverified.append(f'{label} ({number_token(value)}) declares both a path and a derivation')
             continue
         if has_derived:
-            computed = derived_value(item['derived'], results, names)
+            computed = derived_value(item['derived'], results, names, aliases)
             if isinstance(computed, str):
                 unverified.append(f'{label} ({number_token(value)}): {computed}')
             elif not (
@@ -393,12 +417,13 @@ def verify_claims(
                     f'{label} ({number_token(value)}) does not match the derived value ({number_token(computed)})'
                 )
             continue
-        options = candidates(str(item.get('call_id', '')), results, names)
+        reference = str(item.get('call_id', ''))
+        options = candidates(reference, results, names, aliases)
         if isinstance(options, str):
             unverified.append(f'{label} ({number_token(value)}) {options}')
             continue
         if not options:
-            unverified.append(f'{label} ({number_token(value)}) refers to a tool call that returned nothing')
+            unverified.append(f'{label} ({number_token(value)}) {missing_call_reason(reference)}')
             continue
         path = short(str(item.get('path', '')))
         actuals: list[Any] = []
@@ -426,5 +451,9 @@ def verify_claims(
     undeclared = sum(token not in declared_tokens for token in integers)
     if claims is None and (prose_ids - asked or undeclared):
         unverified.append('no claims were declared for the records or numbers in this answer')
-    note = ('Unverified: ' + '; '.join(unverified)) if unverified else ''
+    reasons = Counter(unverified)
+    summary = [reason + (f' (\u00d7{count})' if count > 1 else '') for reason, count in list(reasons.items())[:10]]
+    if len(reasons) > 10:
+        summary.append(f'and {len(reasons) - 10} more')
+    note = ('Unverified: ' + '; '.join(summary)) if unverified else ''
     return Verification(verified=not unverified, unverified=unverified, undeclared=undeclared, note=note)

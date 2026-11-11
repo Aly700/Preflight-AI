@@ -96,7 +96,7 @@ def result_block(call_id: str, content: str, *, error: bool = False) -> dict[str
 
 
 def claims_prompt(calls: list[tuple[str, str, dict[str, Any]]]) -> str:
-    """The user turn that asks for the declaration, listing the exact ids the model must reference."""
+    """The declaration request, with short ids numbered in successful call log order."""
     lines = [
         'Now call the final_answer tool, the only tool available, to declare the claims in your answer above: '
         'declare only counts and quantities that come from tool results, not ranks, ordinals, dates or IDs. '
@@ -118,9 +118,10 @@ def claims_prompt(calls: list[tuple[str, str, dict[str, Any]]]) -> str:
         'record IDs. Do not write any more answer text.'
     ]
     if calls:
-        lines.append('Tool calls in this conversation and their ids; use these exact ids as call_id:')
+        lines.append('Tool calls in this conversation and their short ids; use these short ids as call_id:')
         lines += [
-            f'- {call_id}: {name}({json.dumps(arguments, ensure_ascii=True)})' for call_id, name, arguments in calls
+            f'- c{i}: {name}({json.dumps(arguments, ensure_ascii=True)})'
+            for i, (_, name, arguments) in enumerate(calls, 1)
         ]
     else:
         lines.append(
@@ -382,6 +383,7 @@ class Loop:
             results=self.results,
             seen_ids=self.seen,
             names=self.names,
+            aliases={f'c{i}': call_id for i, (call_id, _, _) in enumerate(self.calls_log, 1)},
             question_ids=self.question_ids,
         )
         events: list[Event] = []

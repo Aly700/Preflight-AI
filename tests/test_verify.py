@@ -25,6 +25,113 @@ def computed(value, op, operands, **options):
     }
 
 
+class UnverifiedNotes(unittest.TestCase):
+    def test_note_collapses_duplicate_reasons_in_first_seen_order(self):
+        result = verify_claims(
+            prose='',
+            results={},
+            seen_ids=set(),
+            claims={'numbers': [None, {'label': 'Count', 'value': 'bad'}, *([None] * 1999)]},
+        )
+        self.assertFalse(result.verified)
+        self.assertEqual(
+            result.note,
+            'Unverified: a declared number is malformed (\u00d72000); Count: the declared value is not a number',
+        )
+        self.assertEqual(len(result.unverified), 2001)
+        self.assertEqual(result.unverified.count('a declared number is malformed'), 2000)
+        self.assertEqual(result.unverified[1], 'Count: the declared value is not a number')
+
+    def test_note_caps_distinct_reasons_and_counts_omitted_reasons(self):
+        for distinct in (9, 10, 13):
+            with self.subTest(distinct=distinct):
+                numbers = [{'label': f'Count {i}', 'value': 'bad'} for i in range(distinct)]
+                result = verify_claims(
+                    prose='',
+                    results={},
+                    seen_ids=set(),
+                    claims={'numbers': [*numbers, *numbers, numbers[0]]},
+                )
+                expected = [
+                    f'Count {i}: the declared value is not a number (\u00d7{3 if i == 0 else 2})'
+                    for i in range(min(distinct, 10))
+                ]
+                if distinct > 10:
+                    expected.append(f'and {distinct - 10} more')
+                self.assertEqual(result.note, 'Unverified: ' + '; '.join(expected))
+                self.assertEqual(len(result.unverified), distinct * 2 + 1)
+                self.assertEqual(result.unverified[-1], result.unverified[0])
+
+
+class CallReferences(unittest.TestCase):
+    def check(self, declaration, **kwargs):
+        return verify_claims(
+            prose='',
+            claims={'cited_ids': [], 'numbers': [declaration]},
+            results=kwargs.pop('results', RESULTS),
+            seen_ids=set(),
+            **kwargs,
+        )
+
+    def test_short_alias_resolves_a_direct_path_before_real_ids_and_names(self):
+        result = self.check(
+            number(162, call_id='c1'),
+            aliases={'c1': 't1'},
+            results={**RESULTS, 'c1': {'total': 9}},
+            names={'t1': 'c1', 'c1': 'c1'},
+        )
+        self.assertTrue(result.verified, result.note)
+
+    def test_short_alias_resolves_derived_operands_before_real_ids_and_names(self):
+        result = self.check(
+            computed(157, 'difference', [operand('c1'), operand('c2', 'limit')]),
+            aliases={'c1': 't1', 'c2': 't1'},
+            results={**RESULTS, 'c1': {'total': 9}},
+            names={'t1': 'c1', 'c1': 'c1'},
+        )
+        self.assertTrue(result.verified, result.note)
+
+    def test_real_ids_and_tool_name_fallback_still_resolve_with_aliases(self):
+        for reference in ('t1', 'count_issues'):
+            for declaration in (
+                number(162, call_id=reference),
+                computed(157, 'difference', [operand(reference), operand(reference, 'limit')]),
+            ):
+                with self.subTest(reference=reference, declaration=declaration):
+                    result = self.check(declaration, aliases={'c1': 't1'}, names={'t1': 'count_issues'})
+                    self.assertTrue(result.verified, result.note)
+
+    def test_missing_references_echo_only_short_safe_ids(self):
+        for reference, suffix in (
+            ('c9', ' (c9)'),
+            ('call_1.test:ok-2', ' (call_1.test:ok-2)'),
+            ('a' * 40, ' (' + 'a' * 40 + ')'),
+            ('a' * 41, ''),
+            ('<script>alert(1)</script>', ''),
+            ('c9\n', ''),
+            ('c9 secret', ''),
+            ('', ''),
+        ):
+            for declaration, prefix in (
+                (number(3, call_id=reference, label='Open issues'), 'Open issues (3) '),
+                (computed(3, 'count', [operand(reference, 'items')]), 'Unresolved structures issues (3): '),
+            ):
+                with self.subTest(reference=reference, declaration=declaration):
+                    result = self.check(declaration)
+                    self.assertEqual(
+                        result.unverified, [prefix + 'refers to a tool call that returned nothing' + suffix]
+                    )
+
+    def test_schema_describes_short_call_ids_for_numbers_and_operands(self):
+        properties = FINAL_ANSWER_TOOL['input_schema']['properties']['numbers']['items']['properties']
+        operands = properties['derived']['properties']['operands']['items']['properties']
+        for field in (properties['call_id'], operands['call_id']):
+            description = field.get('description', '')
+            self.assertIn('short id', description)
+            self.assertIn('c1', description)
+            self.assertIn('listed after the answer', description)
+
+
 class DerivedClaimVerification(unittest.TestCase):
     def check(self, declaration, *, prose='', results=None, names=None):
         return verify_claims(

@@ -232,6 +232,25 @@ class NativePrompts(unittest.TestCase):
         self.assertIn('total', prompt)
         self.assertIn('aircraft', prompt)
 
+    def test_claims_prompt_lists_short_ids_in_call_log_order(self):
+        calls: list[tuple[str, str, dict[str, Any]]] = [
+            ('toolu_z_long_random_id', 'count_issues', {'group_by': 'status'}),
+            ('toolu_a_long_random_id', 'count_issues', {'group_by': 'priority'}),
+            ('toolu_m_long_random_id', 'list_open_issues', {'limit': 5}),
+        ]
+        prompt = claims_prompt(calls)
+        self.assertIn('use these short ids as call_id', prompt)
+        self.assertEqual(
+            [line for line in prompt.splitlines() if line.startswith('- ')],
+            [
+                '- c1: count_issues({"group_by": "status"})',
+                '- c2: count_issues({"group_by": "priority"})',
+                '- c3: list_open_issues({"limit": 5})',
+            ],
+        )
+        for call_id, _, _ in calls:
+            self.assertNotIn(call_id, prompt)
+
     def test_system_prompt_rules_from_the_tuning_round(self):
         system = ' '.join(SYSTEM.split())
         for rule in (
@@ -269,6 +288,64 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
                 question, replace(settings, runtime=self.runtime_name), model_client=model, tools=tools
             )
         ]
+
+    async def test_short_call_references_verify_across_rounds_and_failed_calls(self):
+        tools = FakeTools(fail={'get_issue_history'})
+        opened = sum(i['status'] == 'open' for i in tools.repo.rows['issues'])
+        closed = sum(i['status'] == 'closed' for i in tools.repo.rows['issues'])
+        first_id, second_id = 'toolu_z_long_random_call_id', 'toolu_a_long_random_call_id'
+        model = FakeModel(
+            [
+                Turn(
+                    '',
+                    [
+                        ToolCall('failed', 'get_issue_history', {'issue_id': 'ISSUE-0001'}),
+                        ToolCall(first_id, 'count_issues', {'group_by': 'status', 'status': 'open'}),
+                    ],
+                ),
+                Turn('', [ToolCall(second_id, 'count_issues', {'group_by': 'status', 'status': 'closed'})]),
+                Turn(f'There are {opened} open and {closed} closed issues, a gap of {abs(opened - closed)}.'),
+                claims(
+                    numbers=[
+                        {'label': 'Open', 'value': opened, 'call_id': 'c1', 'path': 'groups[key=open].count'},
+                        {'label': 'Closed', 'value': closed, 'call_id': 'c2', 'path': 'total'},
+                        {
+                            'label': 'Gap',
+                            'value': abs(opened - closed),
+                            'derived': {
+                                'op': 'difference',
+                                'operands': [
+                                    {'call_id': 'c1', 'path': 'total'},
+                                    {'call_id': 'c2', 'path': 'total'},
+                                ],
+                            },
+                        },
+                    ]
+                ),
+            ]
+        )
+        events = await self.collect(model, tools)
+        self.assertTrue(events[-1]['data']['verified'], events)
+        self.assertEqual(events[-1]['data']['unverified'], 0)
+        self.assertEqual(events[-1]['data']['undeclared'], 0)
+        prompt = model.calls[-1]['messages'][-1]['content']
+        self.assertEqual(
+            [line for line in prompt.splitlines() if line.startswith('- ')],
+            [
+                '- c1: count_issues({"group_by": "status", "status": "open"})',
+                '- c2: count_issues({"group_by": "status", "status": "closed"})',
+            ],
+        )
+        evidence = next(e['data']['results'] for e in events if e['event'] == 'evidence')
+        self.assertEqual([entry['call_id'] for entry in evidence], [first_id, second_id])
+
+    async def test_unverified_note_is_compact_but_done_counts_every_failure(self):
+        model = FakeModel([Turn('There are 3 issues.'), claims(numbers=[None] * 2000)])
+        events = await self.collect(model, FakeTools())
+        self.assertFalse(events[-1]['data']['verified'])
+        self.assertEqual(events[-1]['data']['unverified'], 2000)
+        text = ''.join(e['data']['text'] for e in events if e['event'] == 'delta')
+        self.assertEqual(text, 'There are 3 issues.\n\nUnverified: a declared number is malformed (\u00d72000)')
 
     async def test_scope_fills_arguments_refuses_conflicts_and_recovers_with_private_trace(self):
         scope = {'entity': 'issues', 'aircraft_id': 'DEMO-AIR-0001', 'priority': 'high'}
@@ -1024,7 +1101,7 @@ class NativeLoop(unittest.IsolatedAsyncioTestCase):
         self.assertNotIn('final_answer', [t['name'] for t in model.calls[0]['tools']])
         self.assertEqual([t['name'] for t in model.calls[2]['tools']], ['final_answer'])
         self.assertEqual(model.calls[2]['tool_choice'], CLAIMS_CHOICE)
-        self.assertIn('t1', model.calls[2]['messages'][-1]['content'])
+        self.assertIn('- c1:', model.calls[2]['messages'][-1]['content'])
         self.assertIn('list_open_issues', model.calls[2]['messages'][-1]['content'])
         kinds = [e['event'] for e in events]
         self.assertEqual(kinds[:2], ['tool', 'tool'])
