@@ -8,6 +8,17 @@ All data is made up: 12 demo aircraft, 180 issues, 480 tasks and their history, 
 
 ![Architecture: a browser reaches a Cloudflare Worker, which proxies chat to Nginx on an EC2 host; the API calls Claude on Amazon Bedrock and reaches the read-only MCP tools through AgentCore Gateway over a private link](docs/architecture.svg)
 
+## Use it with your own data
+
+Nothing in the architecture is tied to aircraft. The chat UI, the model loop, the answer checks and the hosting work with any records you can put in PostgreSQL and reach through read-only tools. To build your own version:
+
+1. **Data.** Replace the tables in `sql/schema.sql` and the CSVs that `scripts/load_postgres.py` loads. Documents for search load through `scripts/load_documents.py`.
+2. **Tools.** Write each query in `mcp_service/repository.py` and expose it as a tool in `mcp_service/server.py`. Give it a typed result in `preflight_core/models.py` and an entry in `preflight_core/tools.py`. The model can see only what these tools return.
+3. **Prompt and checks.** Rewrite the system prompt for your subject (`backend/agent_runtime.py`, and `backend/copilot_chat.py` for the Copilot runtime), and change the record ID pattern in `backend/verify.py` so the checks recognize your IDs.
+4. **Filters and evaluation** (optional). The scope filters live in `preflight_core/scope.py` and `frontend/src/scope-options.json`. Questions scored against your own SQL go in `evals/`.
+
+Keep the tools read-only and the database private, so the chat endpoint stays the only public entry.
+
 ## What is in the repo
 
 - **Chat UI** in React, served with a small proxy that holds the only credential. The browser never sees a key.
